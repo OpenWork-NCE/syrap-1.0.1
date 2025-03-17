@@ -6,35 +6,56 @@
 	align-items: center;
 	justify-content: space-around;
 	padding: calc(var(--mantine-spacing-xl) * 2) 0;
-	background-color: lightdark(var(--mantine-colors-white), var(--mantine-colors-dark-8));
+	background-color: light-dark(
+		var(--mantine-color-white),
+		var(--mantine-color-dark-8)
+	);
+}
 
-	@media (max-width: $mantine-breakpoint-sm) {
-		flex-direction: column-reverse;
-		padding: var(--mantine-spacing-xl);
+.wrapper-mobile {
+	flex-direction: column-reverse;
+	padding: var(--mantine-spacing-xl);
+}
+
+@media (max-width: $mantine-breakpoint-sm) {
+	.wrapper {
+		composes: wrapper-mobile;
 	}
 }
 
 .image {
 	max-width: 30%;
+}
 
-	@media (max-width: $mantine-breakpoint-sm) {
-		max-width: 100%;
+.image-mobile {
+	max-width: 100%;
+}
+
+@media (max-width: $mantine-breakpoint-sm) {
+	.image {
+		composes: image-mobile;
 	}
 }
 
 .body {
 	max-width: 50%;
 	padding-right: calc(var(--mantine-spacing-xl) * 4);
+}
 
-	@media (max-width: $mantine-breakpoint-sm) {
-		max-width: 90%;
-		padding-right: 0;
-		margin-top: var(--mantine-spacing-xl);
+.body-mobile {
+	max-width: 90%;
+	padding-right: 0;
+	margin-top: var(--mantine-spacing-xl);
+}
+
+@media (max-width: $mantine-breakpoint-sm) {
+	.body {
+		composes: body-mobile;
 	}
 }
 
 .title {
-	color: lightdark(var(--mantine-colors-black), var(--mantine-colors-white));
+	color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
 	line-height: 1;
 	margin-bottom: var(--mantine-spacing-sm);
 }

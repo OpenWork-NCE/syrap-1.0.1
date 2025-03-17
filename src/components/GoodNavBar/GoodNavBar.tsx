@@ -1,8 +1,10 @@
-import { Group, Code, ScrollArea, rem } from "@mantine/core";
+import { ScrollArea, rem } from "@mantine/core";
 import { UserButton } from "../UserButton/UserButton";
 import classes from "./GoodNavBar.module.css";
 import type { NavItem } from "@/types/nav-item";
 import { LinksGroup } from "@/components/GoodNavbarLinksGroup/GoodNavbarLinksGroup";
+import { ThemedNavbar } from "@/components/ui/ThemeComponents";
+import { useRef, useEffect } from "react";
 
 interface Props {
 	data: NavItem[];
@@ -11,10 +13,30 @@ interface Props {
 
 export function GoodNavbar({ data }: Props) {
 	const links = data.map((item) => <LinksGroup {...item} key={item.label} />);
+	const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+	// Update scroll behavior when data changes
+	useEffect(() => {
+		// Force recalculation of scrollbars
+		if (scrollAreaRef.current) {
+			// Small timeout to ensure DOM is updated
+			setTimeout(() => {
+				// Trigger resize event to recalculate scrollbars
+				window.dispatchEvent(new Event("resize"));
+			}, 100);
+		}
+	}, [data]);
 
 	return (
-		<>
-			<ScrollArea className={classes.links}>
+		<ThemedNavbar className={classes.navbar}>
+			<ScrollArea
+				className={classes.links}
+				scrollbarSize={6}
+				type="hover"
+				offsetScrollbars
+				scrollHideDelay={500}
+				viewportRef={scrollAreaRef}
+			>
 				<div className={classes.linksInner}>{links}</div>
 			</ScrollArea>
 
@@ -25,6 +47,6 @@ export function GoodNavbar({ data }: Props) {
 					email="hspoon@outlook.com"
 				/>
 			</div>
-		</>
+		</ThemedNavbar>
 	);
 }

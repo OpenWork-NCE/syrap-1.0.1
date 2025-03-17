@@ -39,6 +39,13 @@ export type User = {
 	roles: Profile[];
 	model_id?: string;
 	model: string;
+	// Additional properties for profile page
+	phone?: string;
+	position?: string;
+	avatar?: string;
+	github?: string;
+	twitter?: string;
+	linkedin?: string;
 };
 
 export type Cenadi = {
@@ -83,6 +90,8 @@ export type University = {
 	arrondissement_id: string;
 	user_id: string;
 	cenadi_id: string;
+	branches_count: string;
+	levels_count: string;
 };
 
 export type Localization = {
@@ -97,8 +106,8 @@ export type Localization = {
 export type Classroom = {
 	id: string;
 	designation: string;
-	niveau: Level;
-	filiere: Branch;
+	level: Level;
+	branch: Branch;
 };
 
 export type FormattedClassroom = {
@@ -121,19 +130,19 @@ export type ShowUniversity = {
 	description: string;
 	email: string;
 	arrondissement?: Localization;
-	institute_id: string;
+	institute: string;
 	user: string;
 	salles?: Classroom;
-	ipes_count: string;
-	branch_count: string;
+	branches_count: string;
+	levels_count: string;
 	global_matching: string;
 };
 
 export type ClassroomForWithSyllabus = {
 	id: string;
 	designation: string;
-	niveau: Level;
-	filiere: Branch;
+	level: Level;
+	branch: Branch;
 	ues: {
 		id: string;
 		name: string;
@@ -168,6 +177,22 @@ export type Ipes = {
 	arrete_ouverture: string;
 	decret_creation: string;
 	promoteur_id: string;
+};
+
+export type ShowIpesWithClassrooms = {
+	id: string;
+	name: string;
+	code: string;
+	phone: string;
+	email: string;
+	arrondissement?: Localization;
+	user_id: string;
+	cenadi_id: string;
+	university_id: string;
+	arrete_ouverture: string;
+	decret_creation: string;
+	promoteur_id: string;
+	salles: ClassroomForWithSyllabus[];
 };
 
 export type ShowIpes = {
@@ -275,8 +300,8 @@ export const mockFiles: FileDocument[] = [
 export interface FileFormData {
 	title: string;
 	description: string;
-	file?: File;
-	visibility: ("CENADI" | "MINESUP" | "IPES")[];
+	visibility: string[];
+	file: File | null;
 }
 
 export interface ComparisonResult {

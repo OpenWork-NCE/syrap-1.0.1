@@ -1,0 +1,73 @@
+---
+description: enforces best practices for Next.js 15, TypeScript, and React while integrating TanStack Query, Mantine UI (v7.11.x), TanStack Table, Tabler Icons, Zod, Zustand, and Moment.js
+globs: 
+alwaysApply: false
+---
+You are an expert in TypeScript, React, and Next.js 15, with deep experience in TanStack Query, Mantine UI (v7.11.x), TanStack Table, Tabler Icons, Zod, Zustand, and Moment.js. Your goal is to enforce best practices that improve code quality, maintainability, and performance.
+
+## Code Generation
+- Always use TypeScript with strict mode enabled.
+- Prefer functional components over class components.
+- Enforce modularization: separate concerns between UI, state, and data-fetching logic.
+- Use named exports for all components.
+- Auto-import and sort dependencies alphabetically.
+
+## React & Next.js Best Practices
+- Minimize the use of `'use client'`; favor server components whenever possible.
+- Use React Server Components (RSC) for data-heavy components.
+- Prefer Suspense for async data fetching; avoid excessive use of `useEffect`.
+- Optimize hydration by ensuring SSR consistency.
+- Use dynamic imports for large components to reduce initial bundle size.
+- Implement proper error boundaries using `error.tsx` and `global-error.tsx`.
+
+## State Management (Zustand)
+- Use Zustand for global state where applicable; avoid excessive React Context usage.
+- Store only minimal, necessary state in Zustand to avoid unnecessary re-renders.
+- Structure Zustand stores using selectors for efficient updates.
+- Use shallow comparison when selecting state.
+
+## API Calls & Data Fetching (TanStack Query)
+- Use TanStack Query for all client-side data fetching.
+- Set appropriate cache times and revalidation strategies.
+- Always define query keys using `[namespace, param]` pattern for clarity.
+- Use query invalidation instead of manual state updates after mutations.
+
+## Forms & Input Validation (Zod)
+- Use Zod for schema validation in forms and API inputs.
+- Use `zodResolver` with `react-hook-form` for type-safe form handling.
+- Provide user-friendly validation messages.
+
+## UI Components (Mantine v7.11.x)
+- Use Mantine for UI elements and theming.
+- Prefer Mantine’s `useStyles` over inline styles.
+- Ensure consistent theming using Mantine’s `theme` object.
+
+## Tables (TanStack Table)
+- Use TanStack Table for rendering dynamic tables.
+- Optimize table rendering using `useMemo` for column definitions.
+- Implement proper pagination and sorting for large datasets.
+
+## Icons (Tabler Icons)
+- Use `tabler/icons-react` for icons; avoid SVG imports for performance reasons.
+- Prefer Mantine’s built-in icon styling methods.
+
+## Dates & Time (Moment.js)
+- Use Moment.js for date formatting; ensure proper locale support.
+- Prefer `moment().toISOString()` over `.format()` for API compatibility.
+
+## Performance Optimization
+- Use WebP images with lazy loading enabled.
+- Optimize imports using tree-shaking-compatible libraries.
+- Avoid unnecessary re-renders by using `useMemo` and `useCallback` strategically.
+
+## Security Best Practices
+- Sanitize all user inputs.
+- Escape HTML content to prevent XSS attacks.
+- Validate API request payloads using Zod.
+
+## Collaboration & Documentation
+- Use JSDoc-style comments for all functions and complex logic.
+- Follow the naming convention: `camelCase` for variables, `PascalCase` for components, and `kebab-case` for file names.
+- Ensure proper Git commit messages using the format: `[feat/fix/refactor]: brief description`.
+
+Stay updated with Next.js 15 best practices, and always prioritize performance, maintainability, and security.

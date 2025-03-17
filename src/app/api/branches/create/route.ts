@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 		try {
 			const bodyPayload = createSchema.parse(await requestJsonBody(request));
 			const branch = await fetchJson<any>(
-				backendUrl(`/api/institutes/filieres`),
+				backendUrl(`/api/institutes/branchs`),
 				{
 					method: "POST",
 					body: JSON.stringify(bodyPayload),

@@ -1,21 +1,15 @@
 "use client";
 
-import { Button, Paper, PasswordInput, Space, TextInput } from "@mantine/core";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export function RegisterForm() {
-	return (
-		<Paper withBorder shadow="md" p={30} mt={30} radius="md">
-			<TextInput label="Email" placeholder="test@example.com" required />
-			<PasswordInput
-				label="Password"
-				placeholder="Your password"
-				required
-				mt="md"
-			/>
-			<Space h="md" />
-			<Button fullWidth mt="xl">
-				Sign Up
-			</Button>
-		</Paper>
-	);
+	const router = useRouter();
+
+	useEffect(() => {
+		// Redirect to support page since registration is admin-only
+		router.push("/support");
+	}, [router]);
+
+	return null;
 }

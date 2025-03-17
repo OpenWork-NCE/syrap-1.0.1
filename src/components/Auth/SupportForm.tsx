@@ -3,36 +3,41 @@
 import {
 	Anchor,
 	Button,
-	Card,
 	Center,
-	Checkbox,
+	Divider,
 	Group,
-	Paper,
-	PasswordInput,
 	Select,
-	SimpleGrid,
-	Text,
 	Textarea,
 	TextInput,
-	TextProps,
-	Title,
 } from "@mantine/core";
+import {
+	ThemedCard,
+	ThemedText,
+	ThemedTitle,
+} from "@/components/ui/ThemeComponents";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { fetchJson, internalApiUrl } from "@/app/lib/utils";
 import { notifications } from "@mantine/notifications";
-import { PATH_AUTHENTICATIONS, PATH_BOARD } from "@/routes";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
-import { useInstitution } from "@/app/context/InstitutionContext";
+import { PATH_AUTHENTICATIONS } from "@/routes";
+import {
+	IconArrowLeft,
+	IconAt,
+	IconCheck,
+	IconSend,
+	IconUser,
+} from "@tabler/icons-react";
+import classes from "./SupportForm.module.css";
 
 export function SupportForm() {
 	const { push } = useRouter();
 	const initiated = useRef<Boolean>(false);
 	const [loading, setLoading] = useState<boolean>(false);
+	const [messageSent, setMessageSent] = useState<boolean>(false);
 
 	const supportSchema = useMemo(
 		() =>
@@ -40,12 +45,15 @@ export function SupportForm() {
 				name: z
 					.string({ required_error: "Ce champ est requis." })
 					.trim()
-					.min(2),
+					.min(2, "Le nom doit contenir au moins 2 caractères"),
 				email: z
-					.string({ required_error: "Une addresse mail est requise." })
+					.string({ required_error: "Une adresse mail est requise." })
 					.email("L'adresse mail doit être valide."),
+				institution: z.string({ required_error: "Ce champ est requis." }),
 				subject: z.string({ required_error: "Ce champ est requis." }),
-				message: z.string({ required_error: "Veuillez entrer un message." }),
+				message: z
+					.string({ required_error: "Veuillez entrer un message." })
+					.min(10, "Le message doit contenir au moins 10 caractères"),
 			}),
 		[],
 	);
@@ -62,21 +70,20 @@ export function SupportForm() {
 				"Content-Type": "application/json",
 			},
 		})
-			.then(async (data) => {
+			.then(async () => {
+				setMessageSent(true);
 				notifications.show({
 					color: "green",
-					title: "Message envoyé avec succès.",
-					message: "Vous serrez repondu sous peu.",
+					title: "Message envoyé avec succès",
+					message: "Un administrateur vous contactera prochainement",
+					icon: <IconCheck size="1.1rem" />,
 				});
-				setTimeout(async () => {
-					push(PATH_AUTHENTICATIONS.login);
-				}, 2000);
 			})
 			.catch((error) => {
 				notifications.show({
 					color: "red",
-					title: "Echec de l'envoi du message.",
-					message: "Il se peut que nous rencontrions des soucis techniques.",
+					title: "Échec de l'envoi du message",
+					message: "Une erreur est survenue. Veuillez réessayer.",
 				});
 				setLoading(false);
 			});
@@ -86,61 +93,168 @@ export function SupportForm() {
 		register,
 		handleSubmit,
 		formState: { errors },
+		control,
 	} = useForm<z.infer<typeof supportSchema>>({
 		resolver: zodResolver(supportSchema),
+		defaultValues: {
+			institution: "",
+		},
 	});
 
 	useEffect(() => {
 		if (!initiated.current) {
 			initiated.current = true;
 		}
-	});
+	}, []);
+
+	if (messageSent) {
+		return (
+			<ThemedCard
+				withBorder
+				shadow="md"
+				p={30}
+				mt={30}
+				radius="md"
+				className={classes.card}
+			>
+				<Center>
+					<IconCheck size={50} color="green" />
+				</Center>
+				<ThemedTitle order={2} ta="center" mt="md">
+					Demande envoyée
+				</ThemedTitle>
+				<ThemedText c="dimmed" ta="center" mt="sm">
+					Votre demande a été envoyée avec succès. Un administrateur vous
+					contactera prochainement pour créer votre compte.
+				</ThemedText>
+				<Button
+					fullWidth
+					mt="xl"
+					component="a"
+					href="/login"
+					leftSection={<IconArrowLeft size={18} />}
+					className="theme-button theme-button-primary"
+				>
+					Retour à la connexion
+				</Button>
+			</ThemedCard>
+		);
+	}
 
 	return (
-		<Card shadow="md" p={30} mt={30} radius="md">
-			<form onSubmit={handleSubmit(submitData)}>
-				<Text size="xl" ta="center">
-					Contactez l'administration
-				</Text>
+		<ThemedCard
+			withBorder
+			shadow="md"
+			p={30}
+			mt={30}
+			radius="md"
+			className={classes.card}
+		>
+			<ThemedTitle order={2} ta="center" mt="md" mb={20}>
+				Demande de compte
+			</ThemedTitle>
+			<ThemedText size="sm" c="dimmed" ta="center" mb={30}>
+				Remplissez ce formulaire pour demander la création d'un compte. Un
+				administrateur vous contactera prochainement.
+			</ThemedText>
 
+			<form onSubmit={handleSubmit(submitData)}>
 				<TextInput
-					label="Nom"
-					placeholder="Votre nom"
-					variant="filled"
-					mt="md"
+					label="Nom complet"
+					placeholder="Votre nom et prénom"
+					required
+					error={errors.name?.message}
+					leftSection={<IconUser size={16} />}
 					{...register("name")}
+					mb="md"
+					className="theme-input"
 				/>
+
 				<TextInput
 					label="Email"
-					placeholder="Votre email"
-					variant="filled"
-					mt="md"
+					placeholder="votre@email.com"
+					required
+					error={errors.email?.message}
+					leftSection={<IconAt size={16} />}
 					{...register("email")}
+					mb="md"
+					className="theme-input"
+				/>
+
+				<Controller
+					name="institution"
+					control={control}
+					render={({ field }) => (
+						<Select
+							label="Institution"
+							placeholder="Sélectionnez votre institution"
+							required
+							error={errors.institution?.message}
+							data={[
+								{ value: "CENADI", label: "CENADI" },
+								{ value: "MINESUP", label: "MINESUP" },
+								{ value: "IPES", label: "IPES" },
+							]}
+							{...field}
+							mb="md"
+							className="theme-input"
+						/>
+					)}
 				/>
 
 				<TextInput
-					label="Object"
-					placeholder="Object du message"
-					mt="md"
-					variant="filled"
+					label="Objet"
+					placeholder="Objet de votre demande"
+					required
+					error={errors.subject?.message}
 					{...register("subject")}
+					mb="md"
+					className="theme-input"
 				/>
+
 				<Textarea
-					mt="md"
 					label="Message"
-					placeholder="Votre message"
-					maxRows={10}
-					minRows={5}
+					placeholder="Décrivez votre demande en détail..."
+					required
+					error={errors.message?.message}
+					minRows={4}
+					maxRows={8}
 					autosize
-					variant="filled"
 					{...register("message")}
+					mb="xl"
+					className="theme-input"
 				/>
-				<Group justify="center" mt="xl">
-					<Button type="submit" size="md" loading={loading}>
-						Envoyer le message
+
+				<Group justify="space-between">
+					<Button
+						variant="light"
+						component={Link}
+						href="/login"
+						leftSection={<IconArrowLeft size={18} />}
+						className="theme-button theme-button-outline"
+					>
+						Retour
+					</Button>
+
+					<Button
+						type="submit"
+						loading={loading}
+						leftSection={<IconSend size={18} />}
+						className="theme-button theme-button-primary"
+					>
+						Envoyer la demande
 					</Button>
 				</Group>
 			</form>
-		</Card>
+
+			<Divider my="lg" />
+
+			<ThemedText size="sm" ta="center">
+				Vous avez déjà un compte ?{" "}
+				<Anchor component={Link} href="/login" fw={700} className="theme-link">
+					Connectez-vous
+				</Anchor>
+			</ThemedText>
+		</ThemedCard>
 	);
 }

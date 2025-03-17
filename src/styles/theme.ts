@@ -1,39 +1,121 @@
 "use client";
 
-import { createTheme } from "@mantine/core";
-import { headingFont } from "@/styles/fonts";
+import { createTheme, MantineColorsTuple } from "@mantine/core";
 
-export const themeCenadi = createTheme({
-	fontFamily: "Gabarito, MD Sans, sans-serif",
+/**
+ * Common theme configuration shared across all themes
+ */
+const baseThemeConfig = {
+	fontFamily: "Inter, sans-serif",
 	headings: {
-		fontFamily: "PT Serif, Radley, Garamond, MD Sans, sans-serif",
+		fontFamily: "Inter, sans-serif",
 		fontWeight: "700",
 	},
+	defaultRadius: "md",
 	components: {
-		Input: {
+		Button: {
+			defaultProps: {
+				radius: "md",
+			},
 			styles: {
-				input: {
-					fontFamily: "Gabarito, MD Sans, sans-serif", // Police pour les champs d'entrée
-					fontSize: "16px", // Taille de la police
+				root: {
+					transition: "all 0.2s ease",
+					position: "relative",
+					overflow: "hidden",
+					"&:hover": {
+						transform: "translateY(-2px)",
+						boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)",
+					},
 				},
+			},
+		},
+		Card: {
+			defaultProps: {
+				radius: "md",
+				withBorder: true,
+				padding: "lg",
+			},
+			styles: {
+				root: {
+					transition: "all 0.3s ease",
+					backdropFilter: "blur(10px)",
+					backgroundColor:
+						"light-dark(rgba(255, 255, 255, 0.9), rgba(26, 27, 30, 0.8))",
+					border:
+						"1px solid light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1))",
+				},
+			},
+		},
+		Paper: {
+			defaultProps: {
+				radius: "md",
+				withBorder: true,
+				p: "lg",
+			},
+			styles: {
+				root: {
+					transition: "all 0.3s ease",
+					backdropFilter: "blur(10px)",
+					backgroundColor:
+						"light-dark(rgba(255, 255, 255, 0.9), rgba(26, 27, 30, 0.8))",
+					border:
+						"1px solid light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1))",
+				},
+			},
+		},
+		Title: {
+			styles: {
+				root: {
+					fontFamily: "var(--font-inter), var(--mantine-font-family)",
+					fontWeight: 700,
+				},
+			},
+		},
+		TextInput: {
+			defaultProps: {
+				radius: "md",
 			},
 		},
 		Select: {
-			styles: {
-				input: {
-					fontFamily: "Gabarito, MD Sans, sans-serif", // Police pour les selects
-					fontSize: "16px",
-				},
+			defaultProps: {
+				radius: "md",
 			},
 		},
-		Button: {
-			styles: {
-				root: {
-					fontFamily: "Gabarito, MD Sans,sans-serif", // Police pour les boutons
-				},
+		Textarea: {
+			defaultProps: {
+				radius: "md",
 			},
 		},
 	},
+	other: {
+		gradients: {
+			primary:
+				"linear-gradient(45deg, var(--mantine-color-primary-6), var(--mantine-color-primary-4))",
+			secondary:
+				"linear-gradient(45deg, var(--mantine-color-primary-7), var(--mantine-color-primary-5))",
+			text: "linear-gradient(45deg, var(--mantine-color-primary-6), var(--mantine-color-primary-4))",
+			border:
+				"linear-gradient(90deg, transparent, var(--mantine-color-primary-6), var(--mantine-color-primary-4), transparent)",
+		},
+		transitions: {
+			default: "all 0.3s ease",
+			fast: "all 0.2s ease",
+			slow: "all 0.5s ease",
+		},
+		shadows: {
+			sm: "0 4px 6px rgba(0, 0, 0, 0.05)",
+			md: "0 8px 15px rgba(0, 0, 0, 0.08)",
+			lg: "0 12px 20px rgba(0, 0, 0, 0.1)",
+			hover: "0 10px 20px rgba(0, 0, 0, 0.15)",
+		},
+	},
+};
+
+/**
+ * Cenadi theme - Blue color scheme
+ */
+export const themeMinesup = createTheme({
+	...baseThemeConfig,
 	colors: {
 		blue: [
 			"#e7f5ff",
@@ -46,7 +128,7 @@ export const themeCenadi = createTheme({
 			"#1c7ed6",
 			"#1971c2",
 			"#1864ab",
-		],
+		] as MantineColorsTuple,
 		emerald: [
 			"#f0fdf5",
 			"#dcfce8",
@@ -59,17 +141,38 @@ export const themeCenadi = createTheme({
 			"#166533",
 			"#14532b",
 			"#052e14",
-		],
+		] as MantineColorsTuple,
+		gray: [
+			"#f8f9fa",
+			"#f1f3f5",
+			"#e9ecef",
+			"#dee2e6",
+			"#ced4da",
+			"#adb5bd",
+			"#868e96",
+			"#495057",
+			"#343a40",
+			"#212529",
+		] as MantineColorsTuple,
 	},
 	primaryColor: "blue",
-	defaultRadius: "md",
+	other: {
+		...baseThemeConfig.other,
+		gradients: {
+			primary: "linear-gradient(45deg, #228be6, #4dabf7)",
+			secondary: "linear-gradient(45deg, #1c7ed6, #339af0)",
+			text: "linear-gradient(45deg, #228be6, #4dabf7)",
+			border:
+				"linear-gradient(90deg, transparent, #228be6, #4dabf7, transparent)",
+		},
+	},
 });
 
-export const themeMinesup = createTheme({
-	fontFamily: "Gabarito, sans-serif",
-	headings: {
-		fontFamily: "Comic Sans MS, MD Sans, sans-serif",
-	},
+/**
+ * Minesup theme - Green color scheme
+ */
+export const themeCenadi = createTheme({
+	...baseThemeConfig,
 	colors: {
 		minesup: [
 			"#E6FAF0",
@@ -82,7 +185,7 @@ export const themeMinesup = createTheme({
 			"#19895A",
 			"#126143",
 			"#0A3A2B",
-		],
+		] as MantineColorsTuple,
 		emerald: [
 			"#f0fdf5",
 			"#dcfce8",
@@ -95,17 +198,38 @@ export const themeMinesup = createTheme({
 			"#166533",
 			"#14532b",
 			"#052e14",
-		],
+		] as MantineColorsTuple,
+		gray: [
+			"#f8f9fa",
+			"#f1f3f5",
+			"#e9ecef",
+			"#dee2e6",
+			"#ced4da",
+			"#adb5bd",
+			"#868e96",
+			"#495057",
+			"#343a40",
+			"#212529",
+		] as MantineColorsTuple,
 	},
 	primaryColor: "minesup",
-	defaultRadius: "md",
+	other: {
+		...baseThemeConfig.other,
+		gradients: {
+			primary: "linear-gradient(45deg, #20B172, #58DAA1)",
+			secondary: "linear-gradient(45deg, #19895A, #34D28C)",
+			text: "linear-gradient(45deg, #20B172, #58DAA1)",
+			border:
+				"linear-gradient(90deg, transparent, #20B172, #58DAA1, transparent)",
+		},
+	},
 });
 
+/**
+ * Ipes theme - Gray color scheme
+ */
 export const themeIpes = createTheme({
-	fontFamily: "Gabarito, sans-serif",
-	headings: {
-		fontFamily: "Comic Sans MS, MD Sans, sans-serif",
-	},
+	...baseThemeConfig,
 	colors: {
 		ipes: [
 			"#E5EAEA",
@@ -118,7 +242,7 @@ export const themeIpes = createTheme({
 			"#303B3D",
 			"#202729",
 			"#101314",
-		],
+		] as MantineColorsTuple,
 		emerald: [
 			"#f0fdf5",
 			"#dcfce8",
@@ -131,8 +255,29 @@ export const themeIpes = createTheme({
 			"#166533",
 			"#14532b",
 			"#052e14",
-		],
+		] as MantineColorsTuple,
+		gray: [
+			"#f8f9fa",
+			"#f1f3f5",
+			"#e9ecef",
+			"#dee2e6",
+			"#ced4da",
+			"#adb5bd",
+			"#868e96",
+			"#495057",
+			"#343a40",
+			"#212529",
+		] as MantineColorsTuple,
 	},
 	primaryColor: "ipes",
-	defaultRadius: "md",
+	other: {
+		...baseThemeConfig.other,
+		gradients: {
+			primary: "linear-gradient(45deg, #4F6367, #7B8F91)",
+			secondary: "linear-gradient(45deg, #3F4F52, #587174)",
+			text: "linear-gradient(45deg, #4F6367, #7B8F91)",
+			border:
+				"linear-gradient(90deg, transparent, #4F6367, #7B8F91, transparent)",
+		},
+	},
 });

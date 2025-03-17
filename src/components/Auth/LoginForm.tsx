@@ -3,17 +3,11 @@
 import {
 	Anchor,
 	Button,
-	Card,
-	Center,
 	Checkbox,
+	Divider,
 	Group,
-	Paper,
 	PasswordInput,
-	Select,
-	Text,
 	TextInput,
-	TextProps,
-	Title,
 } from "@mantine/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,6 +20,15 @@ import { notifications } from "@mantine/notifications";
 import { PATH_BOARD } from "@/routes";
 import { useAuthorizations } from "@/app/context/AuthorizationsContext";
 import { useInstitution } from "@/app/context/InstitutionContext";
+import { IconAt, IconLock, IconLogin } from "@tabler/icons-react";
+import {
+	ThemedAuthCard,
+	ThemedTitle,
+	ThemedText,
+	ThemedButton,
+	ThemedGroup,
+} from "@/components/ui/ThemeComponents";
+import classes from "./LoginForm.module.css";
 
 export function LoginForm() {
 	const { resetAuthorizations, setAuthorizations } = useAuthorizations();
@@ -38,9 +41,9 @@ export function LoginForm() {
 		() =>
 			z.object({
 				email: z
-					.string({ required_error: "Une addresse mail est requise." })
+					.string({ required_error: "Une adresse mail est requise." })
 					.email("L'adresse mail doit être valide."),
-				password: z.string({ required_error: "Un mot de pase est requis." }),
+				password: z.string({ required_error: "Un mot de passe est requis." }),
 				stayConnected: z.boolean().default(false).optional(),
 			}),
 		[],
@@ -65,26 +68,18 @@ export function LoginForm() {
 			.then(async (data) => {
 				notifications.show({
 					color: "green",
-					title: "Authentification reussie.",
-					message: "Vous allez être redirigé vers votre Board",
+					title: "Authentification réussie",
+					message: "Vous allez être redirigé vers votre tableau de bord",
 				});
 				setInstitution(data.institution);
 				setAuthorizations(data.authorizations);
-				// // redirect to callback url
-				// const institution = await getCurrentUserInstitution();
-				// // redirect to callback url
-				// institution == 'Ipes'
-				//   ? push(PATH_BOARD.ipes)
-				//   : institution == 'Minesup'
-				//     ? push(PATH_BOARD.minesup)
-				//     : push(PATH_BOARD.cenadi);
 				push(PATH_BOARD.root);
 			})
 			.catch((error) => {
 				notifications.show({
 					color: "red",
-					title: "Echec de l'authentification.",
-					message: "Verifiez vos informations et reessayez.",
+					title: "Échec de l'authentification",
+					message: "Vérifiez vos informations et réessayez",
 				});
 
 				// we stop the loading only when the authentification has failed
@@ -104,50 +99,80 @@ export function LoginForm() {
 		if (!initiated.current) {
 			initiated.current = true;
 		}
-	});
+	}, []);
 
 	return (
-		<Card withBorder shadow="md" p={30} mt={30} radius="md">
+		<ThemedAuthCard
+			withBorder
+			shadow="md"
+			p={30}
+			mt={30}
+			radius="md"
+			className={classes.card}
+		>
+			<ThemedTitle order={2} ta="center" mt="md" mb={30} gradient>
+				Connexion à SYRAP
+			</ThemedTitle>
+
 			<form onSubmit={handleSubmit(submitData)}>
 				<TextInput
-					label="Votre mail"
-					placeholder="moi@syrap.admin"
+					label="Adresse email"
+					placeholder="votre@email.com"
 					required
 					error={errors.email?.message}
 					autoFocus
+					leftSection={<IconAt size={16} />}
 					{...register("email")}
+					mb="md"
+					className="theme-input"
 				/>
 				<PasswordInput
-					label="Votre mot de passe"
+					label="Mot de passe"
 					placeholder="Votre mot de passe"
 					required
-					mt="md"
 					error={errors.password?.message}
 					autoComplete="current-password"
+					leftSection={<IconLock size={16} />}
 					{...register("password")}
+					className="theme-input"
 				/>
-				{/*<Select*/}
-				{/*  label="Role utilisateur"*/}
-				{/*  placeholder="Choisir le rôle utilisateur"*/}
-				{/*  required*/}
-				{/*  mt="md"*/}
-				{/*  data={['Cenadi', 'Minesup', 'Ipes']}*/}
-				{/*  {...form.getInputProps('role')}*/}
-				{/*/>*/}
-				<Group justify="space-between" mt="lg">
+
+				<ThemedGroup justify="space-between" mt="lg">
 					<Checkbox
 						label="Se souvenir de moi"
 						error={errors.stayConnected?.message}
 						{...register("stayConnected", {})}
 					/>
-					<Text component={Link} href={"/forgot-password"} size="sm">
+					<Anchor
+						component={Link}
+						href="/forgot-password"
+						size="sm"
+						className={classes.forgotLink}
+					>
 						Mot de passe oublié ?
-					</Text>
-				</Group>
-				<Button fullWidth mt="xl" type="submit" loading={loading}>
+					</Anchor>
+				</ThemedGroup>
+
+				<Button
+					fullWidth
+					mt="xl"
+					type="submit"
+					loading={loading}
+					leftSection={<IconLogin size={18} />}
+					className={`${classes.submitButton} theme-button theme-button-primary`}
+				>
 					Se connecter
 				</Button>
 			</form>
-		</Card>
+
+			<Divider my="lg" label="Besoin d'aide ?" labelPosition="center" />
+
+			<ThemedText size="sm" ta="center">
+				Vous n'avez pas de compte ?{" "}
+				<Anchor component={Link} href="/support" fw={700}>
+					Contactez l'administrateur
+				</Anchor>
+			</ThemedText>
+		</ThemedAuthCard>
 	);
 }

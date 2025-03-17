@@ -20,6 +20,7 @@ import {
 } from "@tabler/icons-react";
 import type { NavItem } from "@/types/nav-item";
 import { PATH_SECTIONS } from "../routes";
+import { mkConfig } from "export-to-csv";
 
 export const navLinks = (authorizations: string[]) => {
 	return [
@@ -70,7 +71,7 @@ export const navLinks = (authorizations: string[]) => {
 						icon: IconSchool,
 						links: [
 							{
-								label: "Vue Globale",
+								label: "Toutes les universités",
 								link: `${PATH_SECTIONS.universities.all}`,
 							},
 							{
@@ -88,7 +89,7 @@ export const navLinks = (authorizations: string[]) => {
 			icon: IconNotebook,
 			links: [
 				{
-					label: "Vue Globale",
+					label: "Toutes les IPES",
 					link: `${PATH_SECTIONS.ipes.all}`,
 				},
 				{
@@ -130,15 +131,15 @@ export const navLinks = (authorizations: string[]) => {
 							},
 						]
 					: []),
-				...(authorizations.includes("list-ues")
-					? [
-							{
-								label: "Permissions",
-								icon: IconAffiliate,
-								link: `${PATH_SECTIONS.authorizations}`,
-							},
-						]
-					: []),
+				// ...(authorizations.includes("list-ues")
+				// 	? [
+				// 			{
+				// 				label: "Permissions",
+				// 				icon: IconAffiliate,
+				// 				link: `${PATH_SECTIONS.authorizations}`,
+				// 			},
+				// 		]
+				// 	: []),
 			],
 		},
 		{
@@ -167,7 +168,7 @@ export const navLinks = (authorizations: string[]) => {
 		// ...(authorizations.includes("list-ues")
 		// 	? [
 		{
-			label: "Raports et Logs",
+			label: "Documents",
 			icon: IconChartArea,
 			links: [
 				{
@@ -225,3 +226,9 @@ export const navLinks = (authorizations: string[]) => {
 		// },
 	] as NavItem[];
 };
+
+export const csvConfig = mkConfig({
+	fieldSeparator: ",",
+	decimalSeparator: ".",
+	useKeysAsHeaders: true,
+});

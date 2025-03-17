@@ -16,6 +16,7 @@ import {
 import { useCustomTable } from "@/hooks/use-custom-table";
 import {
 	ActionIcon,
+	Alert,
 	Box,
 	Button,
 	Divider,
@@ -31,6 +32,7 @@ import {
 	IconCheck,
 	IconDownload,
 	IconEdit,
+	IconExclamationCircle,
 	IconEye,
 	IconFileTypeCsv,
 	IconFileTypePdf,
@@ -56,6 +58,7 @@ import { FormattedClassroom, Classroom, Branch, Level } from "@/types";
 import { useRouter } from "next/navigation";
 import CustomCreateRowModal from "@/components/ClassroomsTable/CreateModal";
 import { PATH_SECTIONS } from "@/routes";
+import { handleExportAsCSV, handleExportRowsAsPDF } from "@/app/lib/utils";
 
 const csvConfig = mkConfig({
 	fieldSeparator: ",",
@@ -144,10 +147,11 @@ const useGetBranches = () => {
 type SectionProps = {
 	institute: "Ipes" | "University";
 	instituteId: string;
+	parentInstitute: string;
 };
 
 const Section = (props: SectionProps) => {
-	const { institute, instituteId } = props;
+	const { institute, instituteId, parentInstitute } = props;
 	// const [fetchedClassrooms, setFetchedClassroooms] = useState<Classroom[]>([]);
 	// const [formattedClassrooms, setFormattedClassrooms] = useState<
 	// 	FormattedClassroom[]
@@ -160,12 +164,12 @@ const Section = (props: SectionProps) => {
 		return {
 			id: classroom.id,
 			designation: classroom.designation,
-			levelId: classroom.filiere?.id,
-			levelName: classroom.niveau?.name,
-			levelDescription: classroom.niveau?.description,
-			branchId: classroom.filiere?.id,
-			branchName: classroom.filiere?.name,
-			branchDescription: classroom.filiere?.description,
+			levelId: classroom.level?.id,
+			levelName: classroom.level?.name,
+			levelDescription: classroom.branch?.description,
+			branchId: classroom.branch?.id,
+			branchName: classroom.branch?.name,
+			branchDescription: classroom.branch?.description,
 		};
 	}
 
@@ -190,105 +194,6 @@ const Section = (props: SectionProps) => {
 
 	const fetchedBranches = bData?.data ?? [];
 	console.log("Intelligence de jeu branches : ", fetchedBranches);
-
-	const handleExportRows = (rows: MRT_Row<FormattedClassroom>[]) => {
-		const doc = new jsPDF("portrait", "pt", "A4");
-		const pageWidth = doc.internal.pageSize.getWidth();
-		const logoUrl = "/thumbnail.png"; // Path to your logo
-
-		// French Column (Left)
-		const frenchText = `
-	    REPUBLIQUE DU CAMEROUN
-	           Paix – Travail – Patrie
-	            -------------------------
-	      MINISTERE DES FINANCES
-	            -------------------------
-	       SECRETARIAT GENERAL
-	            ------------------------
-	        CENTRE NATIONAL DE
-	         DEVELOPPEMENT DE
-	             L’INFORMATIQUE
-	             -------------------------
-	  `;
-
-		// English Column (Right)
-		const englishText = `
-	        REPUBLIC OF CAMEROON
-	         Peace – Work – Fatherland
-	                -------------------------
-	           MINISTRY OF FINANCE
-	                -------------------------
-	          GENERAL SECRETARIAT
-	                -------------------------
-	        NATIONAL CENTRE FOR THE
-	      DEVELOPMENT OF COMPUTER
-	                         SERVICES
-	            ------------------------------------
-	  `;
-
-		// Add Header with 3 columns
-		doc.setFontSize(10);
-
-		// Column 1: French text
-		doc.text(frenchText, 40, 50); // Positioned on the left side
-
-		// Column 2: Logo
-		doc.addImage(logoUrl, "PNG", pageWidth / 2 - 30, 40, 60, 60); // Centered logo
-
-		// Column 3: English text
-		doc.text(englishText, pageWidth - 250, 50); // Positioned on the right side
-
-		// Draw a line separating the header from the rest of the content
-		// doc.setLineWidth(0.5);
-		// doc.line(30, 170, pageWidth - 30, 170); // Line under the header
-
-		// doc.setLineWidth(0.5);
-		// doc.line(30, 60, 180, 60); // Draw a line under the header
-
-		// doc.text();
-		const tableData = rows.map((row) => Object.values(row.original));
-		const tableHeaders = columns.map((c) => c.header);
-
-		autoTable(doc, {
-			startY: 200, // Start after the header
-			head: [tableHeaders],
-			body: [
-				[
-					"designation",
-					"levelName",
-					"levelDescription",
-					"branchName",
-					"branchDescription",
-				],
-			],
-		});
-
-		doc.save("syrap-classrooms.pdf");
-	};
-
-	const handleExportRowsAsCSV = (rows: MRT_Row<FormattedClassroom>[]) => {
-		const rowData = rows.map((row) => ({
-			designation: row.original.id,
-			levelName: row.original.levelName,
-			levelDescription: row.original.levelDescription,
-			branchName: row.original.branchName,
-			branchDescription: row.original.branchDescription,
-		}));
-		const csv = generateCsv(csvConfig)(rowData);
-		download(csvConfig)(csv);
-	};
-
-	const handleExportDataAsCSV = () => {
-		const allData = formattedClassrooms.map((row: any) => ({
-			designation: row.original.id,
-			levelName: row.original.levelName,
-			levelDescription: row.original.levelDescription,
-			branchName: row.original.branchName,
-			branchDescription: row.original.branchDescription,
-		}));
-		const csv = generateCsv(csvConfig)(allData);
-		download(csvConfig)(csv);
-	};
 
 	const columns = useMemo<MRT_ColumnDef<FormattedClassroom>[]>(
 		() => [
@@ -365,7 +270,7 @@ const Section = (props: SectionProps) => {
 		institute,
 	});
 
-	const formattedClassrooms = useMemo(() => {
+	const formattedClassrooms: FormattedClassroom[] = useMemo(() => {
 		// console.log("Voici les informations concernant les classrooms : ", data);
 		// if (data === undefined || data.length === 0) {
 		// 	return [] as unknown as FormattedClassroom[];
@@ -399,11 +304,29 @@ const Section = (props: SectionProps) => {
 				"Voici les valeurs en question asadasdasdasdasdasdsadsadas sadsadasda: ",
 				values,
 			);
-			await createClassroom({
-				...values,
-				institute_id: instituteId,
-			});
-			exitCreatingMode();
+			if (
+				formattedClassrooms.find(
+					(classroom) =>
+						classroom.levelId == values.levelId &&
+						classroom.branchId == values.branchId,
+				)
+			) {
+				notifications.show({
+					color: "red",
+					title: "Erreur Duplication de la Salle",
+					message:
+						"Vous ne pouvez pas dupliquer une salle. Cette salle existe déja.",
+					icon: <IconCheck />,
+					loading: false,
+					autoClose: 2000,
+				});
+			} else {
+				await createClassroom({
+					...values,
+					institute_id: String(parentInstitute),
+				});
+				exitCreatingMode();
+			}
 		};
 
 	const handleSaveClassroom: MRT_TableOptions<FormattedClassroom>["onEditingRowSave"] =
@@ -414,12 +337,30 @@ const Section = (props: SectionProps) => {
 				return;
 			}
 			setValidationErrors(values);
-			await updateClassroom({
-				...values,
-				institute_id: instituteId,
-				id: row.original.id,
-			});
-			table.setEditingRow(null);
+			if (
+				formattedClassrooms.find(
+					(classroom) =>
+						classroom.levelId == values.levelId &&
+						classroom.branchId == values.branchId,
+				)
+			) {
+				notifications.show({
+					color: "red",
+					title: "Erreur Duplication de la Salle",
+					message:
+						"Vous ne pouvez pas dupliquer une salle. Cette salle existe déja.",
+					icon: <IconCheck />,
+					loading: false,
+					autoClose: 2000,
+				});
+			} else {
+				await updateClassroom({
+					...values,
+					institute_id: String(parentInstitute),
+					id: row.original.id,
+				});
+				table.setEditingRow(null);
+			}
 		};
 
 	const openDeleteConfirmModal = (row: MRT_Row<FormattedClassroom>) =>
@@ -593,7 +534,24 @@ const Section = (props: SectionProps) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getPrePaginationRowModel().rows)
+									handleExportRowsAsPDF(
+										[
+											"Salle",
+											"Niveau",
+											"Description Niveau",
+											"Filière",
+											"Description Filière",
+										],
+										table
+											.getPrePaginationRowModel()
+											.rows.map((row) => [
+												row.original.designation,
+												row.original.levelName,
+												row.original.levelDescription,
+												row.original.branchName,
+												row.original.branchDescription,
+											]),
+									)
 								}
 							>
 								Exporter tout
@@ -602,7 +560,26 @@ const Section = (props: SectionProps) => {
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
 								leftSection={<IconFileTypePdf />}
-								onClick={() => handleExportRows(table.getRowModel().rows)}
+								onClick={() =>
+									handleExportRowsAsPDF(
+										[
+											"Salle",
+											"Niveau",
+											"Description Niveau",
+											"Filière",
+											"Description Filière",
+										],
+										table
+											.getRowModel()
+											.rows.map((row) => [
+												row.original.designation,
+												row.original.levelName,
+												row.original.levelDescription,
+												row.original.branchName,
+												row.original.branchDescription,
+											]),
+									)
+								}
 							>
 								Exporter la page
 							</Menu.Item>
@@ -614,7 +591,24 @@ const Section = (props: SectionProps) => {
 								//only export selected rows
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getSelectedRowModel().rows)
+									handleExportRowsAsPDF(
+										[
+											"Salle",
+											"Niveau",
+											"Description Niveau",
+											"Filière",
+											"Description Filière",
+										],
+										table
+											.getSelectedRowModel()
+											.rows.map((row) => [
+												row.original.designation,
+												row.original.levelName,
+												row.original.levelDescription,
+												row.original.branchName,
+												row.original.branchDescription,
+											]),
+									)
 								}
 							>
 								Exporter la selection
@@ -623,7 +617,17 @@ const Section = (props: SectionProps) => {
 							<Menu.Label>Format Excel</Menu.Label>
 							<Menu.Item
 								//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
-								onClick={handleExportDataAsCSV}
+								onClick={() => {
+									handleExportAsCSV(
+										formattedClassrooms.map((row) => ({
+											Designation: row.designation,
+											Niveau: row.levelName,
+											"Description Niveau": row.levelDescription,
+											Filière: row.branchName,
+											"Description Filière": row.branchDescription,
+										})),
+									);
+								}}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter tout
@@ -632,7 +636,15 @@ const Section = (props: SectionProps) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								//export all rows, including from the next page, (still respects filtering and sorting)
 								onClick={() =>
-									handleExportRowsAsCSV(table.getPrePaginationRowModel().rows)
+									handleExportAsCSV(
+										table.getPrePaginationRowModel().rows.map((row) => ({
+											Designation: row.original.designation,
+											Niveau: row.original.levelName,
+											"Description Niveau": row.original.levelDescription,
+											Filière: row.original.branchName,
+											"Description Filière": row.original.branchDescription,
+										})),
+									)
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -641,7 +653,17 @@ const Section = (props: SectionProps) => {
 							<Menu.Item
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								onClick={() => handleExportRowsAsCSV(table.getRowModel().rows)}
+								onClick={() =>
+									handleExportAsCSV(
+										table.getRowModel().rows.map((row) => ({
+											Designation: row.original.designation,
+											Niveau: row.original.levelName,
+											"Description Niveau": row.original.levelDescription,
+											Filière: row.original.branchName,
+											"Description Filière": row.original.branchDescription,
+										})),
+									)
+								}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter toutes la pages
@@ -653,7 +675,15 @@ const Section = (props: SectionProps) => {
 								}
 								//only export selected rows
 								onClick={() =>
-									handleExportRowsAsCSV(table.getSelectedRowModel().rows)
+									handleExportAsCSV(
+										table.getSelectedRowModel().rows.map((row) => ({
+											Designation: row.original.designation,
+											Niveau: row.original.levelName,
+											"Description Niveau": row.original.levelDescription,
+											Filière: row.original.branchName,
+											"Description Filière": row.original.branchDescription,
+										})),
+									)
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -685,6 +715,7 @@ function useCreateClassroom() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (classroom: FormattedClassroom) => {
+			console.log("Voici les informations de la salle : ", classroom);
 			const response = await fetch(
 				"http://localhost:3000/api/classrooms/create",
 				{
@@ -695,7 +726,6 @@ function useCreateClassroom() {
 					body: JSON.stringify(classroom),
 				},
 			);
-
 			if (!response.ok) {
 				throw new Error("Erreur lors de la création de la Salle");
 			}
@@ -839,11 +869,20 @@ const queryClient = new QueryClient();
 type ClassroomProps = {
 	institute: "Ipes" | "University";
 	instituteId: string;
+	parentInstitute: string;
 };
 
-const ClassroomTable = ({ institute, instituteId }: ClassroomProps) => (
+const ClassroomTable = ({
+	institute,
+	instituteId,
+	parentInstitute,
+}: ClassroomProps) => (
 	<QueryClientProvider client={queryClient}>
-		<Section institute={institute} instituteId={instituteId} />
+		<Section
+			institute={institute}
+			instituteId={instituteId}
+			parentInstitute={parentInstitute}
+		/>
 	</QueryClientProvider>
 );
 

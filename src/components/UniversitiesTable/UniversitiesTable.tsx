@@ -298,7 +298,7 @@ const Section = (props: any) => {
 				accessorFn: (row) =>
 					fetchedLocalizations.find(
 						(localisation) =>
-							String(localisation.id) === String(row.arrondissement_id),
+							String(localisation.id) == String(row.arrondissement_id),
 					)?.name,
 				header: "Localisation",
 				editVariant: "select",
@@ -779,6 +779,7 @@ function useDeleteUniversity() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (universityId: string) => {
+			console.log("Here id of university to delete", universityId);
 			const response = await fetch(
 				`http://localhost:3000/api/universities/${universityId}/delete`,
 				{
@@ -807,18 +808,18 @@ function useDeleteUniversity() {
 		onMutate: (universityId: string) => {
 			queryClient.cancelQueries({ queryKey: ["universities"] });
 
-			const previousUniversityes = queryClient.getQueryData(["universities"]);
+			const previousUniversities = queryClient.getQueryData(["universities"]);
 
 			queryClient.setQueryData(
 				["universities"],
-				(prevUniversityes: any | undefined) => {
-					return prevUniversityes?.data?.filter(
+				(prevUniversities: any | undefined) => {
+					return prevUniversities?.data?.filter(
 						(university: University) => university.id !== universityId,
 					);
 				},
 			);
 
-			return { previousUniversityes };
+			return { previousUniversities };
 		},
 		onError: (err, universityId, context: any) => {
 			if (context?.previousUniversityes) {
@@ -868,13 +869,13 @@ const UniversityTable = ({
 export default UniversityTable;
 
 const validateRequired = (value: string) => !!value.length;
-const validateEmail = (email: string) =>
-	!!email.length &&
-	email
-		.toLowerCase()
-		.match(
-			/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-		);
+// const validateEmail = (email: string) =>
+// 	!!email.length &&
+// 	email
+// 		.toLowerCase()
+// 		.match(
+// 			/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+// 		);
 
 function validateUniversity(universities: University) {
 	return {

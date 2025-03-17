@@ -9,10 +9,10 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { AdminHeader } from "@/components/Headers/AdminHeader";
-import { Navbar } from "@/components/Navbar/Navbar";
+import { GoodNavbar } from "@/components/GoodNavBar/GoodNavBar";
 import { navLinks } from "@/config";
 import { useAuthorizations } from "@/app/context/AuthorizationsContext";
-import { GoodNavbar } from "@/components/GoodNavBar/GoodNavBar";
+import classes from "./layout.module.css";
 
 interface Props {
 	children: React.ReactNode;
@@ -26,22 +26,24 @@ export default function DashboardLayout({ children }: Props) {
 
 	const navItems = navLinks(authorizations);
 
-	const bg =
-		colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.gray[0];
-
 	return (
 		<AppShell
 			header={{ height: 60 }}
-			navbar={{ width: 300, breakpoint: "sm", collapsed: { mobile: !opened } }}
+			navbar={{
+				width: 300,
+				breakpoint: "sm",
+				collapsed: { mobile: !opened },
+			}}
 			padding="md"
 			transitionDuration={500}
 			transitionTimingFunction="ease"
+			className={classes.appShell}
+			layout="default"
 		>
-			<AppShell.Navbar>
+			<AppShell.Navbar className={classes.navbar}>
 				<GoodNavbar data={navItems} hidden={!opened} />
-				{/*<Navbar data={navItems} hidden={!opened} />*/}
 			</AppShell.Navbar>
-			<AppShell.Header>
+			<AppShell.Header className={classes.header}>
 				<AdminHeader
 					burger={
 						<Burger
@@ -54,10 +56,10 @@ export default function DashboardLayout({ children }: Props) {
 					}
 				/>
 			</AppShell.Header>
-			<AppShell.Main bg={bg}>{children}</AppShell.Main>
-			<AppShell.Footer>
-				<Text w="full" size="sm" c="gray">
-					CopyRight © 2023 SYRAP
+			<AppShell.Main className={classes.main}>{children}</AppShell.Main>
+			<AppShell.Footer className={classes.footer}>
+				<Text w="full" size="sm" c="gray" ta="center">
+					© {new Date().getFullYear()} SYRAP. Tous droits réservés.
 				</Text>
 			</AppShell.Footer>
 		</AppShell>

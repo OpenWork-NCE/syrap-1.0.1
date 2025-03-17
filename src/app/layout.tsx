@@ -2,6 +2,8 @@
 
 import "@mantine/core/styles.css";
 import "mantine-react-table/styles.css";
+import "@/styles/global.css";
+import "@/styles/theme.css";
 
 import {
 	ColorSchemeScript,
@@ -10,7 +12,7 @@ import {
 } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
-import { spaceGrotesk } from "@/styles/fonts";
+import { interFont } from "@/styles/fonts";
 import { themeCenadi, themeMinesup, themeIpes } from "@/styles/theme";
 import { AppProvider } from "./provider";
 import { useEffect, useState } from "react";
@@ -43,7 +45,7 @@ export default function RootLayout({
 		fetchInstitution();
 	}, []);
 	return (
-		<html lang="en-US">
+		<html lang="en-US" className={interFont.variable}>
 			<head>
 				<ColorSchemeScript />
 				<meta
@@ -51,7 +53,7 @@ export default function RootLayout({
 					content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
 				/>
 			</head>
-			<body className={spaceGrotesk.className}>
+			<body className={interFont.className}>
 				{/*<DirectionProvider>*/}
 				<MantineProvider
 					theme={

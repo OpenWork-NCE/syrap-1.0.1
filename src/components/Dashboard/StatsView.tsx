@@ -1,69 +1,54 @@
 import {
-	IconArrowDownRight,
-	IconArrowUpRight,
 	IconNote,
 	IconNotebook,
 	IconSchool,
 	IconUsers,
 } from "@tabler/icons-react";
-import {
-	Center,
-	Group,
-	Paper,
-	RingProgress,
-	SimpleGrid,
-	Text,
-	ThemeIcon,
-} from "@mantine/core";
+import { ThemedSection } from "@/components/ui/ThemeComponents";
+import { StatsCard } from "@/components/StatsCard/StatsCard";
+import classes from "./StatsView.module.css";
 
 const data = [
 	{
-		label: "Universités",
-		stats: "20",
-		color: "teal",
-		icon: <IconSchool size={72} />,
+		title: "Universités",
+		count: "20",
+		icon: IconSchool,
+		description: "Nombre total d'universités enregistrées",
 	},
 	{
-		label: "IPES",
-		stats: "30",
-		color: "blue",
-		icon: <IconNotebook size={64} />,
+		title: "IPES",
+		count: "30",
+		icon: IconNotebook,
+		description: "Nombre total d'IPES enregistrés",
 	},
 	{
-		label: "Programmes",
-		stats: "70",
-		color: "red",
-		icon: <IconNote size={64} />,
+		title: "Programmes",
+		count: "70",
+		icon: IconNote,
+		description: "Nombre total de programmes académiques",
 	},
 	{
-		label: "Utilisateurs",
-		stats: "70",
-		color: "red",
-		icon: <IconUsers size={64} />,
+		title: "Utilisateurs",
+		count: "70",
+		icon: IconUsers,
+		description: "Nombre total d'utilisateurs actifs",
 	},
 ] as const;
 
 export function StatsView() {
-	const stats = data.map((stat) => {
-		return (
-			<Paper withBorder shadow={"md"} radius="md" p="md" key={stat.label}>
-				<Group>
-					<ThemeIcon variant="white" radius="xl" size="xl">
-						{stat.icon}
-					</ThemeIcon>
+	const stats = data.map((item) => (
+		<StatsCard
+			key={item.title}
+			icon={item.icon}
+			title={item.title}
+			count={item.count}
+			description={item.description}
+		/>
+	));
 
-					<div>
-						<Text c="dimmed" size="xs" tt="uppercase" fw={700}>
-							{stat.label}
-						</Text>
-						<Text fw={700} size="xl">
-							{stat.stats}
-						</Text>
-					</div>
-				</Group>
-			</Paper>
-		);
-	});
-
-	return <SimpleGrid cols={{ base: 1, sm: 3, md: 4 }}>{stats}</SimpleGrid>;
+	return (
+		<ThemedSection className={`${classes.container} theme-animate-fade`}>
+			<div className={`${classes.grid} theme-animate-slide`}>{stats}</div>
+		</ThemedSection>
+	);
 }

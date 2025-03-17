@@ -29,6 +29,7 @@ import {
 	IconCheck,
 	IconDownload,
 	IconEdit,
+	IconEye,
 	IconFileTypeCsv,
 	IconFileTypePdf,
 	IconPlus,
@@ -50,12 +51,8 @@ import autoTable from "jspdf-autotable";
 import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { useCustomTable } from "@/hooks/use-custom-table";
-
-const csvConfig = mkConfig({
-	fieldSeparator: ",",
-	decimalSeparator: ".",
-	useKeysAsHeaders: true,
-});
+import { PATH_SECTIONS } from "@/routes";
+import { handleExportAsCSV, handleExportRowsAsPDF } from "@/app/lib/utils";
 
 type Ue = {
 	id: string;
@@ -133,92 +130,6 @@ const Section = (props: any) => {
 		});
 	};
 
-	const handleExportRows = (rows: MRT_Row<Ue>[]) => {
-		const doc = new jsPDF("portrait", "pt", "A4");
-		const pageWidth = doc.internal.pageSize.getWidth();
-		const logoUrl = "/thumbnail.png"; // Path to your logo
-
-		// French Column (Left)
-		const frenchText = `
-      REPUBLIQUE DU CAMEROUN
-             Paix – Travail – Patrie
-              -------------------------
-        MINISTERE DES FINANCES
-              -------------------------
-         SECRETARIAT GENERAL
-              ------------------------
-          CENTRE NATIONAL DE
-           DEVELOPPEMENT DE
-               L’INFORMATIQUE
-               -------------------------
-    `;
-
-		// English Column (Right)
-		const englishText = `
-          REPUBLIC OF CAMEROON
-           Peace – Work – Fatherland
-                  -------------------------
-             MINISTRY OF FINANCE
-                  -------------------------
-            GENERAL SECRETARIAT
-                  -------------------------
-          NATIONAL CENTRE FOR THE
-        DEVELOPMENT OF COMPUTER
-                           SERVICES
-              ------------------------------------
-    `;
-
-		// Add Header with 3 columns
-		doc.setFontSize(10);
-
-		// Column 1: French text
-		doc.text(frenchText, 40, 50); // Positioned on the left side
-
-		// Column 2: Logo
-		doc.addImage(logoUrl, "PNG", pageWidth / 2 - 30, 40, 60, 60); // Centered logo
-
-		// Column 3: English text
-		doc.text(englishText, pageWidth - 250, 50); // Positioned on the right side
-
-		// Draw a line separating the header from the rest of the content
-		// doc.setLineWidth(0.5);
-		// doc.line(30, 170, pageWidth - 30, 170); // Line under the header
-
-		// doc.setLineWidth(0.5);
-		// doc.line(30, 60, 180, 60); // Draw a line under the header
-
-		// doc.text();
-		const tableData = rows.map((row) => Object.values(row.original));
-		const tableHeaders = columns.map((c) => c.header);
-
-		// Add table using autoTable
-		autoTable(doc, {
-			startY: 200, // Start after the header
-			head: [["Name", "Description"]],
-			body: rows.map((row) => [row.original.name, row.original.description]),
-		});
-
-		doc.save("syrap-ues.pdf");
-	};
-
-	const handleExportRowsAsCSV = (rows: MRT_Row<Ue>[]) => {
-		const rowData = rows.map((row) => ({
-			name: row.original.name,
-			description: row.original.description,
-		}));
-		const csv = generateCsv(csvConfig)(rowData);
-		download(csvConfig)(csv);
-	};
-
-	const handleExportDataAsCSV = () => {
-		const allData = fetchedUes.map((row) => ({
-			name: row.name,
-			description: row.description,
-		}));
-		const csv = generateCsv(csvConfig)(allData);
-		download(csvConfig)(csv);
-	};
-
 	const columns = useMemo<MRT_ColumnDef<Ue>[]>(
 		() => [
 			{
@@ -229,6 +140,7 @@ const Section = (props: any) => {
 			{
 				accessorKey: "name",
 				header: "Nom",
+				enableEditing: (row: MRT_Row<any>) => row.original.validate !== null,
 				mantineEditTextInputProps: {
 					type: "text",
 					required: true,
@@ -372,6 +284,12 @@ const Section = (props: any) => {
 		data: fetchedUes,
 		createDisplayMode: "row", //default ('row', and 'custom' are also available)
 		editDisplayMode: "row", //default ('row', 'cell', 'table', and 'custom' are also available)
+		mantineTableBodyRowProps: ({ row }) => ({
+			style: {
+				// Type-safe access to row.original with Person interface
+				backgroundColor: row.original.validate === null ? "#cecece" : undefined,
+			},
+		}),
 
 		mantineSearchTextInputProps: {
 			placeholder: "Rechercher des UEs",
@@ -410,7 +328,9 @@ const Section = (props: any) => {
 		),
 		renderEditRowModalContent: ({ table, row, internalEditComponents }) => (
 			<Stack>
-				<Title order={3}>Editer l'UE</Title>
+				<Title order={3}>
+					{row.original.validate == null ? "Valider l'UE" : "Editer l'UE"}
+				</Title>
 				{internalEditComponents}
 				<Flex justify="flex-end" mt="xl">
 					<MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -437,16 +357,28 @@ const Section = (props: any) => {
 							Intitulé de l'UE :{" "}
 							<span style={{ fontWeight: "bolder" }}>{row.original.name}</span>
 						</Text>
-						<Divider my={10} />
-						{/*<Title order={5} mb={5}>*/}
-						{/*  Niveaux de l\'UE*/}
-						{/*</Title>*/}
-						{/*<LevelTable*/}
-						{/*  datas={*/}
-						{/*    fakeDataWithLevel.find((el) => el.id === row.original.id)*/}
-						{/*      ?.levels*/}
-						{/*  }*/}
-						{/*/>*/}
+						<Text size={"sm"}>
+							Description :{" "}
+							<span style={{ fontWeight: "bolder" }}>
+								{row.original.description}
+							</span>
+						</Text>
+						<Text size={"sm"}>
+							Validé ? :{" "}
+							<span style={{ fontWeight: "bolder" }}>
+								{row.original.validate == null ? "Non" : "Oui"}
+							</span>
+						</Text>
+						{/*<Divider my={10} />*/}
+						{/*{row.original.validate == null && (*/}
+						{/*	<Button*/}
+						{/*		variant={"outline"}*/}
+						{/*		leftSection={<IconCheck />}*/}
+						{/*		onClick={() => {}}*/}
+						{/*	>*/}
+						{/*		Valider*/}
+						{/*	</Button>*/}
+						{/*)}*/}
 					</Box>
 				</Box>
 			</Box>
@@ -455,12 +387,12 @@ const Section = (props: any) => {
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
 				{authorizations.includes("update-ues") && (
-					<Tooltip label="Editer">
+					<Tooltip label={row.original.validate == null ? "Valider" : "Editer"}>
 						<ActionIcon
 							color={"green"}
 							onClick={() => table.setEditingRow(row)}
 						>
-							<IconEdit />
+							{row.original.validate == null ? <IconCheck /> : <IconEdit />}
 						</ActionIcon>
 					</Tooltip>
 				)}
@@ -522,7 +454,15 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getPrePaginationRowModel().rows)
+									handleExportRowsAsPDF(
+										["Intitulé", "Description"],
+										table
+											.getPrePaginationRowModel()
+											.rows.map((row) => [
+												row.original.name,
+												row.original.description,
+											]),
+									)
 								}
 							>
 								Exporter tout
@@ -531,7 +471,17 @@ const Section = (props: any) => {
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
 								leftSection={<IconFileTypePdf />}
-								onClick={() => handleExportRows(table.getRowModel().rows)}
+								onClick={() =>
+									handleExportRowsAsPDF(
+										["Intitulé", "Description"],
+										table
+											.getRowModel()
+											.rows.map((row) => [
+												row.original.name,
+												row.original.description,
+											]),
+									)
+								}
 							>
 								Exporter la page
 							</Menu.Item>
@@ -543,7 +493,15 @@ const Section = (props: any) => {
 								//only export selected rows
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getSelectedRowModel().rows)
+									handleExportRowsAsPDF(
+										["Intitulé", "Description"],
+										table
+											.getSelectedRowModel()
+											.rows.map((row) => [
+												row.original.name,
+												row.original.description,
+											]),
+									)
 								}
 							>
 								Exporter la selection
@@ -552,7 +510,14 @@ const Section = (props: any) => {
 							<Menu.Label>Format Excel</Menu.Label>
 							<Menu.Item
 								//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
-								onClick={handleExportDataAsCSV}
+								onClick={() =>
+									handleExportAsCSV(
+										fetchedUes.map((row) => ({
+											name: row.name,
+											description: row.description,
+										})),
+									)
+								}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter tout
@@ -561,7 +526,12 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								//export all rows, including from the next page, (still respects filtering and sorting)
 								onClick={() =>
-									handleExportRowsAsCSV(table.getPrePaginationRowModel().rows)
+									handleExportAsCSV(
+										table.getPrePaginationRowModel().rows.map((row) => ({
+											name: row.original.name,
+											description: row.original.description,
+										})),
+									)
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -570,7 +540,14 @@ const Section = (props: any) => {
 							<Menu.Item
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								onClick={() => handleExportRowsAsCSV(table.getRowModel().rows)}
+								onClick={() =>
+									handleExportAsCSV(
+										table.getRowModel().rows.map((row) => ({
+											name: row.original.name,
+											description: row.original.description,
+										})),
+									)
+								}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter toutes la pages
@@ -582,7 +559,12 @@ const Section = (props: any) => {
 								}
 								//only export selected rows
 								onClick={() =>
-									handleExportRowsAsCSV(table.getSelectedRowModel().rows)
+									handleExportAsCSV(
+										table.getSelectedRowModel().rows.map((row) => ({
+											name: row.original.name,
+											description: row.original.description,
+										})),
+									)
 								}
 								leftSection={<IconFileTypeCsv />}
 							>

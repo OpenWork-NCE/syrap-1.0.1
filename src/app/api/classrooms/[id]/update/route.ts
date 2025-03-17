@@ -29,8 +29,8 @@ export async function PUT(
 				{
 					method: "PUT",
 					body: JSON.stringify({
-						niveau_id: bodyPayload.levelId,
-						filiere_id: bodyPayload.branchId,
+						level_id: bodyPayload.levelId,
+						branch_id: bodyPayload.branchId,
 						institute_id: bodyPayload.institute_id,
 						designation: bodyPayload.designation,
 					}),

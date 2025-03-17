@@ -1,36 +1,76 @@
 .navbar {
-	background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
-	height: rem(800px);
+	background-color: light-dark(var(--bg-light), var(--bg-dark));
+	height: 100vh;
 	width: rem(300px);
-	padding: var(--mantine-spacing-md);
-	padding-bottom: 0;
+	padding: var(--spacing-md);
+	padding-bottom: calc(var(--spacing-md) + 60px); /* Add space for footer */
 	display: flex;
 	flex-direction: column;
-	border-right: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+	border-right: rem(1px) solid
+		light-dark(var(--border-light), var(--border-dark));
+	position: relative;
+}
+
+.navbar::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 5px;
+	height: 100%;
+	background: linear-gradient(to bottom, var(--primary-6), var(--primary-4));
+	opacity: 0.7;
 }
 
 .header {
-	padding: var(--mantine-spacing-md);
+	padding: var(--spacing-md);
 	padding-top: 0;
-	margin-left: calc(var(--mantine-spacing-md) * -1);
-	margin-right: calc(var(--mantine-spacing-md) * -1);
-	color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
-	border-bottom: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+	margin-left: calc(var(--spacing-md) * -1);
+	margin-right: calc(var(--spacing-md) * -1);
+	color: light-dark(var(--text-light), var(--text-dark));
+	border-bottom: rem(1px) solid
+		light-dark(var(--border-light), var(--border-dark));
 }
 
 .links {
 	flex: 1;
-	/*margin-left: calc(var(--mantine-spacing-md) * -1);*/
-	/*margin-right: calc(var(--mantine-spacing-md) * -1);*/
+	transition: var(--transition-default);
+	margin-right: calc(var(--spacing-xs) * -1); /* Compensate for scrollbar */
 }
 
 .linksInner {
-	padding-top: var(--mantine-spacing-xl);
-	padding-bottom: var(--mantine-spacing-xl);
+	padding-top: var(--spacing-md);
+	padding-bottom: var(--spacing-md);
 }
 
 .footer {
-	/*margin-left: calc(var(--mantine-spacing-md) * -1);*/
-	/*margin-right: calc(var(--mantine-spacing-md) * -1);*/
-	border-top: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+	border-top: rem(1px) solid light-dark(var(--border-light), var(--border-dark));
+	padding: var(--spacing-md);
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: light-dark(var(--bg-light), var(--bg-dark));
+	z-index: 10;
+	height: 60px; /* Fixed height for footer */
+	display: flex;
+	align-items: center;
+}
+
+.footer::before {
+	content: "";
+	position: absolute;
+	top: -1px;
+	left: 0;
+	width: 100%;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		var(--primary-6),
+		var(--primary-4),
+		transparent
+	);
+	transform: scaleX(0.8);
+	opacity: 0.5;
 }

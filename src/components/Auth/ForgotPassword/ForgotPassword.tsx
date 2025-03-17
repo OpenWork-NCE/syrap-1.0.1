@@ -4,22 +4,12 @@ import {
 	Anchor,
 	Box,
 	Button,
-	Card,
 	Center,
-	Checkbox,
 	Container,
 	Group,
 	Paper,
-	PasswordInput,
-	Select,
-	SimpleGrid,
-	Text,
-	Textarea,
 	TextInput,
-	TextProps,
-	Title,
 } from "@mantine/core";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -28,51 +18,60 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { fetchJson, internalApiUrl } from "@/app/lib/utils";
 import { notifications } from "@mantine/notifications";
 import { PATH_AUTHENTICATIONS } from "@/routes";
-import { IconArrowLeft } from "@tabler/icons-react";
+import { IconArrowLeft, IconCheck } from "@tabler/icons-react";
+import {
+	ThemedText,
+	ThemedTitle,
+	ThemedButton,
+	ThemedGroup,
+	ThemedPaper,
+	ThemedContainer,
+} from "@/components/ui/ThemeComponents";
 import classes from "./ForgotPassword.module.css";
 
 export function ForgotPassword() {
 	const { push } = useRouter();
 	const initiated = useRef<Boolean>(false);
 	const [loading, setLoading] = useState<boolean>(false);
+	const [emailSent, setEmailSent] = useState<boolean>(false);
 
-	const supportSchema = useMemo(
+	const forgotPasswordSchema = useMemo(
 		() =>
 			z.object({
 				email: z
-					.string({ required_error: "Une addresse mail est requise." })
+					.string({ required_error: "Une adresse mail est requise." })
 					.email("L'adresse mail doit être valide."),
 			}),
 		[],
 	);
 
-	const submitData: SubmitHandler<z.infer<typeof supportSchema>> = async (
-		data,
-	) => {
+	const submitData: SubmitHandler<
+		z.infer<typeof forgotPasswordSchema>
+	> = async (data) => {
 		setLoading(true);
 
-		await fetchJson(await internalApiUrl(`/api/auth/forgotPassword`), {
+		await fetchJson(await internalApiUrl(`/api/auth/forgot-password`), {
 			method: "POST",
 			body: JSON.stringify(data),
 			headers: {
 				"Content-Type": "application/json",
 			},
 		})
-			.then(async (data) => {
+			.then(async () => {
+				setEmailSent(true);
 				notifications.show({
 					color: "green",
-					title: "Message envoyé avec succès.",
-					message: "Vous serrez repondu sous peu.",
+					title: "Email envoyé avec succès",
+					message:
+						"Vérifiez votre boîte de réception pour réinitialiser votre mot de passe",
+					icon: <IconCheck size="1.1rem" />,
 				});
-				setTimeout(async () => {
-					push(PATH_AUTHENTICATIONS.login);
-				}, 2000);
 			})
 			.catch((error) => {
 				notifications.show({
 					color: "red",
-					title: "Echec de l'envoi du message.",
-					message: "Il se peut que nous rencontrions des soucis techniques.",
+					title: "Échec de l'envoi",
+					message: "Une erreur est survenue. Veuillez réessayer.",
 				});
 				setLoading(false);
 			});
@@ -82,54 +81,103 @@ export function ForgotPassword() {
 		register,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<z.infer<typeof supportSchema>>({
-		resolver: zodResolver(supportSchema),
+	} = useForm<z.infer<typeof forgotPasswordSchema>>({
+		resolver: zodResolver(forgotPasswordSchema),
 	});
 
 	useEffect(() => {
 		if (!initiated.current) {
 			initiated.current = true;
 		}
-	});
+	}, []);
+
+	if (emailSent) {
+		return (
+			<ThemedContainer size="sm" my={30}>
+				<ThemedPaper
+					className={classes.formContainer}
+					withBorder
+					p="xl"
+					radius="md"
+					shadow="md"
+				>
+					<Center>
+						<IconCheck size={50} color="green" />
+					</Center>
+					<ThemedTitle ta="center" order={3} mt="md">
+						Email envoyé avec succès
+					</ThemedTitle>
+					<ThemedText ta="center" c="dimmed" fz="sm">
+						Nous avons envoyé un lien de réinitialisation à votre adresse email.
+						Veuillez vérifier votre boîte de réception et suivre les
+						instructions.
+					</ThemedText>
+					<Button
+						fullWidth
+						mt="xl"
+						component="a"
+						href="/login"
+						className={`${classes.control} theme-button theme-button-primary`}
+					>
+						Retour à la connexion
+					</Button>
+				</ThemedPaper>
+			</ThemedContainer>
+		);
+	}
 
 	return (
-		<Container style={{ width: "100%" }} my={30}>
-			<Text className={classes.title} ta="center">
+		<ThemedContainer size="sm" my={30}>
+			<ThemedTitle className={classes.title} ta="center" gradient>
 				Mot de passe oublié ?
-			</Text>
-			<Text c="dimmed" fz="sm" ta="center">
-				Entrez votre mail afin de recevoir le mail de reinitialisation
-			</Text>
-			<form onSubmit={handleSubmit(submitData)}>
-				<Paper withBorder shadow="md" p={30} radius="md" mt="xl">
+			</ThemedTitle>
+			<ThemedText c="dimmed" fz="sm" ta="center">
+				Entrez votre adresse email pour recevoir un lien de réinitialisation
+			</ThemedText>
+
+			<ThemedPaper
+				className={classes.formContainer}
+				withBorder
+				shadow="md"
+				p={30}
+				radius="md"
+				mt="xl"
+			>
+				<form onSubmit={handleSubmit(submitData)}>
 					<TextInput
-						label="Votre mail"
-						placeholder="me@user.dev"
+						label="Adresse email"
+						placeholder="votre@email.com"
 						required
+						error={errors.email?.message}
 						{...register("email")}
+						className="theme-input"
 					/>
-					<Group justify="space-between" mt="lg" className={classes.controls}>
+					<ThemedGroup
+						justify="space-between"
+						mt="lg"
+						className={classes.controls}
+					>
 						<Anchor
 							c="dimmed"
 							size="sm"
-							href={"/login"}
+							href="/login"
 							className={classes.control}
 						>
 							<Center inline>
 								<IconArrowLeft style={{ width: 12, height: 12 }} stroke={1.5} />
-								<Box ml={5}>Retourner au login</Box>
+								<Box ml={5}>Retour à la connexion</Box>
 							</Center>
 						</Anchor>
 						<Button
 							loading={loading}
-							type={"submit"}
-							className={classes.control}
+							type="submit"
+							className={`${classes.control} theme-button theme-button-primary`}
 						>
 							Réinitialiser le mot de passe
 						</Button>
-					</Group>
-				</Paper>
-			</form>
-		</Container>
+					</ThemedGroup>
+				</form>
+			</ThemedPaper>
+		</ThemedContainer>
 	);
 }

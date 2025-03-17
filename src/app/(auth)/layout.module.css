@@ -1,9 +1,257 @@
 .wrapper {
+	min-height: 100vh;
+	background-color: light-dark(var(--gray-0), var(--gray-9));
+	position: relative;
+	transition: var(--transition-default);
+}
+
+.themeToggle {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	z-index: 10;
+	box-shadow: light-dark(var(--shadow-light-sm), var(--shadow-dark-sm));
+	transition: var(--transition-fast);
+}
+
+.themeToggle:hover {
+	transform: translateY(-2px);
+}
+
+.container {
 	width: 100%;
 	height: 100vh;
-	color: lightdark(var(--mantine-colors-dark), var(--mantine-colors-white));
+	overflow: hidden;
+}
+
+.formContainer {
+	width: 50%;
+	padding: 2rem;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+	position: relative;
+	z-index: 1;
+	transition: var(--transition-default);
+}
+
+.logoContainer {
+	margin-bottom: 1.5rem;
+	text-align: center;
+	position: relative;
+}
+
+.logo {
+	font-family: var(--font-inter);
+	letter-spacing: -1px;
+	background: linear-gradient(45deg, var(--primary-6), var(--primary-4));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	font-size: 3rem;
+	position: relative;
+	transition: var(--transition-default);
+}
+
+.logo::after {
+	content: "";
+	position: absolute;
+	bottom: -5px;
+	left: 0;
+	width: 100%;
+	height: 3px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		var(--primary-6),
+		var(--primary-4),
+		transparent
+	);
+	transform: scaleX(0.8);
+	opacity: 0.7;
+}
+
+.subtitle {
+	margin-top: -0.5rem;
+	transition: var(--transition-default);
+}
+
+.formWrapper {
+	width: 100%;
+	max-width: 450px;
+	transition: var(--transition-default);
+}
+
+.formWrapper:hover {
+	transform: translateY(-5px);
+}
+
+.imageContainer {
+	width: 50%;
+	height: 100vh;
+	position: relative;
+	overflow: hidden;
+}
+
+.gradientOverlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(
+		135deg,
+		rgba(0, 0, 0, 0.7) 0%,
+		rgba(0, 0, 0, 0.4) 100%
+	);
+	z-index: 1;
+}
+
+.image {
+	object-position: center;
+	transition: transform 10s ease;
+}
+
+.imageContainer:hover .image {
+	transform: scale(1.05);
+}
+
+.imageContent {
+	position: absolute;
+	bottom: 5rem;
+	left: 3rem;
+	right: 3rem;
+	z-index: 2;
+	transition: var(--transition-default);
+}
+
+.imageTitle {
+	font-size: 2.5rem;
+	font-weight: 800;
+	margin-bottom: 1rem;
+	text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.imageText {
+	font-size: 1.1rem;
+	max-width: 500px;
+	text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.featureIcons {
+	margin-top: 2rem;
+}
+
+.featureIcon {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-right: 2rem;
+}
+
+.iconCircle {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(5px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+	position: relative;
+	overflow: hidden;
+}
+
+.iconCircle::before {
+	content: "";
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(45deg, var(--primary-6), var(--primary-4));
+	opacity: 0.7;
+}
+
+.glowEffect {
+	position: absolute;
+	width: 150px;
+	height: 150px;
+	border-radius: 50%;
+	background: radial-gradient(
+		circle,
+		rgba(var(--primary-6-rgb), 0.3) 0%,
+		rgba(var(--primary-4-rgb), 0) 70%
+	);
+	top: -50px;
+	right: -50px;
+	filter: blur(20px);
+}
+
+.footer {
+	margin-top: 2rem;
+}
+
+/* Media Queries */
+@media (max-width: 992px) {
+	.container {
+		flex-direction: column;
+	}
+
+	.formContainer,
+	.imageContainer {
+		width: 100%;
+	}
+
+	.imageContainer {
+		height: 300px;
+		order: -1;
+	}
+
+	.imageContent {
+		bottom: 2rem;
+		left: 2rem;
+		right: 2rem;
+	}
+
+	.imageTitle {
+		font-size: 2rem;
+	}
+
+	.imageText {
+		font-size: 1rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.imageContainer {
+		height: 250px;
+	}
+
+	.imageTitle {
+		font-size: 1.8rem;
+	}
+
+	.featureIcon {
+		margin-right: 1rem;
+	}
+
+	.iconCircle {
+		width: 30px;
+		height: 30px;
+	}
+}
+
+@media (max-width: 576px) {
+	.formContainer {
+		padding: 1rem;
+	}
+
+	.logo {
+		font-size: 2.5rem;
+	}
+
+	.themeToggle {
+		top: 10px;
+		right: 10px;
+	}
 }

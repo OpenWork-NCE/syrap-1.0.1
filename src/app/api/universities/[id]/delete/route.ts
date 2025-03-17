@@ -10,7 +10,7 @@ export async function DELETE(
 ) {
   return accessTokenMiddleware(async ({ authHeaders }) => {
     try {
-      const branch = await fetchJson<any>(
+      const university = await fetchJson<any>(
         backendUrl(`/api/acteurs/universities/${id}`),
         {
           method: 'DELETE',
@@ -19,10 +19,11 @@ export async function DELETE(
             'x-user-ip': getClientIp(request),
             'x-user-agent': request.headers.get('user-agent')!,
             'x-user-auth': request.headers.get('x-auto-auth') ?? 'false',
+						...authHeaders
           },
         },
       );
-      return new Response(JSON.stringify(branch));
+      return new Response(JSON.stringify(university));
     } catch (error) {
       return new Response(JSON.stringify(serializeError(error)), {
         status: 500,

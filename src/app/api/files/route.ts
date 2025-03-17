@@ -1,45 +1,59 @@
 import { NextResponse } from "next/server";
 import { mockFiles, FileDocument } from "@/types";
+import accessTokenMiddleware from "@/app/lib/middleware/accessTokenMiddleware";
+import { backendUrl, extractQueryParams, fetchJson } from "@/app/lib/utils";
+import IPaginateResponse from "@/interfaces/IPaginateResponse";
 
-export async function GET(request: Request) {
-	const { searchParams } = new URL(request.url);
-	const search = searchParams.get("search") || "";
-	const page = parseInt(searchParams.get("page") || "1");
-	const limit = parseInt(searchParams.get("limit") || "10");
-	const type = searchParams.get("type") || "all";
+export const dynamic = "force-dynamic";
 
-	let filteredFiles = [...mockFiles];
+export async function GET(req: Request) {
+	return accessTokenMiddleware(async ({ authHeaders }) => {
+		try {
+			// Extract query params
+			const queryParams = extractQueryParams(req);
 
-	if (search) {
-		filteredFiles = filteredFiles.filter(
-			(file) =>
-				file.title.toLowerCase().includes(search.toLowerCase()) ||
-				file.description.toLowerCase().includes(search.toLowerCase()),
-		);
-	}
-
-	if (type !== "all") {
-		filteredFiles = filteredFiles.filter((file) => file.type === type);
-	}
-
-	const total = filteredFiles.length;
-	const files = filteredFiles.slice((page - 1) * limit, page * limit);
-
-	return NextResponse.json({
-		files,
-		total,
-		page,
-		totalPages: Math.ceil(total / limit),
+			const response = await fetchJson<IPaginateResponse<any>>(
+				backendUrl(`/api/files`, queryParams),
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						...authHeaders,
+					},
+					cache: "no-cache",
+				},
+			);
+			return new Response(JSON.stringify(response), { status: 200 });
+		} catch (error) {
+			console.error("Error fetching files:", error);
+			return new Response(JSON.stringify({ error: "Failed to fetch files" }), {
+				status: 500,
+			});
+		}
 	});
 }
 
 export async function POST(request: Request) {
-	const data = await request.json();
-	const newFile = {
-		id: (mockFiles.length + 1).toString(),
-		...data,
-		uploadDate: new Date().toISOString(),
-	};
+	return accessTokenMiddleware(async ({ authHeaders }) => {
+		try {
+			const data = await request.json();
 
-	return NextResponse.json(newFile);
+			// Forward the request to the backend
+			const response = await fetchJson<any>(backendUrl(`/api/files`), {
+				method: "POST",
+				body: JSON.stringify(data),
+				headers: {
+					"Content-Type": "application/json",
+					...authHeaders,
+				},
+			});
+
+			return new Response(JSON.stringify(response), { status: 200 });
+		} catch (error) {
+			console.error("Error creating file:", error);
+			return new Response(JSON.stringify({ error: "Failed to create file" }), {
+				status: 500,
+			});
+		}
+	});
 }

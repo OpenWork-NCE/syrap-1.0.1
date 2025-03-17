@@ -4,7 +4,6 @@ import {
 	Box,
 	Collapse,
 	ThemeIcon,
-	Text,
 	UnstyledButton,
 	rem,
 	useDirection,
@@ -14,6 +13,7 @@ import {
 	IconChevronLeft,
 	IconChevronRight,
 } from "@tabler/icons-react";
+import { ThemedText, ThemedNavbarLink } from "@/components/ui/ThemeComponents";
 import classes from "./GoodNavbarLinkGroup.module.css";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -61,7 +61,9 @@ export function LinksGroup({
 							<ThemeIcon variant="light" size={30}>
 								<Icon size="1.1rem" />
 							</ThemeIcon>
-							<Box ml="md">{label}</Box>
+							<Box ml="md">
+								<ThemedText>{label}</ThemedText>
+							</Box>
 						</Box>
 					</Group>
 				</Link>
@@ -80,7 +82,9 @@ export function LinksGroup({
 							<ThemeIcon variant="light" size={30}>
 								<Icon size="1.1rem" />
 							</ThemeIcon>
-							<Box ml="md">{label}</Box>
+							<Box ml="md">
+								<ThemedText>{label}</ThemedText>
+							</Box>
 						</Box>
 						{hasLinks && (
 							<ChevronIcon

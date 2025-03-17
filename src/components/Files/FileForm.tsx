@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "@mantine/form";
 import {
 	TextInput,
@@ -10,106 +11,31 @@ import {
 	Stack,
 	Group,
 	Text,
+	Paper,
+	Alert,
+	Loader,
+	Title,
 } from "@mantine/core";
-import { IconUpload } from "@tabler/icons-react";
+import {
+	IconUpload,
+	IconAlertCircle,
+	IconCheck,
+	IconFileDescription,
+	IconEye,
+} from "@tabler/icons-react";
 import { FileDocument, FileFormData } from "@/types";
 import {
 	getFileTypeFromExtension,
 	getFileTypeIcon,
 	getFileTypeColor,
 } from "@/app/lib/utils";
+import { notifications } from "@mantine/notifications";
 
 interface FileFormProps {
 	initialData?: FileDocument;
 	onSubmit: (values: FileFormData) => Promise<void>;
 	onCancel: () => void;
 }
-
-// export function FileForm({ initialData, onSubmit, onCancel }: FileFormProps) {
-// 	const form = useForm<FileFormData>({
-// 		initialValues: {
-// 			title: initialData?.title || "",
-// 			description: initialData?.description || "",
-// 			visibility: initialData?.visibility || [],
-// 		},
-// 		validate: {
-// 			title: (value: any) => (!value ? "Le titre est requis" : null),
-// 			description: (value: any) =>
-// 				!value ? "La description est requise" : null,
-// 			visibility: (value: any) =>
-// 				!value.length ? "Sélectionnez au moins une visibilité" : null,
-// 		},
-// 	});
-//
-// 	const visibilityOptions = [
-// 		{ value: "CENADI", label: "CENADI" },
-// 		{ value: "MINESUP", label: "MINESUP" },
-// 		{ value: "IPES", label: "IPES" },
-// 	];
-//
-// 	const handleFileChange = (file: File | null) => {
-// 		if (file) {
-// 			const fileType = getFileTypeFromExtension(file.name);
-// 			const Icon = getFileTypeIcon(fileType);
-// 			const color = getFileTypeColor(fileType);
-// 			return (
-// 				<Group gap="xs">
-// 					<Icon size={20} color={color} />
-// 					<Text size="sm">{file.name}</Text>
-// 				</Group>
-// 			);
-// 		}
-// 		return null;
-// 	};
-//
-// 	return (
-// 		<form onSubmit={form.onSubmit(onSubmit)}>
-// 			<Stack gap="md">
-// 				<TextInput
-// 					label="Titre"
-// 					placeholder="Entrez le titre du document"
-// 					required
-// 					{...form.getInputProps("title")}
-// 				/>
-//
-// 				<Textarea
-// 					label="Description"
-// 					placeholder="Entrez la description du document"
-// 					required
-// 					minRows={3}
-// 					{...form.getInputProps("description")}
-// 				/>
-//
-// 				{!initialData && (
-// 					<FileInput
-// 						label="Fichier"
-// 						placeholder="Charger le fichier"
-// 						accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,application/zip,image/*"
-// 						required
-// 						icon={<IconUpload size={14} />}
-// 						valueComponent={handleFileChange}
-// 						{...form.getInputProps("file")}
-// 					/>
-// 				)}
-//
-// 				<MultiSelect
-// 					label="Visibilité"
-// 					placeholder="Sélectionnez la visibilité"
-// 					data={visibilityOptions}
-// 					required
-// 					{...form.getInputProps("visibility")}
-// 				/>
-//
-// 				<Group justify="flex-end" mt="md">
-// 					<Button variant="light" onClick={onCancel}>
-// 						Annuler
-// 					</Button>
-// 					<Button type="submit">{initialData ? "Modifier" : "Uploader"}</Button>
-// 				</Group>
-// 			</Stack>
-// 		</form>
-// 	);
-// }
 
 const FileValueComponent: React.FC<{ value: File | File[] | null }> = ({
 	value,
@@ -125,23 +51,47 @@ const FileValueComponent: React.FC<{ value: File | File[] | null }> = ({
 		<Group gap="xs">
 			<Icon size={20} color={color} />
 			<Text size="sm">{file.name}</Text>
+			<Text size="xs" c="dimmed">
+				({(file.size / 1024).toFixed(2)} KB)
+			</Text>
 		</Group>
 	);
 };
 
 export function FileForm({ initialData, onSubmit, onCancel }: FileFormProps) {
-	const form = useForm<FileFormData>({
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [success, setSuccess] = useState<string | null>(null);
+
+	const form = useForm<{
+		title: string;
+		description: string;
+		visibility: string[];
+		file: File | null;
+	}>({
 		initialValues: {
 			title: initialData?.title || "",
 			description: initialData?.description || "",
 			visibility: initialData?.visibility || [],
+			file: null,
 		},
 		validate: {
-			title: (value: any) => (!value ? "Le titre est requis" : null),
-			description: (value: any) =>
-				!value ? "La description est requise" : null,
-			visibility: (value: any) =>
+			title: (value) =>
+				!value.trim()
+					? "Le titre est requis"
+					: value.length < 3
+						? "Le titre doit contenir au moins 3 caractères"
+						: null,
+			description: (value) =>
+				!value.trim()
+					? "La description est requise"
+					: value.length < 10
+						? "La description doit être plus détaillée"
+						: null,
+			visibility: (value) =>
 				!value.length ? "Sélectionnez au moins une visibilité" : null,
+			file: (value, values) =>
+				!initialData && !value ? "Le fichier est requis" : null,
 		},
 	});
 
@@ -151,51 +101,154 @@ export function FileForm({ initialData, onSubmit, onCancel }: FileFormProps) {
 		{ value: "IPES", label: "IPES" },
 	];
 
+	const handleSubmitForm = async (values: FileFormData) => {
+		setIsLoading(true);
+		setError(null);
+		setSuccess(null);
+
+		try {
+			await onSubmit(values);
+			setSuccess(
+				initialData
+					? "Document modifié avec succès"
+					: "Document téléchargé avec succès",
+			);
+
+			// Reset form if it's a new upload
+			if (!initialData) {
+				form.reset();
+			}
+
+			// Show notification
+			notifications.show({
+				title: "Succès",
+				message: initialData
+					? "Document modifié avec succès"
+					: "Document téléchargé avec succès",
+				color: "green",
+				icon: <IconCheck size={16} />,
+			});
+
+			// Close form after a delay
+			setTimeout(() => {
+				onCancel();
+			}, 1500);
+		} catch (err) {
+			const errorMessage =
+				err instanceof Error ? err.message : "Une erreur est survenue";
+			setError(errorMessage);
+
+			// Show notification
+			notifications.show({
+				title: "Erreur",
+				message: errorMessage,
+				color: "red",
+				icon: <IconAlertCircle size={16} />,
+			});
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	return (
-		<form onSubmit={form.onSubmit(onSubmit)}>
-			<Stack gap="md">
-				<TextInput
-					label="Titre"
-					placeholder="Entrez le titre du document"
-					required
-					{...form.getInputProps("title")}
-				/>
+		<Paper p="md" radius="md" withBorder>
+			{error && (
+				<Alert
+					icon={<IconAlertCircle size={16} />}
+					title="Erreur"
+					color="red"
+					variant="light"
+					mb="md"
+					withCloseButton
+					onClose={() => setError(null)}
+				>
+					{error}
+				</Alert>
+			)}
 
-				<Textarea
-					label="Description"
-					placeholder="Entrez la description du document"
-					required
-					minRows={3}
-					{...form.getInputProps("description")}
-				/>
+			{success && (
+				<Alert
+					icon={<IconCheck size={16} />}
+					title="Succès"
+					color="green"
+					variant="light"
+					mb="md"
+					withCloseButton
+					onClose={() => setSuccess(null)}
+				>
+					{success}
+				</Alert>
+			)}
 
-				{!initialData && (
-					<FileInput
-						label="Fichier"
-						placeholder="Charger le fichier"
-						accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,application/zip,image/*"
+			<form onSubmit={form.onSubmit(handleSubmitForm)}>
+				<Stack gap="md">
+					<Title order={4} mb="xs">
+						{initialData
+							? "Modifier le document"
+							: "Télécharger un nouveau document"}
+					</Title>
+
+					<TextInput
+						label="Titre"
+						placeholder="Entrez le titre du document"
 						required
-						// icon={<IconUpload size={14} />}
-						valueComponent={FileValueComponent}
-						{...form.getInputProps("file")}
+						leftSection={<IconFileDescription size={16} />}
+						disabled={isLoading}
+						{...form.getInputProps("title")}
 					/>
-				)}
 
-				<MultiSelect
-					label="Visibilité"
-					placeholder="Sélectionnez la visibilité"
-					data={visibilityOptions}
-					required
-					{...form.getInputProps("visibility")}
-				/>
+					<Textarea
+						label="Description"
+						placeholder="Entrez la description du document"
+						required
+						minRows={3}
+						disabled={isLoading}
+						{...form.getInputProps("description")}
+					/>
 
-				<Group justify="flex-end" mt="md">
-					<Button variant="light" onClick={onCancel}>
-						Annuler
-					</Button>
-					<Button type="submit">{initialData ? "Modifier" : "Uploader"}</Button>
-				</Group>
-			</Stack>
-		</form>
+					{!initialData && (
+						<FileInput
+							label="Fichier"
+							placeholder="Charger le fichier"
+							accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,application/zip,image/*"
+							required
+							leftSection={<IconUpload size={16} />}
+							valueComponent={FileValueComponent}
+							disabled={isLoading}
+							clearable
+							description="Formats acceptés: PDF, Word, Excel, texte, ZIP, images"
+							{...form.getInputProps("file")}
+						/>
+					)}
+
+					<MultiSelect
+						label="Visibilité"
+						placeholder="Sélectionnez la visibilité"
+						data={visibilityOptions}
+						required
+						leftSection={<IconEye size={16} />}
+						disabled={isLoading}
+						clearable
+						searchable
+						{...form.getInputProps("visibility")}
+					/>
+
+					<Group justify="flex-end" mt="md">
+						<Button variant="light" onClick={onCancel} disabled={isLoading}>
+							Annuler
+						</Button>
+						<Button
+							type="submit"
+							loading={isLoading}
+							leftSection={
+								isLoading ? <Loader size={14} /> : <IconUpload size={14} />
+							}
+						>
+							{initialData ? "Modifier" : "Télécharger"}
+						</Button>
+					</Group>
+				</Stack>
+			</form>
+		</Paper>
 	);
 }

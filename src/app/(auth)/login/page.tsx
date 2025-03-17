@@ -1,20 +1,22 @@
 import { LoginForm } from "@/components/Auth/LoginForm";
-import { Anchor, Stack, Text } from "@mantine/core";
+import { Anchor } from "@mantine/core";
+import { ThemedText, ThemedFlex } from "@/components/ui/ThemeComponents";
 
 export default function Login() {
 	return (
-		<Stack
+		<ThemedFlex
+			direction="column"
 			style={{ width: "100%", alignItems: "center", justifyContent: "center" }}
 		>
-			<Stack w={400}>
+			<ThemedFlex direction="column" w={400}>
 				<LoginForm />
-			</Stack>
-			<Text c="dimmed" size="sm" mt={5}>
+			</ThemedFlex>
+			<ThemedText c="dimmed" size="sm" mt={5}>
 				Don&apos;t have an account?{" "}
-				<Anchor size="sm" href="/support">
+				<Anchor size="sm" href="/support" className="theme-link">
 					Contacter l'administration
 				</Anchor>
-			</Text>
-		</Stack>
+			</ThemedText>
+		</ThemedFlex>
 	);
 }

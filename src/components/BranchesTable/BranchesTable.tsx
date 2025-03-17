@@ -51,6 +51,7 @@ import autoTable from "jspdf-autotable";
 import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Branch } from "@/types";
+import {handleExportAsCSV, handleExportRowsAsPDF} from "@/app/lib/utils";
 
 const csvConfig = mkConfig({
 	fieldSeparator: ",",
@@ -99,75 +100,6 @@ const Section = (props: any) => {
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string | undefined>
 	>({});
-
-	const handleExportRows = (rows: MRT_Row<Branch>[]) => {
-		const doc = new jsPDF("portrait", "pt", "A4");
-		const pageWidth = doc.internal.pageSize.getWidth();
-		const logoUrl = "/thumbnail.png";
-
-		// French Column (Left)
-		const frenchText = `
-      REPUBLIQUE DU CAMEROUN
-             Paix – Travail – Patrie
-              -------------------------
-        MINISTERE DES FINANCES
-              -------------------------
-         SECRETARIAT GENERAL
-              ------------------------
-          CENTRE NATIONAL DE
-           DEVELOPPEMENT DE
-               L’INFORMATIQUE
-               -------------------------
-    `;
-
-		const englishText = `
-          REPUBLIC OF CAMEROON
-           Peace – Work – Fatherland
-                  -------------------------
-             MINISTRY OF FINANCE
-                  -------------------------
-            GENERAL SECRETARIAT
-                  -------------------------
-          NATIONAL CENTRE FOR THE
-        DEVELOPMENT OF COMPUTER
-                           SERVICES
-              ------------------------------------
-    `;
-
-		doc.setFontSize(10);
-		doc.text(frenchText, 40, 50);
-		doc.addImage(logoUrl, "PNG", pageWidth / 2 - 30, 40, 60, 60);
-		doc.text(englishText, pageWidth - 250, 50);
-
-		const tableData = rows.map((row) => Object.values(row.original));
-		const tableHeaders = columns.map((c) => c.header);
-
-		autoTable(doc, {
-			startY: 200, // Start after the header
-			head: [tableHeaders],
-			body: rows.map((row) => [row.original.name, row.original.description]),
-		});
-
-		doc.save("syrap-branches.pdf");
-	};
-
-	const handleExportRowsAsCSV = (rows: MRT_Row<Branch>[]) => {
-		const rowData = rows.map((row) => ({
-			name: row.original.name,
-			description: row.original.description,
-		}));
-		const csv = generateCsv(csvConfig)(rowData);
-		download(csvConfig)(csv);
-	};
-
-	const handleExportDataAsCSV = () => {
-		const allData = fetchedBranches.map((row) => ({
-			name: row.name,
-			description: row.description,
-		}));
-		const csv = generateCsv(csvConfig)(allData);
-		download(csvConfig)(csv);
-	};
 
 	const columns = useMemo<MRT_ColumnDef<Branch>[]>(
 		() => [
@@ -425,7 +357,7 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getPrePaginationRowModel().rows)
+									handleExportRowsAsPDF(["Intitulé", "Description"], table.getPrePaginationRowModel().rows.map((row) => [row.original.name, row.original.description]))
 								}
 							>
 								Exporter tout
@@ -434,7 +366,7 @@ const Section = (props: any) => {
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
 								leftSection={<IconFileTypePdf />}
-								onClick={() => handleExportRows(table.getRowModel().rows)}
+								onClick={() => handleExportRowsAsPDF(["Intitulé", "Description"], table.getRowModel().rows.map((row) => [row.original.name, row.original.description]))}
 							>
 								Exporter la page
 							</Menu.Item>
@@ -446,7 +378,7 @@ const Section = (props: any) => {
 								//only export selected rows
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getSelectedRowModel().rows)
+									handleExportRowsAsPDF(["Intitulé", "Description"], table.getSelectedRowModel().rows.map((row) => [row.original.name, row.original.description]))
 								}
 							>
 								Exporter la selection
@@ -455,7 +387,10 @@ const Section = (props: any) => {
 							<Menu.Label>Format Excel</Menu.Label>
 							<Menu.Item
 								//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
-								onClick={handleExportDataAsCSV}
+								onClick={() => handleExportAsCSV(fetchedBranches.map((row) => ({
+									name: row.name,
+									description: row.description,
+								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter tout
@@ -464,7 +399,10 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								//export all rows, including from the next page, (still respects filtering and sorting)
 								onClick={() =>
-									handleExportRowsAsCSV(table.getPrePaginationRowModel().rows)
+									handleExportAsCSV(table.getPrePaginationRowModel().rows.map((row) => ({
+										name: row.original.name,
+										description: row.original.description,
+									})))
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -473,7 +411,10 @@ const Section = (props: any) => {
 							<Menu.Item
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								onClick={() => handleExportRowsAsCSV(table.getRowModel().rows)}
+								onClick={() => handleExportAsCSV(table.getRowModel().rows.map((row) => ({
+									name: row.original.name,
+									description: row.original.description,
+								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter toutes la pages
@@ -485,7 +426,10 @@ const Section = (props: any) => {
 								}
 								//only export selected rows
 								onClick={() =>
-									handleExportRowsAsCSV(table.getSelectedRowModel().rows)
+									handleExportAsCSV(table.getSelectedRowModel().rows.map((row) => ({
+										name: row.original.name,
+										description: row.original.description,
+									})))
 								}
 								leftSection={<IconFileTypeCsv />}
 							>

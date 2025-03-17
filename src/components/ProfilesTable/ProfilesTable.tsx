@@ -221,7 +221,7 @@ const Section = (props: any) => {
 			{
 				accessorKey: "permissions",
 				accessorFn: (row) => {
-					return [];
+					return row.permissions?.map((permission) => String(permission.id));
 				},
 				Cell: ({ cell }) => {
 					const permissions = cell.row.original.permissions.map(
@@ -444,98 +444,98 @@ const Section = (props: any) => {
 						Nouveau rôle
 					</Button>
 					{/*)}*/}
-					<Menu
-						shadow={"md"}
-						// width={130}
-						trigger="hover"
-						openDelay={100}
-						closeDelay={400}
-					>
-						<Menu.Target>
-							<Button
-								leftSection={<IconTableExport />}
-								rightSection={<IconDownload size={14} />}
-								variant={"filled"}
-							>
-								Exporter
-							</Button>
-						</Menu.Target>
+					{/*<Menu*/}
+					{/*	shadow={"md"}*/}
+					{/*	// width={130}*/}
+					{/*	trigger="hover"*/}
+					{/*	openDelay={100}*/}
+					{/*	closeDelay={400}*/}
+					{/*>*/}
+					{/*	<Menu.Target>*/}
+					{/*		<Button*/}
+					{/*			leftSection={<IconTableExport />}*/}
+					{/*			rightSection={<IconDownload size={14} />}*/}
+					{/*			variant={"filled"}*/}
+					{/*		>*/}
+					{/*			Exporter*/}
+					{/*		</Button>*/}
+					{/*	</Menu.Target>*/}
 
-						<Menu.Dropdown>
-							<Menu.Label>Format PDF</Menu.Label>
-							<Menu.Item
-								//export all rows, including from the next page, (still respects filtering and sorting)
-								disabled={table.getPrePaginationRowModel().rows.length === 0}
-								leftSection={<IconFileTypePdf />}
-								onClick={() =>
-									handleExportRows(table.getPrePaginationRowModel().rows)
-								}
-							>
-								Exporter tout
-							</Menu.Item>
-							<Menu.Item
-								disabled={table.getRowModel().rows.length === 0}
-								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								leftSection={<IconFileTypePdf />}
-								onClick={() => handleExportRows(table.getRowModel().rows)}
-							>
-								Exporter la page
-							</Menu.Item>
-							<Menu.Item
-								disabled={
-									!table.getIsSomeRowsSelected() &&
-									!table.getIsAllRowsSelected()
-								}
-								//only export selected rows
-								leftSection={<IconFileTypePdf />}
-								onClick={() =>
-									handleExportRows(table.getSelectedRowModel().rows)
-								}
-							>
-								Exporter la selection
-							</Menu.Item>
-							<Menu.Divider />
-							<Menu.Label>Format Excel</Menu.Label>
-							<Menu.Item
-								//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
-								onClick={handleExportDataAsCSV}
-								leftSection={<IconFileTypeCsv />}
-							>
-								Exporter tout
-							</Menu.Item>
-							<Menu.Item
-								disabled={table.getPrePaginationRowModel().rows.length === 0}
-								//export all rows, including from the next page, (still respects filtering and sorting)
-								onClick={() =>
-									handleExportRowsAsCSV(table.getPrePaginationRowModel().rows)
-								}
-								leftSection={<IconFileTypeCsv />}
-							>
-								Exporter toute les lignes
-							</Menu.Item>
-							<Menu.Item
-								disabled={table.getRowModel().rows.length === 0}
-								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								onClick={() => handleExportRowsAsCSV(table.getRowModel().rows)}
-								leftSection={<IconFileTypeCsv />}
-							>
-								Exporter toutes la pages
-							</Menu.Item>
-							<Menu.Item
-								disabled={
-									!table.getIsSomeRowsSelected() &&
-									!table.getIsAllRowsSelected()
-								}
-								//only export selected rows
-								onClick={() =>
-									handleExportRowsAsCSV(table.getSelectedRowModel().rows)
-								}
-								leftSection={<IconFileTypeCsv />}
-							>
-								Exporter la selection
-							</Menu.Item>
-						</Menu.Dropdown>
-					</Menu>
+					{/*	<Menu.Dropdown>*/}
+					{/*		<Menu.Label>Format PDF</Menu.Label>*/}
+					{/*		<Menu.Item*/}
+					{/*			//export all rows, including from the next page, (still respects filtering and sorting)*/}
+					{/*			disabled={table.getPrePaginationRowModel().rows.length === 0}*/}
+					{/*			leftSection={<IconFileTypePdf />}*/}
+					{/*			onClick={() =>*/}
+					{/*				handleExportRows(table.getPrePaginationRowModel().rows)*/}
+					{/*			}*/}
+					{/*		>*/}
+					{/*			Exporter tout*/}
+					{/*		</Menu.Item>*/}
+					{/*		<Menu.Item*/}
+					{/*			disabled={table.getRowModel().rows.length === 0}*/}
+					{/*			//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)*/}
+					{/*			leftSection={<IconFileTypePdf />}*/}
+					{/*			onClick={() => handleExportRows(table.getRowModel().rows)}*/}
+					{/*		>*/}
+					{/*			Exporter la page*/}
+					{/*		</Menu.Item>*/}
+					{/*		<Menu.Item*/}
+					{/*			disabled={*/}
+					{/*				!table.getIsSomeRowsSelected() &&*/}
+					{/*				!table.getIsAllRowsSelected()*/}
+					{/*			}*/}
+					{/*			//only export selected rows*/}
+					{/*			leftSection={<IconFileTypePdf />}*/}
+					{/*			onClick={() =>*/}
+					{/*				handleExportRows(table.getSelectedRowModel().rows)*/}
+					{/*			}*/}
+					{/*		>*/}
+					{/*			Exporter la selection*/}
+					{/*		</Menu.Item>*/}
+					{/*		<Menu.Divider />*/}
+					{/*		<Menu.Label>Format Excel</Menu.Label>*/}
+					{/*		<Menu.Item*/}
+					{/*			//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)*/}
+					{/*			onClick={handleExportDataAsCSV}*/}
+					{/*			leftSection={<IconFileTypeCsv />}*/}
+					{/*		>*/}
+					{/*			Exporter tout*/}
+					{/*		</Menu.Item>*/}
+					{/*		<Menu.Item*/}
+					{/*			disabled={table.getPrePaginationRowModel().rows.length === 0}*/}
+					{/*			//export all rows, including from the next page, (still respects filtering and sorting)*/}
+					{/*			onClick={() =>*/}
+					{/*				handleExportRowsAsCSV(table.getPrePaginationRowModel().rows)*/}
+					{/*			}*/}
+					{/*			leftSection={<IconFileTypeCsv />}*/}
+					{/*		>*/}
+					{/*			Exporter toute les lignes*/}
+					{/*		</Menu.Item>*/}
+					{/*		<Menu.Item*/}
+					{/*			disabled={table.getRowModel().rows.length === 0}*/}
+					{/*			//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)*/}
+					{/*			onClick={() => handleExportRowsAsCSV(table.getRowModel().rows)}*/}
+					{/*			leftSection={<IconFileTypeCsv />}*/}
+					{/*		>*/}
+					{/*			Exporter toutes la pages*/}
+					{/*		</Menu.Item>*/}
+					{/*		<Menu.Item*/}
+					{/*			disabled={*/}
+					{/*				!table.getIsSomeRowsSelected() &&*/}
+					{/*				!table.getIsAllRowsSelected()*/}
+					{/*			}*/}
+					{/*			//only export selected rows*/}
+					{/*			onClick={() =>*/}
+					{/*				handleExportRowsAsCSV(table.getSelectedRowModel().rows)*/}
+					{/*			}*/}
+					{/*			leftSection={<IconFileTypeCsv />}*/}
+					{/*		>*/}
+					{/*			Exporter la selection*/}
+					{/*		</Menu.Item>*/}
+					{/*	</Menu.Dropdown>*/}
+					{/*</Menu>*/}
 				</Flex>
 			</>
 		),

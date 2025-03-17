@@ -1,0 +1,384 @@
+---
+description: SYRAP UI Design Patterns
+globs: 
+alwaysApply: false
+---
+# SYRAP UI Design Patterns
+
+This rule file defines standardized UI design patterns for the SYRAP application to ensure consistency across all components.
+
+## Color Schemes and Theming
+
+- Use the Mantine theme system with `light` and `dark` color schemes
+- Import themes from `@/styles/theme.ts` rather than defining inline themes
+- Use the `useMantineColorScheme` hook for toggling between light and dark modes
+- Always use the `light-dark()` function for color values that should change based on the theme
+
+```typescript
+// Example of proper theme usage
+import { themeCenadi } from "@/styles/theme";
+import { useMantineColorScheme } from "@mantine/core";
+
+// Get current color scheme
+const { colorScheme, setColorScheme } = useMantineColorScheme();
+const isDark = colorScheme === "dark";
+
+// Toggle color scheme
+const toggleColorScheme = () => {
+  setColorScheme(colorScheme === "dark" ? "light" : "dark");
+};
+
+// Color that changes with theme
+const backgroundColor = "light-dark(rgba(255, 255, 255, 0.9), rgba(26, 27, 30, 0.8))";
+```
+
+## Form Components
+
+### Card/Paper Containers
+
+Use the following pattern for form containers:
+
+```css
+.formContainer {
+  position: relative;
+  padding: 2rem;
+  border-radius: 12px;
+  background-color: var(--mantine-color-body);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid var(--mantine-color-gray-2);
+}
+
+:global([data-mantine-color-scheme="dark"]) .formContainer {
+  background-color: rgba(36, 36, 46, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 36em) {
+  .formContainer {
+    padding: 1.5rem;
+  }
+}
+```
+
+### Animated Cards
+
+For cards with animated borders:
+
+```css
+.card {
+  max-width: 450px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(10px);
+  background-color: light-dark(rgba(255, 255, 255, 0.9), rgba(26, 27, 30, 0.8));
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(transparent, transparent, transparent, #228be6);
+  animation: rotate 4s linear infinite;
+  z-index: -1;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: light-dark(rgba(255, 255, 255, 0.9), rgba(26, 27, 30, 0.8));
+  border-radius: var(--mantine-radius-md);
+  z-index: -1;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+```
+
+## Typography
+
+### Gradient Titles
+
+```css
+.title {
+  font-size: 1.625rem;
+  font-weight: 900;
+  font-family: var(--font-inter);
+  background: linear-gradient(to right, #4d7cff, #8c5cff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  margin-bottom: 1.5rem;
+}
+```
+
+### Logo Text
+
+```css
+.logo {
+  font-family: var(--font-inter);
+  letter-spacing: -1px;
+  background: linear-gradient(45deg, #228be6, #40c057);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 3rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.logo::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #228be6, #40c057, transparent);
+  transform: scaleX(0.8);
+  opacity: 0.7;
+}
+```
+
+## Interactive Elements
+
+### Buttons
+
+```css
+.control {
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.control:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.control::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(77, 124, 255, 0.1), rgba(140, 92, 255, 0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.control:hover::before {
+  opacity: 1;
+}
+```
+
+### Gradient Buttons
+
+```css
+.submitButton {
+  transition: all 0.3s ease;
+  background: linear-gradient(45deg, #228be6, #40c057);
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.submitButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.7s ease;
+}
+
+.submitButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 14px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.submitButton:hover::before {
+  left: 100%;
+}
+
+.submitButton:active {
+  transform: translateY(-1px);
+}
+```
+
+### Links
+
+```css
+.forgotLink {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.forgotLink::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #228be6, #40c057);
+  transition: width 0.3s ease;
+}
+
+.forgotLink:hover {
+  text-decoration: none;
+  color: light-dark(#228be6, #74c0fc);
+}
+
+.forgotLink:hover::after {
+  width: 100%;
+}
+```
+
+## Layout Patterns
+
+### Form Controls Layout
+
+```css
+.controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+
+@media (max-width: 36em) {
+  .controls {
+    flex-direction: column-reverse;
+  }
+
+  .control {
+    width: 100%;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+}
+```
+
+### Responsive Containers
+
+```css
+.wrapper {
+  min-height: 100vh;
+  background-color: light-dark(#f8f9fa, #1a1b1e);
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.container {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+@media (max-width: 992px) {
+  .imageContainer {
+    display: none;
+  }
+
+  .formContainer {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .formContainer {
+    padding: 1rem;
+  }
+}
+```
+
+## Animation Effects
+
+### Glow Effect
+
+```css
+.glowEffect {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(64, 192, 87, 0.3) 0%,
+    rgba(34, 139, 230, 0.1) 50%,
+    transparent 70%
+  );
+  filter: blur(20px);
+  z-index: -1;
+  animation: pulse 4s infinite alternate;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1.2);
+  }
+}
+```
+
+### Shine Effect
+
+```css
+.element::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  20%, 100% {
+    left: 100%;
+  }
+}
+```
+
+## Best Practices
+
+1. Always use CSS modules for component styling
+2. Use the `light-dark()` function for theme-dependent colors
+3. Implement responsive designs with appropriate media queries
+4. Add transition effects for interactive elements
+5. Use gradient backgrounds for emphasis
+6. Implement proper dark mode support using `:global([data-mantine-color-scheme="dark"])` selectors
+7. Maintain consistent spacing and sizing across components
+8. Use the defined color palette from the theme files
+9. Add subtle animations for enhanced user experience
+10. Ensure accessibility with proper contrast ratios

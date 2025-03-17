@@ -6,7 +6,6 @@ import {
 	Breadcrumbs,
 	BreadcrumbsProps,
 	Button,
-	Divider,
 	Flex,
 	Group,
 	Paper,
@@ -14,12 +13,13 @@ import {
 	rem,
 	Stack,
 	Text,
-	Title,
 	useMantineTheme,
 } from "@mantine/core";
 import { IconPlus, IconRefresh } from "@tabler/icons-react";
 import Surface from "@/components/Surface";
 import { useColorScheme } from "@mantine/hooks";
+import { ThemedTitle } from "@/components/ui/ThemeComponents";
+import classes from "./PageHeader.module.css";
 
 type PageHeaderProps = {
 	title: string;
@@ -43,25 +43,25 @@ const PageHeader = (props: PageHeaderProps) => {
 	const theme = useMantineTheme();
 	const colorScheme = useColorScheme();
 
-	const BREADCRUMBS_PROPS: Omit<BreadcrumbsProps, "children"> = {
-		style: {
-			a: {
-				padding: rem(8),
-				borderRadius: theme.radius.sm,
-				fontWeight: 500,
-				color: colorScheme === "dark" ? theme.white : theme.black,
+	// const BREADCRUMBS_PROPS: Omit<BreadcrumbsProps, "children"> = {
+	// 	style: {
+	// 		a: {
+	// 			padding: rem(8),
+	// 			borderRadius: theme.radius.sm,
+	// 			fontWeight: 500,
+	// 			color: colorScheme === "dark" ? theme.white : theme.black,
 
-				"&:hover": {
-					transition: "all ease 150ms",
-					backgroundColor:
-						colorScheme === "dark"
-							? theme.colors.dark[5]
-							: theme.colors.gray[2],
-					textDecoration: "none",
-				},
-			},
-		},
-	};
+	// 			"&:hover": {
+	// 				transition: "all ease 150ms",
+	// 				backgroundColor:
+	// 					colorScheme === "dark"
+	// 						? theme.colors.dark[5]
+	// 						: theme.colors.gray[2],
+	// 				textDecoration: "none",
+	// 			},
+	// 		},
+	// 	},
+	// };
 
 	return (
 		<>
@@ -77,7 +77,12 @@ const PageHeader = (props: PageHeaderProps) => {
 						gap={{ base: "sm", sm: 4 }}
 					>
 						<Stack gap={4}>
-							<Title order={3}>{title}</Title>
+							<ThemedTitle
+								order={2}
+								className={`${classes.title} theme-text-gradient`}
+							>
+								{title}
+							</ThemedTitle>
 							<Text>Heureux de vous revoir, {title}!</Text>
 						</Stack>
 						<Flex align="center" gap="sm">
@@ -88,8 +93,17 @@ const PageHeader = (props: PageHeaderProps) => {
 					</Flex>
 				) : (
 					<Stack gap="sm">
-						<Title order={2}>{title}</Title>
-						<Breadcrumbs {...BREADCRUMBS_PROPS}>{breadcrumbItems}</Breadcrumbs>
+						<ThemedTitle
+							order={2}
+							className={`${classes.title} theme-text-gradient`}
+						>
+							{title}
+						</ThemedTitle>
+						{/* {breadcrumbItems && (
+							<Breadcrumbs {...BREADCRUMBS_PROPS}>
+								{breadcrumbItems}
+							</Breadcrumbs>
+						)} */}
 					</Stack>
 				)}
 			</Surface>

@@ -1,6 +1,11 @@
 "use client";
 
-import { IconCategory, IconSchool, IconStack3 } from "@tabler/icons-react";
+import {
+	IconCategory,
+	IconSchool,
+	IconStack3,
+	TablerIconsProps,
+} from "@tabler/icons-react";
 import { Box, Paper, SimpleGrid, Title } from "@mantine/core";
 import { StatsCard } from "@/components/StatsCard/StasCard";
 import { CardGradient } from "@/components/CardGradientUniversity/CardGradient";
@@ -29,6 +34,12 @@ const mockStats = [
 	},
 ];
 
+interface CardDataProps {
+	icon: React.FC<any>;
+	title: string;
+	count: string;
+}
+
 interface UniversityPageProps {
 	id: string;
 }
@@ -47,20 +58,20 @@ const UniversityPage = ({ id }: UniversityPageProps) => {
 		description: "",
 		email: "",
 		id: "",
-		institute_id: "",
+		institute: "",
 		name: "",
 		phone: "",
 		salles: {
 			id: "",
 			designation: "",
-			filiere: {
+			branch: {
 				id: "",
 				name: "",
 				author: { user_id: "" },
 				description: "",
 				validate: "",
 			},
-			niveau: {
+			level: {
 				id: "",
 				name: "",
 				description: "",
@@ -69,16 +80,31 @@ const UniversityPage = ({ id }: UniversityPageProps) => {
 			},
 		},
 		user: "",
-		branch_count: "",
+		branches_count: "",
 		global_matching: "",
-		ipes_count: "",
+		levels_count: "",
 	});
+	console.log("Voici l'université ", university);
+
+	const [cardDatas, setCardDatas] = useState<CardDataProps[]>([]);
 
 	useEffect(() => {
 		async function fetchUniversity() {
 			const response = await fetch(internalApiUrl(`/api/universities/${id}`));
 			const data = await response.json();
 			setUniversity(data);
+			setCardDatas([
+				{
+					icon: IconCategory,
+					title: "Nombre de filières",
+					count: data.branches_count,
+				},
+				{
+					icon: IconStack3,
+					title: "Nombre de niveaux",
+					count: data.levels_count,
+				},
+			]);
 		}
 		fetchUniversity();
 	}, []);
@@ -93,7 +119,7 @@ const UniversityPage = ({ id }: UniversityPageProps) => {
 				spacing={{ base: 10, sm: "xl" }}
 				verticalSpacing={{ base: "md", sm: "xl" }}
 			>
-				{mockStats.map((item) => (
+				{cardDatas.map((item) => (
 					<StatsCard
 						key={item.title}
 						icon={item.icon}
@@ -109,12 +135,16 @@ const UniversityPage = ({ id }: UniversityPageProps) => {
 					name: university.name,
 					phone: university.phone,
 					email: university.email,
-					ipes_count: university.ipes_count,
-					branch_count: university.branch_count,
+					levels_count: university.levels_count,
+					branches_count: university.branches_count,
 					global_matching: university.global_matching,
 				}}
 			/>
-			<ClassroomsTable institute={"University"} instituteId={id} />
+			<ClassroomsTable
+				institute={"University"}
+				instituteId={id}
+				parentInstitute={university.institute}
+			/>
 		</>
 	);
 };

@@ -1,6 +1,7 @@
 .icon {
 	width: rem(20px);
 	height: rem(20px);
+	transition: var(--transition-default);
 }
 
 .dark {
@@ -10,6 +11,7 @@
 
 	@mixin light {
 		display: block;
+		color: var(--primary-6);
 	}
 }
 
@@ -20,5 +22,6 @@
 
 	@mixin dark {
 		display: block;
+		color: var(--primary-4);
 	}
 }

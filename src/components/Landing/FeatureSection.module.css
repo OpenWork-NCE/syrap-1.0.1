@@ -1,6 +1,6 @@
 .wrapper {
-	padding-top: calc(var(--mantine-spacing-lg) * 4);
-	padding-bottom: calc(var(--mantine-spacing-lg) * 4);
+	padding-top: calc(var(--spacing-lg) * 4);
+	padding-bottom: calc(var(--spacing-lg) * 4);
 	display: flex;
 	flex-direction: column;
 	align-items: center;

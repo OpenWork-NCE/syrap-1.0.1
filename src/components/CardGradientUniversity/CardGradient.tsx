@@ -26,12 +26,12 @@ export function CardGradient({ datas, title }: CardGradientProps) {
 				Email : <span style={{ fontWeight: "bolder" }}>{datas.email}</span>
 			</Text>
 			<Text size="md" mt="md">
-				Nombre d'IPES :{" "}
-				<span style={{ fontWeight: "bolder" }}>{datas.ipes_count}</span>
+				Nombre de Niveaux :{" "}
+				<span style={{ fontWeight: "bolder" }}>{datas.levels_count}</span>
 			</Text>
 			<Text size="md" mt="md">
 				Nombre de filières :{" "}
-				<span style={{ fontWeight: "bolder" }}>{datas.branch_count}</span>
+				<span style={{ fontWeight: "bolder" }}>{datas.branches_count}</span>
 			</Text>
 			<Text size="md" mt="md">
 				Pourcentage moyen de matching IPES :{" "}

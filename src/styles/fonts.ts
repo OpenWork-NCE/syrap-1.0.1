@@ -1,4 +1,4 @@
-import { DM_Sans, Bellota_Text, Gabarito } from "next/font/google";
+import { DM_Sans, Bellota_Text, Gabarito, Inter } from "next/font/google";
 
 const spaceGrotesk = Bellota_Text({
 	weight: ["400", "700"],
@@ -10,6 +10,15 @@ const headingFont = Gabarito({
 	subsets: ["latin"],
 });
 
+const interFont = Inter({
+	weight: ["400", "500", "600", "700"],
+	subsets: ["latin"],
+	display: "swap",
+	variable: "--font-inter",
+});
+
 export { spaceGrotesk };
 
 export { headingFont };
+
+export { interFont };

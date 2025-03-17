@@ -12,32 +12,15 @@ export const dynamic = "force-dynamic";
 
 const createSchema = z.object({
 	name: z
-		.string({ required_error: "Le nom de la filiere est requis." })
+		.string({ required_error: "Le nom de l'université est requis." })
 		.min(3, "Plus de trois caractères")
 		.max(100, "Moins de 100 caractères."),
 	code: z
-		.string()
-		.min(1, "Plus de trois caractères")
-		.max(20, "Moins de 100 caractères.")
-		.optional(),
-	phone: z
-		.string()
-		.min(3, "Plus de trois caractères")
-		.max(20, "Moins de 100 caractères.")
-		.optional(),
-	email: z
-		.string()
-		.refine(
-			(val) => {
-				// Custom regex for email validation
-				const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-				return emailRegex.test(val);
-			},
-			{
-				message: "Format d'email invalide",
-			},
-		)
-		.optional(),
+		.string({ required_error: "Le code de l'université est requise." })
+		.max(20, "Moins de 100 caractères."),
+	phone: z.string().max(20, "Moins de 100 caractères.").optional(),
+	email: z.string().optional(),
+	description: z.string().optional(),
 	arrondissement_id: z.string(),
 	user_id: z.string(),
 	cenadi_id: z.string(),

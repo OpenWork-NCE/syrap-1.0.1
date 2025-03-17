@@ -21,13 +21,14 @@ export async function POST(request: Request) {
 	return accessTokenMiddleware(async ({ authHeaders }) => {
 		try {
 			const bodyPayload = createSchema.parse(await requestJsonBody(request));
+			console.log("Voici les inforamtions de creation : ", bodyPayload);
 			const branch = await fetchJson<any>(
 				backendUrl(`/api/institutes/salles`),
 				{
 					method: "POST",
 					body: JSON.stringify({
-						niveau_id: bodyPayload.levelId,
-						filiere_id: bodyPayload.branchId,
+						level_id: bodyPayload.levelId,
+						branch_id: bodyPayload.branchId,
 						institute_id: bodyPayload.institute_id,
 						designation: bodyPayload.designation,
 					}),

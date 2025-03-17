@@ -1,19 +1,21 @@
 import { SupportForm } from "@/components/Auth/SupportForm";
-import { Anchor, Box, Stack, Text } from "@mantine/core";
+import { Anchor, Box } from "@mantine/core";
+import { ThemedFlex, ThemedText } from "@/components/ui/ThemeComponents";
 
 export default function Page() {
 	return (
-		<Stack
+		<ThemedFlex
+			direction="column"
 			style={{ width: "100%", alignItems: "center", justifyContent: "center" }}
 		>
 			<Box w={700}>
 				<SupportForm />
 			</Box>
-			<Text c="dimmed" size="sm" mt={5}>
-				<Anchor size="sm" href="/login">
+			<ThemedText c="dimmed" size="sm" mt={5}>
+				<Anchor size="sm" href="/login" className="theme-link">
 					Retourner à la page de connexion
 				</Anchor>
-			</Text>
-		</Stack>
+			</ThemedText>
+		</ThemedFlex>
 	);
 }

@@ -1,7 +1,8 @@
-import { Flex, Text } from "@mantine/core";
+import { Flex } from "@mantine/core";
 import Link from "next/link";
 import classes from "./Logo.module.css";
 import { useInstitution } from "@/app/context/InstitutionContext";
+import { ThemedText } from "../ui/ThemeComponents";
 
 interface Props {
 	width?: string;
@@ -18,9 +19,9 @@ export const Logo: React.FC<Props> = () => {
 				style={{ textDecoration: "none" }}
 				className={classes.heading}
 			>
-				<Text fw="bolder" size="xl" style={{ textTransform: "uppercase" }}>
+				<ThemedText fw="bolder" className={classes.logo}>
 					SYRAP{" "}
-					<Text
+					<ThemedText
 						component="span"
 						fw="normal"
 						size={"md"}
@@ -28,8 +29,8 @@ export const Logo: React.FC<Props> = () => {
 						style={{ textTransform: "capitalize" }}
 					>
 						{institution?.slug?.toUpperCase()}
-					</Text>
-				</Text>
+					</ThemedText>
+				</ThemedText>
 			</Link>
 		</Flex>
 	);

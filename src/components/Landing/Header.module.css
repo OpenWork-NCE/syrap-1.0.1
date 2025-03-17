@@ -28,8 +28,8 @@
 	height: rem(60);
 	display: flex;
 	padding: 0 var(--mantine-spacing-xl);
-	justify-content: 'space-between';
-	align-items: 'center';
+	justify-content: "space-between";
+	align-items: "center";
 }
 
 .links {
@@ -50,12 +50,15 @@
 	padding: rem(8) rem(12);
 	border-radius: var(--mantine-radius-sm);
 	text-decoration: none;
-	color: lightdark(var(--mantine-colors-black), var(--mantine-colors-white));
+	color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
 	font-size: var(--mantine-font-size-sm);
 	font-weight: 500;
 
 	&:hover {
-		background-color: lightdark(var(--mantine-colors-dark-6), var(--mantine-colors-gray-0));
+		background-color: light-dark(
+			var(--mantine-color-dark-6),
+			var(--mantine-color-gray-0)
+		);
 	}
 }
 

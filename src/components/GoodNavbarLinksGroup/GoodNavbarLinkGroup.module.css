@@ -2,31 +2,66 @@
 	font-weight: 500;
 	display: block;
 	width: 100%;
-	padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
-	color: var(--mantine-color-text);
+	padding: var(--spacing-xs) var(--spacing-md);
+	color: light-dark(var(--text-light), var(--text-dark));
 	font-size: var(--mantine-font-size-sm);
+	transition: var(--transition-fast);
+	border-radius: var(--radius-sm);
+	margin-bottom: 2px;
+	position: relative;
+	overflow: hidden;
+	text-decoration: none;
 
 	@mixin hover {
-		background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
-		color: light-dark(var(--mantine-color-black), var(--mantine-color-dark-0));
+		background-color: light-dark(var(--gray-0), var(--gray-8));
+		color: light-dark(var(--text-light), var(--text-dark));
+		transform: translateX(3px);
 	}
+}
+
+.activeControl {
+	background-color: light-dark(var(--gray-1), var(--gray-7));
+	color: light-dark(var(--primary-7), var(--primary-4));
+	font-weight: 600;
+	position: relative;
+}
+
+.activeControl::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	width: 4px;
+	background: linear-gradient(to bottom, var(--primary-6), var(--primary-4));
+	border-radius: 0 2px 2px 0;
 }
 
 .link {
 	font-weight: 500;
 	display: block;
 	text-decoration: none;
-	padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
-	padding-left: var(--mantine-spacing-md);
-	margin-left: var(--mantine-spacing-xl);
+	padding: var(--spacing-xs) var(--spacing-md);
+	padding-left: var(--spacing-md);
+	margin-left: var(--spacing-xl);
 	font-size: var(--mantine-font-size-sm);
-	color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
-	border-left: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+	color: light-dark(var(--gray-7), var(--gray-1));
+	border-left: 1px solid light-dark(var(--border-light), var(--border-dark));
+	transition: var(--transition-fast);
+	border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 
 	@mixin hover {
-		background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
-		color: light-dark(var(--mantine-color-black), var(--mantine-color-dark-0));
+		background-color: light-dark(var(--gray-0), var(--gray-8));
+		color: light-dark(var(--text-light), var(--text-dark));
+		transform: translateX(3px);
 	}
+}
+
+.activeLink {
+	background-color: light-dark(var(--gray-1), var(--gray-7));
+	color: light-dark(var(--primary-7), var(--primary-4));
+	font-weight: 600;
+	border-left: 1px solid light-dark(var(--primary-5), var(--primary-7));
 }
 
 .chevron {
