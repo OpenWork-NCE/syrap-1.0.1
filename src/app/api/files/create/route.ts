@@ -3,7 +3,7 @@ import { backendUrl, getClientIp } from '@/app/lib/utils';
 import { z } from 'zod';
 import accessTokenMiddleware from '@/app/lib/middleware/accessTokenMiddleware';
 
-// Route segment configuration
+// New route segment config
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 

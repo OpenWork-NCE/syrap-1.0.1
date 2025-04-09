@@ -15,7 +15,6 @@ import {
 	Modal,
 	Button,
 	Stack,
-	Title,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { jsPDF } from "jspdf";
