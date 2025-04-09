@@ -27,23 +27,7 @@ export default function RootLayout({
 }: {
 	children: React.ReactNode;
 }) {
-	const [institution, setInstitution] = useState({
-		id: "",
-		name: "",
-		slug: "",
-		code: "",
-	} as Institution);
-
-	useEffect(() => {
-		async function fetchInstitution() {
-			const response = await fetch(
-				internalApiUrl(`/api/cookies/userinstitution`),
-			);
-			const data = await response.json();
-			setInstitution(data);
-		}
-		fetchInstitution();
-	}, []);
+	console.log("J'affiche ceci")
 	return (
 		<html lang="en-US" className={interFont.variable}>
 			<head>
@@ -55,19 +39,8 @@ export default function RootLayout({
 			</head>
 			<body className={interFont.className}>
 				{/*<DirectionProvider>*/}
-				<MantineProvider
-					theme={
-						institution
-							? institution.slug?.includes("Ipes")
-								? themeIpes
-								: institution.slug?.includes("Minsup")
-									? themeMinesup
-									: themeCenadi
-							: themeCenadi
-					}
-				>
-					{/*<Notifications position={"bottom-right"} zIndex={2000} />*/}
-					<ModalsProvider>
+				<MantineProvider>
+					{/* <Notifications position={"bottom-right"} zIndex={2000} /> */}
 						<AppProvider>
 							<InstitutionProvider>
 								<AuthorizationsProvider>
@@ -75,7 +48,6 @@ export default function RootLayout({
 								</AuthorizationsProvider>
 							</InstitutionProvider>
 						</AppProvider>
-					</ModalsProvider>
 				</MantineProvider>
 				{/*</DirectionProvider>*/}
 			</body>

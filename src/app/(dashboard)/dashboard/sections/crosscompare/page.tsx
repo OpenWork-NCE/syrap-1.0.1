@@ -24,7 +24,7 @@ function Page() {
 	return (
 		<>
 			<>
-				<title>Croisement et Comparaison | SYRAP</title>
+				<title>Croisement et Comparaison | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>

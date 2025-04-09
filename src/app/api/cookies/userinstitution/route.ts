@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 			});
 		else
 			return new Response(
-				JSON.stringify({ id: "", name: "", slug: "", code: "" } as Institution),
+				JSON.stringify({ id: "", name: "", slug: "", model: "" } as Institution),
 				{ status: 200 },
 			);
 	} catch (error) {

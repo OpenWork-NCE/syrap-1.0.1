@@ -11,11 +11,11 @@ export default function Page() {
 			<Box w={700}>
 				<SupportForm />
 			</Box>
-			<ThemedText c="dimmed" size="sm" mt={5}>
+			{/* <ThemedText c="dimmed" size="sm" mt={5}>
 				<Anchor size="sm" href="/login" className="theme-link">
 					Retourner à la page de connexion
 				</Anchor>
-			</ThemedText>
+			</ThemedText> */}
 		</ThemedFlex>
 	);
 }

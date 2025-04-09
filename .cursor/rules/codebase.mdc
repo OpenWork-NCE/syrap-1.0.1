@@ -1,0 +1,250 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# SYHPUI Codebase Documentation
+
+## Project Overview
+SYRAP is a modern admin dashboard application built with Next.js, React, TypeScript, and Mantine UI. It follows a structured, component-based architecture with a focus on maintainability, performance, and developer experience.
+
+## Tech Stack
+
+### Core Technologies
+- **Next.js 14.1.0**: React framework for server-side rendering and routing
+- **React 18.2.0**: JavaScript library for building user interfaces
+- **TypeScript 5.3.3**: Static type checking to enhance code quality and developer experience
+- **Mantine UI 7.11.1**: UI component library with comprehensive styling system
+
+### Data Management
+- **TanStack Query 5.18.1**: Data fetching library for handling server state
+- **Zustand 4.5.0**: State management library for client-side state
+- **React Hook Form**: Form handling with validation
+- **Zod**: Schema validation for data validation
+
+### UI Components and Visualization
+- **Mantine React Table**: Data table component built on TanStack Table
+- **@tabler/icons-react**: Icon library 
+- **Chart.js & react-chartjs-2**: Charting library for data visualization
+- **Mantine components**: Core UI building blocks (Modal, Notification, Form, etc.)
+
+### Development Tools
+- **Biome**: Linting, formatting and code quality
+- **Jest**: Testing framework
+- **Husky & lint-staged**: Git hooks for code quality enforcement
+- **Storybook**: UI component development environment
+
+## Project Structure
+
+### Root Structure
+```
+├── .github/             # GitHub workflows and configurations
+├── .husky/              # Git hooks configuration
+├── .storybook/          # Storybook configuration
+├── public/              # Static assets
+├── src/                 # Source code
+│   ├── app/             # Next.js app router pages
+│   ├── components/      # React components
+│   ├── config/          # Application configuration
+│   ├── hooks/           # Custom React hooks
+│   ├── interfaces/      # TypeScript interfaces
+│   ├── routes/          # Route definitions
+│   ├── scripts/         # Utility scripts
+│   ├── services/        # API services
+│   ├── styles/          # Global styles
+│   ├── types/           # TypeScript types
+│   └── utils/           # Utility functions
+├── .env.local           # Environment variables
+├── next.config.js       # Next.js configuration
+├── package.json         # Project dependencies
+└── tsconfig.json        # TypeScript configuration
+```
+
+### App Directory Structure (Next.js App Router)
+```
+src/app/
+├── (auth)/              # Authentication related pages (login, register, etc.)
+├── (dashboard)/         # Dashboard related pages and layouts
+├── api/                 # API routes
+├── context/             # React context providers
+├── lib/                 # Library code
+├── profile/             # User profile pages
+├── layout.tsx           # Root layout
+├── page.tsx             # Root page
+└── provider.tsx         # Global providers
+```
+
+### Component Structure
+Components follow a feature-based organization with a consistent structure:
+```
+ComponentName/
+├── ComponentName.tsx    # Main component implementation
+├── ComponentName.module.css # Component-specific styles
+├── index.ts            # Re-export of the component
+└── ComponentName.stories.tsx # Storybook stories (optional)
+```
+
+## Coding Patterns and Best Practices
+
+### Component Implementation
+- Use functional components with TypeScript interfaces for props
+- Implement client components with "use client" directive when needed
+- Follow Mantine UI styling conventions with CSS modules
+- Export components via index.ts barrel files
+
+```typescript
+// Example component pattern
+"use client";
+
+import { FC } from 'react';
+import { Button } from '@mantine/core';
+import classes from './ComponentName.module.css';
+
+interface ComponentNameProps {
+  title: string;
+  onAction: () => void;
+}
+
+export const ComponentName: FC<ComponentNameProps> = ({ title, onAction }) => {
+  return (
+    <div className={classes.container}>
+      <h1>{title}</h1>
+      <Button onClick={onAction}>Action</Button>
+    </div>
+  );
+};
+```
+
+### Data Fetching
+- Use TanStack Query for data fetching with React Query hooks
+- Implement service-based API calls with typed responses
+- Handle loading and error states consistently
+
+```typescript
+// Example data fetching pattern
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '@/services/api';
+
+export function useDataQuery(id: string) {
+  return useQuery({
+    queryKey: ['data', id],
+    queryFn: () => fetchData(id),
+  });
+}
+```
+
+### State Management
+- Use Zustand for global state management
+- Use React Context for theme and authentication state
+- Use local state (useState) for component-specific state
+
+```typescript
+// Example Zustand store
+import { create } from 'zustand';
+
+interface Store {
+  count: number;
+  increment: () => void;
+}
+
+export const useStore = create<Store>((set) => ({
+  count: 0,
+  increment: () => set((state) => ({ count: state.count + 1 })),
+}));
+```
+
+### Form Handling
+- Use React Hook Form with Zod for form validation
+- Implement reusable form components with consistent styling
+- Handle form submission with clear loading and error states
+
+```typescript
+// Example form pattern
+import { useForm, zodResolver } from 'react-hook-form';
+import { z } from 'zod';
+
+const schema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Invalid email'),
+});
+
+type FormValues = z.infer<typeof schema>;
+
+export function MyForm() {
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: '',
+      email: '',
+    },
+  });
+
+  const onSubmit = (data: FormValues) => {
+    // Handle form submission
+  };
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      {/* Form fields */}
+    </form>
+  );
+}
+```
+
+### Routing
+- Use Next.js App Router for page routing
+- Implement nested layouts for shared UI elements
+- Use route groups for logical organization
+
+### Error Handling
+- Implement consistent error boundaries
+- Use try/catch blocks for async operations
+- Display user-friendly error messages with Mantine notifications
+
+### Authentication
+- Implement context-based authentication state
+- Secure routes with authentication checks
+- Handle JWT token storage and refresh
+
+## UI Component Library
+
+### Mantine UI Integration
+- Use Mantine UI components as the primary UI building blocks
+- Customize theme with the Mantine theme provider
+- Extend Mantine components with custom variants when needed
+
+### Custom UI Components
+- **Table**: Data table component with sorting, filtering, and pagination
+- **Form**: Form components with validation and error handling
+- **Layout**: Page layout components with responsive design
+- **Navigation**: Navigation components like Navbar and sidebar
+- **Stats**: Statistical display components for dashboard
+- **Charts**: Data visualization components
+
+## Performance Considerations
+- Implement code splitting with Next.js dynamic imports
+- Use React memo for expensive component renders
+- Optimize images with Next.js Image component
+- Implement proper caching strategies with TanStack Query
+
+## Accessibility
+- Follow WCAG guidelines for accessible UI
+- Use proper semantic HTML elements
+- Implement keyboard navigation
+- Provide appropriate ARIA attributes
+
+## Testing
+- Write unit tests with Jest and React Testing Library
+- Implement component tests with Storybook
+- Follow test-driven development practices when appropriate
+
+## Development Workflow
+- Follow conventional commits for version control
+- Use Husky hooks for pre-commit linting and formatting
+- Implement CI/CD with GitHub Actions
+- Use Storybook for component development and documentation
+
+## Deployment
+- Deploy to Vercel or similar platform
+- Use environment variables for configuration
+- Implement proper build optimization

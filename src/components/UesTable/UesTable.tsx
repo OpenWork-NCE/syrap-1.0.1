@@ -52,7 +52,7 @@ import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { useCustomTable } from "@/hooks/use-custom-table";
 import { PATH_SECTIONS } from "@/routes";
-import { handleExportAsCSV, handleExportRowsAsPDF } from "@/app/lib/utils";
+import { handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/utils";
 
 type Ue = {
 	id: string;
@@ -91,26 +91,6 @@ const Section = (props: any) => {
 		sorting,
 		// pagination,
 	}: Params) => {
-		//build the URL (https://www.mantine-react-table.com/api/data?start=0&size=10&filters=[]&globalFilter=&sorting=[])
-		const fetchURL = new URL(
-			"/api/ues",
-			process.env.NODE_ENV === "production"
-				? process.env.NEXT_PUBLIC_APP_URL
-				: "http://localhost:3000",
-		);
-		// fetchURL.searchParams.set(
-		//   'start',
-		//   `${pagination.pageIndex * pagination.pageSize}`,
-		// );
-		// fetchURL.searchParams.set('size', `${pagination.pageSize}`);
-		// fetchURL.searchParams.set('filters', JSON.stringify(columnFilters ?? []));
-		// fetchURL.searchParams.set(
-		//   'filterModes',
-		//   JSON.stringify(columnFilterFns ?? {}),
-		// );
-		// fetchURL.searchParams.set('globalFilter', globalFilter ?? '');
-		// fetchURL.searchParams.set('sorting', JSON.stringify(sorting ?? []));
-
 		const select = !authorizations.includes("validate-ues")
 			? (data: UeApiResponse) => {
 					const filteredData = data.data.filter(
@@ -123,7 +103,7 @@ const Section = (props: any) => {
 		return useQuery<UeApiResponse>({
 			// queryKey: ['ues', fetchURL.href], //refetch whenever the URL changes (columnFilters, globalFilter, sorting, pagination),
 			queryKey: ["ues"], //refetch whenever the URL changes (columnFilters, globalFilter, sorting, pagination)
-			queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+			queryFn: () => fetch(innerUrl("/api/ues")).then((res) => res.json()),
 			select,
 			placeholderData: keepPreviousData, //useful for paginated queries by keeping data from previous pages on screen while fetching the next page
 			staleTime: 30_000, //don't refetch previously viewed pages until cache is more than 30 seconds old
@@ -597,7 +577,7 @@ function useCreateUe() {
 	return useMutation({
 		mutationFn: async (ue: Ue) => {
 			// Envoie de la requête API pour créer une nouvelle uee
-			const response = await fetch("http://localhost:3000/api/ues/create", {
+			const response = await fetch(innerUrl("/api/ues/create"), {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -648,7 +628,7 @@ function useUpdateUe() {
 		mutationFn: async (ue: Ue) => {
 			// Envoie de la requête API pour mettre a jour une nouvelle uee
 			const response = await fetch(
-				`http://localhost:3000/api/ues/${ue.id}/update`,
+				innerUrl(`/api/ues/${ue.id}/update`),
 				{
 					method: "PUT",
 					headers: {
@@ -697,7 +677,7 @@ function useDeleteUe() {
 		mutationFn: async (ueId: string) => {
 			// Envoi de la requête API pour supprimer la uee
 			const response = await fetch(
-				`http://localhost:3000/api/ues/${ueId}/delete`,
+				innerUrl(`/api/ues/${ueId}/delete`),
 				{
 					method: "DELETE", // DELETE pour signifier la suppression
 					headers: {

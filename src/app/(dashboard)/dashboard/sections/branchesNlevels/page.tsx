@@ -20,7 +20,7 @@ function Page() {
 	return (
 		<>
 			<>
-				<title>Filières et Niveaux | SYRAP</title>
+				<title>Filières et Niveaux | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>

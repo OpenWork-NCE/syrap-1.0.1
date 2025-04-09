@@ -16,7 +16,7 @@ function Page({ params }: { params: { id: string } }) {
 	return (
 		<>
 			<>
-				<title>Ipes | SYRAP</title>
+				<title>Ipes | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>

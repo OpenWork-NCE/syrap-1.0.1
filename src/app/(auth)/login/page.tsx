@@ -11,12 +11,12 @@ export default function Login() {
 			<ThemedFlex direction="column" w={400}>
 				<LoginForm />
 			</ThemedFlex>
-			<ThemedText c="dimmed" size="sm" mt={5}>
+			{/* <ThemedText c="dimmed" size="sm" mt={5}>
 				Don&apos;t have an account?{" "}
 				<Anchor size="sm" href="/support" className="theme-link">
 					Contacter l'administration
 				</Anchor>
-			</ThemedText>
+			</ThemedText> */}
 		</ThemedFlex>
 	);
 }

@@ -111,7 +111,7 @@ export function LoginForm() {
 			className={classes.card}
 		>
 			<ThemedTitle order={2} ta="center" mt="md" mb={30} gradient>
-				Connexion à SYRAP
+				Connexion à SYHPUI
 			</ThemedTitle>
 
 			<form onSubmit={handleSubmit(submitData)}>

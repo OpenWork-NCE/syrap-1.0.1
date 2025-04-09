@@ -52,9 +52,10 @@ import autoTable from "jspdf-autotable";
 import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Institution, Localization, University, User } from "@/types";
-import { getInstitutionName } from "@/app/lib/utils";
+import { getInstitutionName, innerUrl } from "@/app/lib/utils";
 import { PATH_SECTIONS } from "@/routes";
 import { useRouter } from "next/navigation";
+import { handleExportAsCSV, handleExportRowsAsPDF } from "@/app/lib/utils";
 
 const csvConfig = mkConfig({
 	fieldSeparator: ",",
@@ -83,32 +84,18 @@ interface Params {
 }
 //custom react-query hook
 const useGetUniversities = ({}: Params) => {
-	const fetchURL = new URL(
-		"/api/universities",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<UniversityApiResponse>({
 		queryKey: ["universities"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/universities")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
 };
 
 const useGetLocalizations = () => {
-	const fetchURL = new URL(
-		"/api/localizations",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<LocalizationApiResponse>({
 		queryKey: ["localizations"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/localizations")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
@@ -130,82 +117,6 @@ const Section = (props: any) => {
 	} = useGetLocalizations();
 
 	const fetchedLocalizations = lData?.data ?? [];
-	console.log("Intelligence de jeu : ", fetchedLocalizations);
-
-	const handleExportRows = (rows: MRT_Row<University>[]) => {
-		const doc = new jsPDF("portrait", "pt", "A4");
-		const pageWidth = doc.internal.pageSize.getWidth();
-		const logoUrl = "/thumbnail.png";
-
-		// French Column (Left)
-		const frenchText = `
-      REPUBLIQUE DU CAMEROUN
-             Paix – Travail – Patrie
-              -------------------------
-        MINISTERE DES FINANCES
-              -------------------------
-         SECRETARIAT GENERAL
-              ------------------------
-          CENTRE NATIONAL DE
-           DEVELOPPEMENT DE
-               L’INFORMATIQUE
-               -------------------------
-    `;
-
-		const englishText = `
-          REPUBLIC OF CAMEROON
-           Peace – Work – Fatherland
-                  -------------------------
-             MINISTRY OF FINANCE
-                  -------------------------
-            GENERAL SECRETARIAT
-                  -------------------------
-          NATIONAL CENTRE FOR THE
-        DEVELOPMENT OF COMPUTER
-                           SERVICES
-              ------------------------------------
-    `;
-
-		doc.setFontSize(10);
-		doc.text(frenchText, 40, 50);
-		doc.addImage(logoUrl, "PNG", pageWidth / 2 - 30, 40, 60, 60);
-		doc.text(englishText, pageWidth - 250, 50);
-
-		const tableData = rows.map((row) => Object.values(row.original));
-		const tableHeaders = columns.map((c) => c.header);
-
-		autoTable(doc, {
-			startY: 200, // Start after the header
-			head: [tableHeaders],
-			body: [["code", "name", "description", "phone", "email"]],
-		});
-
-		doc.save("syrap-universities.pdf");
-	};
-
-	const handleExportRowsAsCSV = (rows: MRT_Row<University>[]) => {
-		const rowData = rows.map((row) => ({
-			code: row.original.code,
-			name: row.original.name,
-			description: row.original.description,
-			phone: row.original.phone,
-			email: row.original.email,
-		}));
-		const csv = generateCsv(csvConfig)(rowData);
-		download(csvConfig)(csv);
-	};
-
-	const handleExportDataAsCSV = () => {
-		const allData = fetchedUniversities.map((row) => ({
-			code: row.code,
-			name: row.name,
-			description: row.description,
-			phone: row.phone,
-			email: row.email,
-		}));
-		const csv = generateCsv(csvConfig)(allData);
-		download(csvConfig)(csv);
-	};
 
 	const columns = useMemo<MRT_ColumnDef<University>[]>(
 		() => [
@@ -298,7 +209,7 @@ const Section = (props: any) => {
 				accessorFn: (row) =>
 					fetchedLocalizations.find(
 						(localisation) =>
-							String(localisation.id) == String(row.arrondissement_id),
+							String(localisation.id) == String(row?.arrondissement?.id),
 					)?.name,
 				header: "Localisation",
 				editVariant: "select",
@@ -310,7 +221,7 @@ const Section = (props: any) => {
 				},
 			},
 		],
-		[validationErrors],
+		[validationErrors, fetchedLocalizations],
 	);
 
 	const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
@@ -483,28 +394,10 @@ const Section = (props: any) => {
 							Email :{" "}
 							<span style={{ fontWeight: "bolder" }}>{row.original.email}</span>
 						</Text>
-						{/*<Text size={'sm'}>*/}
-						{/*	Arrondissement :{' '}*/}
-						{/*	<span style={{ fontWeight: 'bolder' }}>{row.original.arrondissement_id}</span>*/}
-						{/*</Text>*/}
-						{/*<Text size={'sm'}>*/}
-						{/*  Nombre d'IPES sous tutelle :{' '}*/}
-						{/*  <span style={{ fontWeight: 'bolder' }}>*/}
-						{/*    {row.original.ipes_count}*/}
-						{/*  </span>*/}
-						{/*</Text>*/}
-						{/*<Text size={'sm'}>*/}
-						{/*  Nombre de filières :{' '}*/}
-						{/*  <span style={{ fontWeight: 'bolder' }}>*/}
-						{/*    {row.original.branch_count}*/}
-						{/*  </span>*/}
-						{/*</Text>*/}
-						{/*<Text size={'sm'}>*/}
-						{/*  Nombre de universités :{' '}*/}
-						{/*  <span style={{ fontWeight: 'bolder' }}>*/}
-						{/*    {row.original.level_count}*/}
-						{/*  </span>*/}
-						{/*</Text>*/}
+						<Text size={'sm'}>
+							Arrondissement :{' '}
+							<span style={{ fontWeight: 'bolder' }}>{row.original.arrondissement.name}</span>
+						</Text>
 						<Divider pb={1} mb={10} />
 						<Button
 							variant={"outline"}
@@ -590,7 +483,7 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getPrePaginationRowModel().rows)
+									handleExportRowsAsPDF(["code", "name", "description", "phone", "email"], table.getPrePaginationRowModel().rows.map(row => [row.original.code, row.original.name, row.original.description, row.original.phone, row.original.email]))
 								}
 							>
 								Exporter tout
@@ -599,7 +492,7 @@ const Section = (props: any) => {
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
 								leftSection={<IconFileTypePdf />}
-								onClick={() => handleExportRows(table.getRowModel().rows)}
+								onClick={() => handleExportRowsAsPDF(["code", "name", "description", "phone", "email"], table.getRowModel().rows.map(row => [row.original.code, row.original.name, row.original.description, row.original.phone, row.original.email]))}
 							>
 								Exporter la page
 							</Menu.Item>
@@ -611,7 +504,7 @@ const Section = (props: any) => {
 								//only export selected rows
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getSelectedRowModel().rows)
+									handleExportRowsAsPDF(["code", "name", "description", "phone", "email"], table.getSelectedRowModel().rows.map(row => [row.original.code, row.original.name, row.original.description, row.original.phone, row.original.email]))
 								}
 							>
 								Exporter la selection
@@ -620,7 +513,13 @@ const Section = (props: any) => {
 							<Menu.Label>Format Excel</Menu.Label>
 							<Menu.Item
 								//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
-								onClick={handleExportDataAsCSV}
+								onClick={() => handleExportAsCSV(fetchedUniversities.map(row => ({
+									code: row.code,
+									name: row.name,
+									description: row.description,
+									phone: row.phone,
+									email: row.email,
+								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter tout
@@ -629,7 +528,13 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								//export all rows, including from the next page, (still respects filtering and sorting)
 								onClick={() =>
-									handleExportRowsAsCSV(table.getPrePaginationRowModel().rows)
+									handleExportAsCSV(table.getPrePaginationRowModel().rows.map(row => ({
+										code: row.original.code,
+										name: row.original.name,
+										description: row.original.description,
+										phone: row.original.phone,
+										email: row.original.email,
+									})))
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -638,7 +543,14 @@ const Section = (props: any) => {
 							<Menu.Item
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								onClick={() => handleExportRowsAsCSV(table.getRowModel().rows)}
+								
+								onClick={() => handleExportAsCSV(table.getRowModel().rows.map(row => ({
+									code: row.original.code,
+									name: row.original.name,
+									description: row.original.description,
+									phone: row.original.phone,
+									email: row.original.email,
+								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter toutes la pages
@@ -650,7 +562,13 @@ const Section = (props: any) => {
 								}
 								//only export selected rows
 								onClick={() =>
-									handleExportRowsAsCSV(table.getSelectedRowModel().rows)
+									handleExportAsCSV(table.getSelectedRowModel().rows.map(row => ({
+										code: row.original.code,
+										name: row.original.name,
+										description: row.original.description,
+										phone: row.original.phone,
+										email: row.original.email,
+									})))
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -683,7 +601,7 @@ function useCreateUniversity() {
 	return useMutation({
 		mutationFn: async (university: University) => {
 			const response = await fetch(
-				"http://localhost:3000/api/universities/create",
+				innerUrl("/api/universities/create"),
 				{
 					method: "POST",
 					headers: {
@@ -732,7 +650,7 @@ function useUpdateUniversity() {
 	return useMutation({
 		mutationFn: async (university: University) => {
 			const response = await fetch(
-				`http://localhost:3000/api/universities/${university.id}/update`,
+				innerUrl(`/api/universities/${university.id}/update`),
 				{
 					method: "PUT",
 					headers: {
@@ -781,7 +699,7 @@ function useDeleteUniversity() {
 		mutationFn: async (universityId: string) => {
 			console.log("Here id of university to delete", universityId);
 			const response = await fetch(
-				`http://localhost:3000/api/universities/${universityId}/delete`,
+				innerUrl(`/api/universities/${universityId}/delete`),
 				{
 					method: "DELETE",
 					headers: {
@@ -843,7 +761,7 @@ type UniversityProps = {
 		id: string;
 		name: string;
 		slug: string;
-		code: string;
+		model: string;
 	};
 	user: {
 		id: string;

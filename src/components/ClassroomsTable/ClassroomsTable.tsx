@@ -58,7 +58,7 @@ import { FormattedClassroom, Classroom, Branch, Level } from "@/types";
 import { useRouter } from "next/navigation";
 import CustomCreateRowModal from "@/components/ClassroomsTable/CreateModal";
 import { PATH_SECTIONS } from "@/routes";
-import { handleExportAsCSV, handleExportRowsAsPDF } from "@/app/lib/utils";
+import { handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/utils";
 
 const csvConfig = mkConfig({
 	fieldSeparator: ",",
@@ -95,50 +95,29 @@ interface Params {
 }
 //custom react-query hook
 const useGetClassrooms = ({ institute, instituteId }: Params) => {
-	const fetchURL = new URL(
-		institute === "Ipes"
-			? `/api/ipess/${instituteId}/classrooms`
-			: `/api/universities/${instituteId}/classrooms`,
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<Classroom[]>({
 		queryKey: ["classrooms"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl(`${institute === "Ipes"
+			? `/api/ipess/${instituteId}/classrooms`
+			: `/api/universities/${instituteId}/classrooms`}`)).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
 };
 
 const useGetLevels = () => {
-	const fetchURL = new URL(
-		"/api/levels",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<LevelApiResponse>({
 		queryKey: ["levels"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/levels")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
 };
 
 const useGetBranches = () => {
-	const fetchURL = new URL(
-		"/api/branches",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<BranchApiResponse>({
 		queryKey: ["branches"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/branches")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
@@ -152,14 +131,11 @@ type SectionProps = {
 
 const Section = (props: SectionProps) => {
 	const { institute, instituteId, parentInstitute } = props;
-	// const [fetchedClassrooms, setFetchedClassroooms] = useState<Classroom[]>([]);
-	// const [formattedClassrooms, setFormattedClassrooms] = useState<
-	// 	FormattedClassroom[]
-	// >([]);
 	const { push } = useRouter();
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string | undefined>
 	>({});
+
 	function formatClassroom(classroom: Classroom): FormattedClassroom {
 		return {
 			id: classroom.id,
@@ -182,7 +158,7 @@ const Section = (props: SectionProps) => {
 	} = useGetLevels();
 
 	const fetchedLevels = lData?.data ?? [];
-	console.log("Intelligence de jeu levels : ", fetchedLevels);
+	console.log("Fetched levels: ", fetchedLevels);
 
 	const {
 		data: bData,
@@ -193,7 +169,7 @@ const Section = (props: SectionProps) => {
 	} = useGetBranches();
 
 	const fetchedBranches = bData?.data ?? [];
-	console.log("Intelligence de jeu branches : ", fetchedBranches);
+	console.log("Fetched branches: ", fetchedBranches);
 
 	const columns = useMemo<MRT_ColumnDef<FormattedClassroom>[]>(
 		() => [
@@ -208,7 +184,7 @@ const Section = (props: SectionProps) => {
 				mantineEditTextInputProps: {
 					type: "text",
 					required: true,
-					error: validationErrors?.designqtion,
+					error: validationErrors?.designation,
 					onFocus: () =>
 						setValidationErrors({
 							...validationErrors,
@@ -226,6 +202,12 @@ const Section = (props: SectionProps) => {
 						value: String(branch.id),
 						label: branch.name,
 					})),
+					error: validationErrors?.branchId,
+					onFocus: () =>
+						setValidationErrors({
+							...validationErrors,
+							branchId: undefined,
+						}),
 				},
 			},
 			{
@@ -238,10 +220,16 @@ const Section = (props: SectionProps) => {
 						value: String(level.id),
 						label: level.name,
 					})),
+					error: validationErrors?.levelId,
+					onFocus: () =>
+						setValidationErrors({
+							...validationErrors,
+							levelId: undefined,
+						}),
 				},
 			},
 		],
-		[validationErrors],
+		[validationErrors, fetchedBranches, fetchedLevels],
 	);
 
 	const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
@@ -255,35 +243,24 @@ const Section = (props: SectionProps) => {
 		);
 	const [globalFilter, setGlobalFilter] = useState("");
 	const [sorting, setSorting] = useState<MRT_SortingState>([]);
-	// const [pagination, setPagination] = useState<MRT_PaginationState>({
-	// 	pageIndex: 0,
-	// 	pageSize: 10,
-	// });
 
 	const { data, isError, isFetching, isLoading, refetch } = useGetClassrooms({
 		columnFilterFns,
 		columnFilters,
 		globalFilter,
-		// pagination,
 		sorting,
 		instituteId,
 		institute,
 	});
 
 	const formattedClassrooms: FormattedClassroom[] = useMemo(() => {
-		// console.log("Voici les informations concernant les classrooms : ", data);
-		// if (data === undefined || data.length === 0) {
-		// 	return [] as unknown as FormattedClassroom[];
-		// } else {
-		// 	return data.map(formatClassroom);
-		// }
 		if (!data || !Array.isArray(data)) {
 			return [] as FormattedClassroom[];
 		}
 		return data.map(formatClassroom);
 	}, [data]);
-	console.log("Voici les classrooms : ", data);
-	console.log("Voici les classrooms que j'ai recu : ", formattedClassrooms);
+	console.log("Fetched classrooms: ", data);
+	console.log("Formatted classrooms: ", formattedClassrooms);
 
 	const { mutateAsync: createClassroom, isPending: isCreatingClassroom } =
 		useCreateClassroom();
@@ -299,24 +276,20 @@ const Section = (props: SectionProps) => {
 				setValidationErrors(newValidationErrors);
 				return;
 			}
-			setValidationErrors(values);
-			console.log(
-				"Voici les valeurs en question asadasdasdasdasdasdsadsadas sadsadasda: ",
-				values,
-			);
+			setValidationErrors({});
 			if (
 				formattedClassrooms.find(
 					(classroom) =>
-						classroom.levelId == values.levelId &&
-						classroom.branchId == values.branchId,
+						classroom.levelId === values.levelId &&
+						classroom.branchId === values.branchId,
 				)
 			) {
 				notifications.show({
 					color: "red",
 					title: "Erreur Duplication de la Salle",
 					message:
-						"Vous ne pouvez pas dupliquer une salle. Cette salle existe déja.",
-					icon: <IconCheck />,
+						"Vous ne pouvez pas dupliquer une salle. Cette salle existe déjà.",
+					icon: <IconExclamationCircle />,
 					loading: false,
 					autoClose: 2000,
 				});
@@ -336,20 +309,20 @@ const Section = (props: SectionProps) => {
 				setValidationErrors(newValidationErrors);
 				return;
 			}
-			setValidationErrors(values);
+			setValidationErrors({});
 			if (
 				formattedClassrooms.find(
 					(classroom) =>
-						classroom.levelId == values.levelId &&
-						classroom.branchId == values.branchId,
+						classroom.levelId === values.levelId &&
+						classroom.branchId === values.branchId,
 				)
 			) {
 				notifications.show({
 					color: "red",
 					title: "Erreur Duplication de la Salle",
 					message:
-						"Vous ne pouvez pas dupliquer une salle. Cette salle existe déja.",
-					icon: <IconCheck />,
+						"Vous ne pouvez pas dupliquer une salle. Cette salle existe déjà.",
+					icon: <IconExclamationCircle />,
 					loading: false,
 					autoClose: 2000,
 				});
@@ -365,11 +338,11 @@ const Section = (props: SectionProps) => {
 
 	const openDeleteConfirmModal = (row: MRT_Row<FormattedClassroom>) =>
 		modals.openConfirmModal({
-			title: "Etes vous sur de vouloir supprimer cette Salle ?",
+			title: "Êtes-vous sûr de vouloir supprimer cette Salle ?",
 			children: (
 				<Text>
-					Etes vous sure de vouloir supprimer {row.original.designation}? Cette
-					action est irreversible.
+					Êtes-vous sûr de vouloir supprimer {row.original.designation}? Cette
+					action est irréversible.
 				</Text>
 			),
 			labels: { confirm: "Supprimer", cancel: "Annuler" },
@@ -380,8 +353,8 @@ const Section = (props: SectionProps) => {
 	const table = useCustomTable({
 		columns,
 		data: formattedClassrooms,
-		createDisplayMode: "modal",
-		editDisplayMode: "modal",
+		createDisplayMode: "row",
+		editDisplayMode: "row",
 
 		mantineSearchTextInputProps: {
 			placeholder: "Rechercher des Salles",
@@ -441,6 +414,12 @@ const Section = (props: SectionProps) => {
 					</Title>
 					<Box style={{ fontSize: "16px" }}>
 						<Text size={"sm"}>
+							Intitulé de la salle :{" "}
+							<span style={{ fontWeight: "bolder" }}>
+								{row.original.designation}
+							</span>
+						</Text>
+						<Text size={"sm"}>
 							Intitulé de la filière :{" "}
 							<span style={{ fontWeight: "bolder" }}>
 								{row.original.branchName}
@@ -456,12 +435,6 @@ const Section = (props: SectionProps) => {
 							Intitulé du niveau :{" "}
 							<span style={{ fontWeight: "bolder" }}>
 								{row.original.levelName}
-							</span>
-						</Text>
-						<Text size={"sm"}>
-							Description du niveau :{" "}
-							<span style={{ fontWeight: "bolder" }}>
-								{row.original.levelDescription}
 							</span>
 						</Text>
 						<Divider pb={1} mb={10} />
@@ -512,7 +485,6 @@ const Section = (props: SectionProps) => {
 					</Button>
 					<Menu
 						shadow={"md"}
-						// width={130}
 						trigger="hover"
 						openDelay={100}
 						closeDelay={400}
@@ -530,7 +502,6 @@ const Section = (props: SectionProps) => {
 						<Menu.Dropdown>
 							<Menu.Label>Format PDF</Menu.Label>
 							<Menu.Item
-								//export all rows, including from the next page, (still respects filtering and sorting)
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
@@ -558,7 +529,6 @@ const Section = (props: SectionProps) => {
 							</Menu.Item>
 							<Menu.Item
 								disabled={table.getRowModel().rows.length === 0}
-								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
 									handleExportRowsAsPDF(
@@ -588,7 +558,6 @@ const Section = (props: SectionProps) => {
 									!table.getIsSomeRowsSelected() &&
 									!table.getIsAllRowsSelected()
 								}
-								//only export selected rows
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
 									handleExportRowsAsPDF(
@@ -616,7 +585,6 @@ const Section = (props: SectionProps) => {
 							<Menu.Divider />
 							<Menu.Label>Format Excel</Menu.Label>
 							<Menu.Item
-								//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
 								onClick={() => {
 									handleExportAsCSV(
 										formattedClassrooms.map((row) => ({
@@ -634,7 +602,6 @@ const Section = (props: SectionProps) => {
 							</Menu.Item>
 							<Menu.Item
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
-								//export all rows, including from the next page, (still respects filtering and sorting)
 								onClick={() =>
 									handleExportAsCSV(
 										table.getPrePaginationRowModel().rows.map((row) => ({
@@ -648,11 +615,10 @@ const Section = (props: SectionProps) => {
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
-								Exporter toute les lignes
+								Exporter toutes les lignes
 							</Menu.Item>
 							<Menu.Item
 								disabled={table.getRowModel().rows.length === 0}
-								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
 								onClick={() =>
 									handleExportAsCSV(
 										table.getRowModel().rows.map((row) => ({
@@ -666,14 +632,13 @@ const Section = (props: SectionProps) => {
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
-								Exporter toutes la pages
+								Exporter la page
 							</Menu.Item>
 							<Menu.Item
 								disabled={
 									!table.getIsSomeRowsSelected() &&
 									!table.getIsAllRowsSelected()
 								}
-								//only export selected rows
 								onClick={() =>
 									handleExportAsCSV(
 										table.getSelectedRowModel().rows.map((row) => ({
@@ -698,7 +663,6 @@ const Section = (props: SectionProps) => {
 			columnFilterFns,
 			columnFilters,
 			globalFilter,
-			// pagination,
 			isLoading: isLoading,
 			isSaving:
 				isCreatingClassroom || isUpdatingClassroom || isDeletingClassroom,
@@ -715,9 +679,8 @@ function useCreateClassroom() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (classroom: FormattedClassroom) => {
-			console.log("Voici les informations de la salle : ", classroom);
 			const response = await fetch(
-				"http://localhost:3000/api/classrooms/create",
+				innerUrl("/api/classrooms/create"),
 				{
 					method: "POST",
 					headers: {
@@ -732,7 +695,7 @@ function useCreateClassroom() {
 
 			notifications.show({
 				color: "teal",
-				title: "Salle crééé",
+				title: "Salle créée",
 				message: "Merci de votre patience",
 				icon: <IconCheck />,
 				loading: false,
@@ -765,7 +728,7 @@ function useUpdateClassroom() {
 	return useMutation({
 		mutationFn: async (classroom: FormattedClassroom) => {
 			const response = await fetch(
-				`http://localhost:3000/api/classrooms/${classroom.id}/update`,
+				innerUrl(`/api/classrooms/${classroom.id}/update`),
 				{
 					method: "PUT",
 					headers: {
@@ -813,7 +776,7 @@ function useDeleteClassroom() {
 	return useMutation({
 		mutationFn: async (classroomId: string) => {
 			const response = await fetch(
-				`http://localhost:3000/api/classrooms/${classroomId}/delete`,
+				innerUrl(`/api/classrooms/${classroomId}/delete`),
 				{
 					method: "DELETE",
 					headers: {
@@ -889,18 +852,17 @@ const ClassroomTable = ({
 export default ClassroomTable;
 
 const validateRequired = (value: string) => !!value.length;
-const validateEmail = (email: string) =>
-	!!email.length &&
-	email
-		.toLowerCase()
-		.match(
-			/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-		);
 
-function validateClassroom(classrooms: FormattedClassroom) {
+function validateClassroom(classroom: FormattedClassroom) {
 	return {
-		designation: !validateRequired(classrooms.designation)
+		designation: !validateRequired(classroom.designation)
 			? "Un intitulé pour la salle est requis"
+			: "",
+		branchId: !validateRequired(classroom.branchId)
+			? "Une filière est requise"
+			: "",
+		levelId: !validateRequired(classroom.levelId)
+			? "Un niveau est requis"
 			: "",
 	};
 }

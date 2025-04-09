@@ -40,29 +40,7 @@ const PageHeader = (props: PageHeaderProps) => {
 		uesAction,
 		...others
 	} = props;
-	const theme = useMantineTheme();
-	const colorScheme = useColorScheme();
-
-	// const BREADCRUMBS_PROPS: Omit<BreadcrumbsProps, "children"> = {
-	// 	style: {
-	// 		a: {
-	// 			padding: rem(8),
-	// 			borderRadius: theme.radius.sm,
-	// 			fontWeight: 500,
-	// 			color: colorScheme === "dark" ? theme.white : theme.black,
-
-	// 			"&:hover": {
-	// 				transition: "all ease 150ms",
-	// 				backgroundColor:
-	// 					colorScheme === "dark"
-	// 						? theme.colors.dark[5]
-	// 						: theme.colors.gray[2],
-	// 				textDecoration: "none",
-	// 			},
-	// 		},
-	// 	},
-	// };
-
+	
 	return (
 		<>
 			<Surface

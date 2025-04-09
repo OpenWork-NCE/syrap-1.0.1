@@ -1,21 +1,49 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MantineProvider } from "@mantine/core";
+import { Loader, MantineProvider, Box } from "@mantine/core";
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { themeCenadi } from "@/styles/theme";
-import { ThemeProvider } from "@/components/ui/ThemeComponents";
-
-const queryClient = new QueryClient();
+import { themeCenadi, themeIpes, themeMinesup } from "@/styles/theme";
+import { ThemedTitle, ThemeProvider } from "@/components/ui/ThemeComponents";
+import { useState, useEffect } from "react";
+import { Institution } from "@/types";
+import { internalApiUrl } from "./lib/utils";
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-	return (
-		<MantineProvider theme={themeCenadi} defaultColorScheme="auto">
+	const [institution, setInstitution] = useState<Institution>()
+	const [isLoading, setIsLoading] = useState(true);
+
+	useEffect(() => {
+		async function fetchInstitution() {
+			setIsLoading(true);
+			const response = await fetch(
+				internalApiUrl(`/api/cookies/userinstitution`),
+			);
+			const data = await response.json();
+			setInstitution(data);
+			setIsLoading(false);
+		}
+		fetchInstitution();
+	}, []);
+	console.log("Institution inside the provider : ", institution);
+	
+	return isLoading ? (
+		<Box style={{display: "flex",
+			flexDirection: "column",
+			alignItems: "center",
+			justifyContent: "center",
+			minHeight: "600px",
+			width: "100%",
+		}}>
+			<Loader size="xl" variant="dots" />
+			<ThemedTitle order={4} mt="md">
+				Veillez patienter ...
+			</ThemedTitle>
+		</Box>
+	) : (
+		<MantineProvider theme={institution?.slug.includes("minsup") ? themeMinesup : institution?.slug.includes("cenadi") ? themeCenadi : themeIpes} defaultColorScheme="auto">
 			<ThemeProvider>
-				<QueryClientProvider client={queryClient}>
 					{children}
 					{/* <ReactQueryDevtools initialIsOpen={false} /> */}
-				</QueryClientProvider>
 			</ThemeProvider>
 		</MantineProvider>
 	);

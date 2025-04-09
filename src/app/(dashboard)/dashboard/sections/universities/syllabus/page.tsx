@@ -19,11 +19,12 @@ function Page() {
 	const { authorizations } = useAuthorizations();
 	const { institution } = useInstitution();
 	const { user } = useUser();
+	console.log("institution : ", institution);
 
 	return (
 		<>
 			<>
-				<title>Programmes d'Universités | SYRAP</title>
+				<title>Programmes d'Universités | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>
@@ -32,7 +33,16 @@ function Page() {
 						title="Programmes d'Universités"
 						breadcrumbItems={items}
 					/>
-					<Syllabus />
+					<Syllabus
+						instituteId={institution.id}
+						instituteName={institution.name}
+						instituteType={"University"}
+						userType={(institution.model).includes("cenadi") ? "Cenadi" : (institution.model).includes("minsup") ? "Minesup" : (institution.model).includes("University") ? "University" : "IPES"}
+					/>
+					{/* <Syllabus
+						instituteId={"16"}
+						instituteName={"Université de Yaoundé 1"}
+					/> */}
 				</Stack>
 			</Container>
 		</>

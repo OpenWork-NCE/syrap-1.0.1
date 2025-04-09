@@ -37,7 +37,7 @@ export const OGImage = () => {
             fontSize: 20,
           }}
         >
-          @SYRAP
+          @SYHPUI
         </span>
       </div>
       <div
@@ -56,7 +56,7 @@ export const OGImage = () => {
           lineHeight: 1.4,
         }}
       >
-        SYRAP
+        SYHPUI
       </div>
     </div>
   );

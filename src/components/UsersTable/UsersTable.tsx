@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
 	MantineReactTable,
 	useMantineReactTable,
@@ -50,8 +50,8 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
-import { Profile, User } from "@/types";
-import { getInstitutionName } from "@/app/lib/utils";
+import { Profile, User, Cenadi, Minesup, University, ShowIpes } from "@/types";
+import { getInstitutionName, innerUrl } from "@/app/lib/utils";
 
 const csvConfig = mkConfig({
 	fieldSeparator: ",",
@@ -71,6 +71,30 @@ type UserApiResponse = {
 	success: string;
 };
 
+type CenadiApiResponse = {
+	data: Array<Cenadi>;
+	messages: Array<string>;
+	success: string;
+};
+
+type MinesupApiResponse = {
+	data: Array<Minesup>;
+	messages: Array<string>;
+	success: string;
+};
+
+type UniversityApiResponse = {
+	data: Array<University>;
+	messages: Array<string>;
+	success: string;
+};
+
+type IpesApiResponse = {
+	data: Array<ShowIpes>;
+	messages: Array<string>;
+	success: string;
+};
+
 interface Params {
 	columnFilterFns: MRT_ColumnFilterFnsState;
 	columnFilters: MRT_ColumnFiltersState;
@@ -80,32 +104,18 @@ interface Params {
 }
 //custom react-query hook
 const useGetUsers = ({}: Params) => {
-	const fetchURL = new URL(
-		"/api/users",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<UserApiResponse>({
 		queryKey: ["users"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/users")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
 };
 
 const useGetProfiles = () => {
-	const fetchURL = new URL(
-		"/api/profiles",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<ProfileApiResponse>({
 		queryKey: ["profiles"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/profiles")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
@@ -116,6 +126,77 @@ const Section = (props: any) => {
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string | undefined>
 	>({});
+	const [selectedModel, setSelectedModel] = useState<string>("");
+	const [modelOptions, setModelOptions] = useState<{value: string, label: string}[]>([]);
+	const [isModelSelectInitialized, setIsModelSelectInitialized] = useState(false);
+	
+	// States for each type of entity
+	const [cenadis, setCenadis] = useState<Cenadi[]>([]);
+	const [minesups, setMinesups] = useState<Minesup[]>([]);
+	const [universities, setUniversities] = useState<University[]>([]);
+	const [ipess, setIpess] = useState<ShowIpes[]>([]);
+	
+	// Fetch model options based on selected model type
+	const fetchModelOptions = async (modelType: string) => {
+		try {
+			let endpoint = "";
+			switch (modelType) {
+				case "Cenadi":
+					endpoint = innerUrl("/api/cenadis");
+					const cenadiResponse = await fetch(endpoint);
+					const cenadiData: CenadiApiResponse = await cenadiResponse.json();
+					setCenadis(cenadiData.data || []);
+					setModelOptions(cenadiData.data.map(item => ({
+						value: String(item.id),
+						label: item.name
+					})));
+					break;
+				case "Minesup":
+					endpoint = innerUrl("/api/minesups");
+					const minesupResponse = await fetch(endpoint);
+					const minesupData: MinesupApiResponse = await minesupResponse.json();
+					setMinesups(minesupData.data || []);
+					setModelOptions(minesupData.data.map(item => ({
+						value: String(item.id),
+						label: item.name
+					})));
+					break;
+				case "University":
+					endpoint = innerUrl("/api/universities");
+					const universityResponse = await fetch(endpoint);
+					const universityData: UniversityApiResponse = await universityResponse.json();
+					setUniversities(universityData.data || []);
+					setModelOptions(universityData.data.map(item => ({
+						value: String(item.institute),
+						label: item.name
+					})));
+					break;
+				case "Ipes":
+					endpoint = innerUrl("/api/ipess");
+					const ipesResponse = await fetch(endpoint);
+					const ipesData: IpesApiResponse = await ipesResponse.json();
+					setIpess(ipesData.data || []);
+					setModelOptions(ipesData.data.map(item => ({
+						value: String(item.institute),
+						label: item.name
+					})));
+					break;
+				default:
+					setModelOptions([]);
+			}
+		} catch (error) {
+			console.error("Error fetching model options:", error);
+			setModelOptions([]);
+		}
+	};
+
+	// Handle model selection
+	const handleModelChange = (value: any) => {
+		if (typeof value === 'string' && value) {
+			setSelectedModel(value);
+			fetchModelOptions(value);
+		}
+	};
 
 	const {
 		data: lData,
@@ -126,156 +207,113 @@ const Section = (props: any) => {
 	} = useGetProfiles();
 
 	const fetchedProfiles = lData?.data ?? [];
-	console.log("Intelligence de jeu : ", fetchedProfiles);
-
-	const handleExportRows = (rows: MRT_Row<User>[]) => {
-		const doc = new jsPDF("portrait", "pt", "A4");
-		const pageWidth = doc.internal.pageSize.getWidth();
-		const logoUrl = "/thumbnail.png";
-
-		// French Column (Left)
-		const frenchText = `
-      REPUBLIQUE DU CAMEROUN
-             Paix – Travail – Patrie
-              -------------------------
-        MINISTERE DES FINANCES
-              -------------------------
-         SECRETARIAT GENERAL
-              ------------------------
-          CENTRE NATIONAL DE
-           DEVELOPPEMENT DE
-               L’INFORMATIQUE
-               -------------------------
-    `;
-
-		const englishText = `
-          REPUBLIC OF CAMEROON
-           Peace – Work – Fatherland
-                  -------------------------
-             MINISTRY OF FINANCE
-                  -------------------------
-            GENERAL SECRETARIAT
-                  -------------------------
-          NATIONAL CENTRE FOR THE
-        DEVELOPMENT OF COMPUTER
-                           SERVICES
-              ------------------------------------
-    `;
-
-		doc.setFontSize(10);
-		doc.text(frenchText, 40, 50);
-		doc.addImage(logoUrl, "PNG", pageWidth / 2 - 30, 40, 60, 60);
-		doc.text(englishText, pageWidth - 250, 50);
-
-		const tableData = rows.map((row) => Object.values(row.original));
-		const tableHeaders = columns.map((c) => c.header);
-
-		autoTable(doc, {
-			startY: 200, // Start after the header
-			head: [tableHeaders],
-			body: [["name", "roles"]],
-		});
-
-		doc.save("syrap-users.pdf");
-	};
-
-	const handleExportRowsAsCSV = (rows: MRT_Row<User>[]) => {
-		const rowData = rows.map((row) => ({
-			name: row.original.name,
-		}));
-		const csv = generateCsv(csvConfig)(rowData);
-		download(csvConfig)(csv);
-	};
-
-	const handleExportDataAsCSV = () => {
-		const allData = fetchedUsers.map((row) => ({
-			name: row.name,
-		}));
-		const csv = generateCsv(csvConfig)(allData);
-		download(csvConfig)(csv);
-	};
 
 	const columns = useMemo<MRT_ColumnDef<User>[]>(
-		() => [
-			{
-				accessorKey: "id",
-				header: "Identifiant",
-				enableEditing: false,
-			},
-			{
-				accessorKey: "name",
-				header: "Nom Utilisateur",
-				mantineEditTextInputProps: {
-					type: "text",
-					required: true,
-					error: validationErrors?.name,
-					//remove any previous validation errors when user focuses on the input
-					onFocus: () =>
-						setValidationErrors({
-							...validationErrors,
-							name: undefined,
-						}),
-					//optionally add validation checking for onBlur or onChange
+		() => {
+			// Define base columns that are always shown
+			const baseColumns = [
+				{
+					accessorKey: "id",
+					header: "Identifiant",
+					enableEditing: false,
 				},
-			},
-			{
-				accessorKey: "email",
-				header: "Email",
-				mantineEditTextInputProps: {
-					type: "email",
-					required: true,
-					error: validationErrors?.email,
-					//remove any previous validation errors when user focuses on the input
-					onFocus: () =>
-						setValidationErrors({
-							...validationErrors,
-							email: undefined,
-						}),
-					//optionally add validation checking for onBlur or onChange
+				{
+					accessorKey: "name",
+					header: "Nom Utilisateur",
+					mantineEditTextInputProps: {
+						type: "text",
+						required: true,
+						error: validationErrors?.name,
+						onFocus: () =>
+							setValidationErrors({
+								...validationErrors,
+								name: undefined,
+							}),
+					},
 				},
-			},
-			{
-				accessorKey: "roles",
-				accessorFn: (row) => {
-					// const profiles = row.roles?.map((role) => role.name);
-					return [];
+				{
+					accessorKey: "email",
+					header: "Email",
+					mantineEditTextInputProps: {
+						type: "email",
+						required: true,
+						error: validationErrors?.email,
+						onFocus: () =>
+							setValidationErrors({
+								...validationErrors,
+								email: undefined,
+							}),
+					},
 				},
-				Cell: ({ cell }) => {
-					const roles = cell.row.original.roles.map((role) => role.name);
-					return roles.join(", ");
+			];
+
+			// These columns are only shown if user has create-all-users permission
+			const modelColumns = authorizations.includes("create-all-users") ? [
+				{
+					accessorKey: "model",
+					header: "Entité",
+					editVariant: "select" as const,
+					mantineEditSelectProps: {
+						data: [
+							{ value: "Cenadi", label: "Cenadi" },
+							{ value: "Minesup", label: "Minesup" },
+							{ value: "University", label: "Université" },
+							{ value: "Ipes", label: "IPES" },
+						],
+						onChange: handleModelChange,
+					},
 				},
-				// accessorFn: (row) => {
-				// 	const profiles = row.roles?.map((role) => role.name);
-				// 	return profiles?.join(", ");
-				// },
-				// accessorFn: (row) => row.roles?.map((role) => role.name)?.join(", "),
-				header: "Roles",
-				editVariant: "multi-select",
-				mantineEditSelectProps: {
-					data: fetchedProfiles.map((profile) => ({
-						value: String(profile.id),
-						label: profile.name,
-					})),
+				{
+					accessorKey: "model_id",
+					header: "Spécifique",
+					editVariant: "select" as const,
+					mantineEditSelectProps: {
+						data: modelOptions,
+						disabled: !selectedModel,
+						placeholder: selectedModel ? "Sélectionnez une option" : "Choisissez d'abord une entité",
+					},
 				},
-			},
-			{
-				accessorKey: "password",
-				header: "Mot de passe",
-				mantineEditTextInputProps: {
-					type: "password",
-					required: true,
-					error: validationErrors?.password,
-					//remove any previous validation errors when user focuses on the input
-					onFocus: () =>
-						setValidationErrors({
-							...validationErrors,
-							password: undefined,
-						}),
-					//optionally add validation checking for onBlur or onChange
+			] : [];
+
+			// Remaining columns
+			const remainingColumns = [
+				{
+					accessorKey: "roles",
+					accessorFn: (row: any) => {
+						return [];
+					},
+					Cell: ({ cell }: { cell: any }) => {
+						const roles = cell.row.original.roles.map((role: any) => role.name);
+						return roles.join(", ");
+					},
+					header: "Roles",
+					editVariant: "multi-select" as const,
+					mantineEditSelectProps: {
+						data: fetchedProfiles.map((profile) => ({
+							value: String(profile.id),
+							label: profile.name,
+						})),
+					},
 				},
-			},
-		],
-		[validationErrors],
+				{
+					accessorKey: "password",
+					header: "Mot de passe",
+					mantineEditTextInputProps: {
+						type: "password",
+						required: true,
+						error: validationErrors?.password,
+						onFocus: () =>
+							setValidationErrors({
+								...validationErrors,
+								password: undefined,
+							}),
+					},
+				},
+			];
+
+			return [...baseColumns, ...modelColumns, ...remainingColumns];
+		},
+		[validationErrors, modelOptions, selectedModel, fetchedProfiles, handleModelChange, authorizations],
 	);
 
 	const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
@@ -316,45 +354,86 @@ const Section = (props: any) => {
 		values,
 		exitCreatingMode,
 	}) => {
-		const newValidationErrors = validateUser(values);
+		const newValidationErrors = validateUser(values, authorizations as string[]);
 		if (Object.values(newValidationErrors).some((error) => error)) {
 			setValidationErrors(newValidationErrors);
 			return;
 		}
-		console.log("Voici les valeurs : ", values);
-		setValidationErrors(values);
-		await createUser({
-			...values,
-			model:
-				getInstitutionName(institution?.slug) !== "Ipes"
+		
+		// For users with create-all-users permission, validate model fields
+		if (authorizations.includes("create-all-users")) {
+			// Validate model selection
+			if (!values.model) {
+				setValidationErrors({
+					...newValidationErrors,
+					model: "Veuillez sélectionner une entité",
+				});
+				return;
+			}
+			
+			// Validate model_id selection
+			if (!values.model_id) {
+				setValidationErrors({
+					...newValidationErrors,
+					model_id: "Veuillez sélectionner une option spécifique",
+				});
+				return;
+			}
+			
+			console.log("Voici les valeurs : ", values);
+			setValidationErrors({});
+			await createUser({
+				...values,
+				model: values.model === "Cenadi" ? "cenadi" : values.model === "Minesup" ? "minesup" : "institute",
+				model_id: String(values.model_id),
+			});
+		} else {
+			// For regular users, use the institution values
+			console.log("Voici les valeurs (without model): ", values);
+			setValidationErrors({});
+			await createUser({
+				...values,
+				model: getInstitutionName(institution?.slug) !== "Ipes" 
 					? getInstitutionName(institution?.slug)
 					: "institute",
-			model_id: String(institution?.id),
-		});
+				model_id: String(institution?.id),
+			});
+		}
+		
+		setSelectedModel('');
+		setModelOptions([]);
 		exitCreatingMode();
 	};
 
+	// Handle row creation start/cancel events
+	const handleCreatingRowCancel = () => {
+		setValidationErrors({});
+		setSelectedModel('');
+		setModelOptions([]);
+	};
+	
 	const handleSaveUser: MRT_TableOptions<User>["onEditingRowSave"] = async ({
 		values,
 		table,
 		row,
 	}) => {
-		const newValidationErrors = validateUser(values);
+		const newValidationErrors = validateUser(values, authorizations as string[]);
 		if (Object.values(newValidationErrors).some((error) => error)) {
 			setValidationErrors(newValidationErrors);
 			return;
 		}
-		setValidationErrors(values);
+		setValidationErrors({});
 		await updateUser({
 			...values,
 			id: row.original.id,
-			model:
-				getInstitutionName(institution?.slug) !== "Ipes"
-					? getInstitutionName(institution?.slug)
-					: "institute",
+			model: values.model === "Cenadi" ? "cenadi" : values.model === "Minesup" ? "minesup" : "institute",
 			model_id: String(institution?.id),
 		});
 		table.setEditingRow(null);
+	};
+
+	const handleEditingRowCancel = () => {
+		setValidationErrors({});
 	};
 
 	const openDeleteConfirmModal = (row: MRT_Row<User>) =>
@@ -370,6 +449,13 @@ const Section = (props: any) => {
 			confirmProps: { color: "red" },
 			onConfirm: () => deleteUser(row.original.id),
 		});
+
+	const handleRowActionClick = (action: 'edit' | 'create', row?: MRT_Row<User>) => {
+		if (action === 'create') {
+			setSelectedModel('');
+			setModelOptions([]);
+		}
+	};
 
 	const table = useCustomTable({
 		columns,
@@ -392,9 +478,9 @@ const Section = (props: any) => {
 				minHeight: "auto",
 			},
 		},
-		onCreatingRowCancel: () => setValidationErrors({}),
+		onCreatingRowCancel: handleCreatingRowCancel,
 		onCreatingRowSave: handleCreateUser,
-		onEditingRowCancel: () => setValidationErrors({}),
+		onEditingRowCancel: handleEditingRowCancel,
 		onEditingRowSave: handleSaveUser,
 		renderCreateRowModalContent: ({ table, row, internalEditComponents }) => {
 			if (!authorizations.includes("create-users")) {
@@ -421,7 +507,7 @@ const Section = (props: any) => {
 			</Stack>
 		),
 
-		renderDetailPanel: ({ row }) => (
+		renderDetailPanel: ({ row } : { row: any}) => (
 			<Box
 				style={{
 					display: "flex",
@@ -486,16 +572,18 @@ const Section = (props: any) => {
 							<IconRefresh />
 						</ActionIcon>
 					</Tooltip>
+					{/* {authorizations.includes("create-users") && ( */}
+						<Button
+							onClick={() => {
+								handleRowActionClick('create');
+								table.setCreatingRow(true);
+							}}
+							leftSection={<IconPlus />}
+						>
+							Nouvelle Utilisateur
+						</Button>
+					{/* )} */}
 					{/*{authorizations.includes("create-users") && (*/}
-					<Button
-						onClick={() => {
-							table.setCreatingRow(true);
-						}}
-						leftSection={<IconPlus />}
-					>
-						Nouvelle Utilisateur
-					</Button>
-					{/*)}*/}
 					{/*<Menu*/}
 					{/*	shadow={"md"}*/}
 					{/*	// width={130}*/}
@@ -604,6 +692,30 @@ const Section = (props: any) => {
 		},
 	});
 
+	// Place the useEffect hooks here, after table is defined
+	// Reset selected model when creating a new user
+	useEffect(() => {
+		// Only run this effect when table is defined
+		if (table) {
+			const creatingRow = table.getState().creatingRow;
+			if (!creatingRow) {
+				setSelectedModel('');
+				setModelOptions([]);
+			}
+		}
+	}, [table?.getState().creatingRow]);
+
+	// Reset selected model when the table state changes
+	useEffect(() => {
+		const creatingRow = table.getState().creatingRow;
+		if (!creatingRow && isModelSelectInitialized) {
+			setSelectedModel('');
+			setModelOptions([]);
+		} else if (creatingRow) {
+			setIsModelSelectInitialized(true);
+		}
+	}, [table.getState().creatingRow, isModelSelectInitialized]);
+
 	return <MantineReactTable table={table} />;
 };
 
@@ -611,12 +723,18 @@ function useCreateUser() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (user: User) => {
-			const response = await fetch("http://localhost:3000/api/users/create", {
+			// Ensure model_id is a string
+			const userData = {
+				...user,
+				model_id: String(user.model_id)
+			};
+			
+			const response = await fetch(innerUrl("/api/users/create"), {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify(user),
+				body: JSON.stringify(userData),
 			});
 
 			if (!response.ok) {
@@ -655,14 +773,20 @@ function useUpdateUser() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (user: User) => {
+			// Ensure model_id is a string
+			const userData = {
+				...user,
+				model_id: String(user.model_id)
+			};
+			
 			const response = await fetch(
-				`http://localhost:3000/api/users/${user.id}/update`,
+				innerUrl(`/api/users/${user.id}/update`),
 				{
 					method: "PUT",
 					headers: {
 						"Content-Type": "application/json",
 					},
-					body: JSON.stringify(user),
+					body: JSON.stringify(userData),
 				},
 			);
 
@@ -700,7 +824,7 @@ function useDeleteUser() {
 	return useMutation({
 		mutationFn: async (userId: string) => {
 			const response = await fetch(
-				`http://localhost:3000/api/users/${userId}/delete`,
+				innerUrl(`/api/users/${userId}/delete`),
 				{
 					method: "DELETE",
 					headers: {
@@ -754,7 +878,7 @@ type UserProps = {
 		id: string;
 		name: string;
 		slug: string;
-		code: string;
+		model: string;
 	};
 };
 
@@ -771,33 +895,32 @@ const validateRequired = (value: string) =>
 const validateRequiredNumber = (value: number) => !!value;
 const validateEmail = (email: string) =>
 	!!email.length &&
-	email
-		.toLowerCase()
-		.match(
-			/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-		);
-const validatePassword = (password: string) =>
-	password.length >= 8 &&
-	/[A-Z]/.test(password) &&
-	/[a-z]/.test(password) &&
-	/[0-9]/.test(password) &&
-	/[\W_]/.test(password);
+	email.includes('@') &&
+	email.includes('.') &&
+	email.length >= 5;
 
-function validateUser(user: User) {
-	return user.password
-		? {
-				name: !validateRequired(user.name) ? "Ce champs est requis" : "",
-				email: !validateEmail(user.email)
-					? "L'email est un chaine de caractère comprise entre 3 et 100"
-					: "",
-				password: !validatePassword(user.password)
-					? "Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule, un chiffre, un caractère spécial."
-					: "",
-			}
-		: {
-				name: !validateRequired(user.name) ? "Ce champs est requis" : "",
-				email: !validateEmail(user.email)
-					? "L'email est un chaine de caractère comprise entre 3 et 100"
-					: "",
-			};
+function validateUser(user: User, auths: string[] = []) {
+	// Base validation for all users
+	const baseValidation = {
+		name: !validateRequired(user.name)
+			? 'Le nom doit contenir entre 3 et 100 caractères'
+			: undefined,
+		email: !validateEmail(user.email)
+			? 'Veuillez entrer un email valide'
+			: undefined,
+		password: !validateRequired(user.password!)
+			? 'Le mot de passe doit contenir entre 3 et 100 caractères'
+			: undefined,
+	};
+	
+	// Additional validation for users with create-all-users permission
+	if (auths.includes("create-all-users")) {
+		return {
+			...baseValidation,
+			// Additional model validations would be handled in the form submission
+		};
+	}
+	
+	return baseValidation;
 }
+

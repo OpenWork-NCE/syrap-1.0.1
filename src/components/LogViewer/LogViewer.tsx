@@ -26,13 +26,28 @@ import {
 	IconRefresh,
 	IconTableExport,
 } from "@tabler/icons-react";
-import { getLogCounts } from "./fake-data";
 import { LogEntry, LogCounts } from "@/types";
 import { ThemedText, ThemedTitle } from "@/components/ui/ThemeComponents";
 import classes from "./LogViewer.module.css";
+import { innerUrl } from "@/app/lib/utils";
 
 const ITEMS_PER_PAGE = 25;
 const TOTAL_LOGS = 10000;
+
+function getLogCounts(logs: LogEntry[]) {
+	return logs.reduce(
+		(acc, log) => {
+			acc[log.level]++;
+			return acc;
+		},
+		{
+			error: 0,
+			warning: 0,
+			info: 0,
+			debug: 0,
+		},
+	);
+}
 
 export function LogViewer() {
 	const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -53,13 +68,7 @@ export function LogViewer() {
 	useEffect(() => {
 		const initLogs = async () => {
 			try {
-				const fetchURL = new URL(
-					"/api/logs",
-					process.env.NODE_ENV === "production"
-						? process.env.NEXT_PUBLIC_APP_URL
-						: "http://localhost:3000",
-				);
-				const logs = await fetch(fetchURL).then((res) => res.json());
+				const logs = await fetch(innerUrl("/api/logs")).then((res) => res.json());
 				const data: LogEntry[] = await logs.data;
 				setLogs(data);
 			} catch (error) {

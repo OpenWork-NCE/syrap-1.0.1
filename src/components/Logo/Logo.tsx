@@ -1,4 +1,4 @@
-import { Flex } from "@mantine/core";
+import { Flex, Text } from "@mantine/core";
 import Link from "next/link";
 import classes from "./Logo.module.css";
 import { useInstitution } from "@/app/context/InstitutionContext";
@@ -9,27 +9,32 @@ interface Props {
 	height?: string;
 }
 
-export const Logo: React.FC<Props> = () => {
+export const Logo: React.FC<Props> = ({ width = "auto", height = "auto" }) => {
 	const { institution } = useInstitution();
 	console.log("Institution", institution);
 	return (
-		<Flex direction="row" align="center" gap={4}>
+		<Flex 
+			direction="row" 
+			align="center" 
+			gap={4}
+			style={{ width, height }}
+		>
 			<Link
 				href="/"
 				style={{ textDecoration: "none" }}
 				className={classes.heading}
 			>
 				<ThemedText fw="bolder" className={classes.logo}>
-					SYRAP{" "}
-					<ThemedText
-						component="span"
+					SYHPUI{" "}
+					<Text
+						span
 						fw="normal"
-						size={"md"}
+						size="md"
 						className={classes.subheading}
 						style={{ textTransform: "capitalize" }}
 					>
-						{institution?.slug?.toUpperCase()}
-					</ThemedText>
+						{institution?.slug ? institution.slug.toUpperCase() : ''}
+					</Text>
 				</ThemedText>
 			</Link>
 		</Flex>

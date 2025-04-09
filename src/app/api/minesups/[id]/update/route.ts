@@ -25,7 +25,7 @@ export async function PUT(
     try {
       const bodyPayload = createSchema.parse(await requestJsonBody(request));
       const branch = await fetchJson<any>(
-        backendUrl(`/api/acteurs/minesup/${id}`),
+        backendUrl(`/api/acteurs/minsup/${id}`),
         {
           method: 'PUT',
           body: JSON.stringify(bodyPayload),

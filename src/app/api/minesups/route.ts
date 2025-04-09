@@ -12,7 +12,7 @@ export async function GET(req: Request) {
         extractQueryParams(req);
 
       const response = await fetchJson<IPaginateResponse<any>>(
-        backendUrl(`/api/acteurs/minesup`, queryParams),
+        backendUrl(`/api/acteurs/minsup`, queryParams),
         {
           headers: {
             method: 'GET',

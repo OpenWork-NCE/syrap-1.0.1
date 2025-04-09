@@ -3,35 +3,6 @@ import { mockFiles } from "@/types";
 import accessTokenMiddleware from "@/app/lib/middleware/accessTokenMiddleware";
 import { backendUrl, fetchJson } from "@/app/lib/utils";
 
-export async function PUT(
-	request: Request,
-	{ params: { id } }: { params: { id: string } },
-) {
-	return accessTokenMiddleware(async ({ authHeaders }) => {
-		try {
-			const data = await request.json();
-
-			// Forward the request to the backend
-			const response = await fetchJson<any>(backendUrl(`/api/files/${id}`), {
-				method: "PUT",
-				body: JSON.stringify(data),
-				headers: {
-					"Content-Type": "application/json",
-					...authHeaders,
-				},
-			});
-
-			return new Response(JSON.stringify(response), { status: 200 });
-		} catch (error) {
-			console.error(`Error updating file with ID ${id}:`, error);
-			return new Response(
-				JSON.stringify({ error: `Failed to update file with ID ${id}` }),
-				{ status: 500 },
-			);
-		}
-	});
-}
-
 export const dynamic = "force-dynamic";
 
 export async function GET(
@@ -40,7 +11,7 @@ export async function GET(
 ) {
 	return accessTokenMiddleware(async ({ authHeaders }) => {
 		try {
-			const response = await fetchJson<any>(backendUrl(`/api/files/${id}`), {
+			const response = await fetchJson<any>(backendUrl(`/api/documents/${id}`), {
 				method: "GET",
 				headers: {
 					"Content-Type": "application/json",
@@ -67,7 +38,7 @@ export async function DELETE(
 ) {
 	return accessTokenMiddleware(async ({ authHeaders }) => {
 		try {
-			const response = await fetchJson<any>(backendUrl(`/api/files/${id}`), {
+			const response = await fetchJson<any>(backendUrl(`/api/documents/${id}`), {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",

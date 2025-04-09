@@ -36,12 +36,14 @@ import classes from "./Compare.module.css";
 interface ProgramSelectorProps {
 	title: string;
 	institutes: ShowUniversitWihClassrooms[] | ShowIpesWithClassrooms[];
+	instituteType: "university" | "ipes";
 	onClassroomSelect: (classroom: ClassroomForWithSyllabus) => void;
 }
 
 export function ProgramSelector({
 	title,
 	institutes,
+	instituteType,
 	onClassroomSelect,
 }: ProgramSelectorProps) {
 	const [activeStep, setActiveStep] = useState(0);
@@ -240,7 +242,7 @@ export function ProgramSelector({
 				}}
 			>
 				<Stepper.Step
-					label="Institut"
+					label={instituteType === "university" ? "Université" : "IPES"}
 					description={
 						selectedInstitute ? getSelectedInstituteName() : "Sélectionner"
 					}

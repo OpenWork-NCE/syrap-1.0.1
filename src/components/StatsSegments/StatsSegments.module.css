@@ -1,6 +1,0 @@
-.progressLabel {
-	font-family: var(--font-inter), var(--mantine-font-family);
-	line-height: 1;
-	font-size: var(--mantine-font-size-sm);
-	border-radius: 0;
-}

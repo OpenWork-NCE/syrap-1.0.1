@@ -26,6 +26,7 @@ import {
 	ThemedSection,
 } from "@/components/ui/ThemeComponents";
 import classes from "./Compare.module.css";
+import { innerUrl } from "@/app/lib/utils";
 
 export default function ComparePage() {
 	const [classroom1, setClassroom1] = useState<ClassroomForWithSyllabus | null>(
@@ -50,8 +51,8 @@ export default function ComparePage() {
 			setError(null);
 			try {
 				const [universitiesResponse, ipesesResponse] = await Promise.all([
-					fetch("http://localhost:3000/api/universities"),
-					fetch("http://localhost:3000/api/ipess"),
+					fetch(innerUrl("/api/universities")),
+					fetch(innerUrl("/api/ipess")),
 				]);
 
 				if (!universitiesResponse.ok || !ipesesResponse.ok) {
@@ -87,7 +88,7 @@ export default function ComparePage() {
 
 			try {
 				const response = await fetch(
-					`http://localhost:3000/api/syllabus/${classroom1.id}/compare`,
+					innerUrl(`/api/syllabus/${classroom1.id}/compare`),
 					{
 						method: "POST",
 						headers: {
@@ -147,6 +148,7 @@ export default function ComparePage() {
 							>
 								<ProgramSelector
 									title="Université de Tutelle"
+									instituteType="university"
 									institutes={universities}
 									onClassroomSelect={setClassroom1}
 								/>
@@ -161,6 +163,7 @@ export default function ComparePage() {
 							>
 								<ProgramSelector
 									title="IPES"
+									instituteType="ipes"
 									institutes={ipeses}
 									onClassroomSelect={setClassroom2}
 								/>

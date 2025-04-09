@@ -51,7 +51,7 @@ import autoTable from "jspdf-autotable";
 import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Authorization, Profile } from "@/types";
-import { getInstitutionName } from "@/app/lib/utils";
+import { getInstitutionName, innerUrl } from "@/app/lib/utils";
 
 const csvConfig = mkConfig({
 	fieldSeparator: ",",
@@ -80,32 +80,18 @@ interface Params {
 }
 //custom react-query hook
 const useGetProfiles = ({}: Params) => {
-	const fetchURL = new URL(
-		"/api/profiles",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<ProfileApiResponse>({
 		queryKey: ["profiles"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/profiles")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
 };
 
 const useGetAuthorizations = () => {
-	const fetchURL = new URL(
-		"/api/authorizations",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<AuthorizationApiResponse>({
 		queryKey: ["authorizations"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/authorizations")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
@@ -126,74 +112,6 @@ const Section = (props: any) => {
 	} = useGetAuthorizations();
 
 	const fetchedAuthorizations = lData?.data ?? [];
-	console.log("Intelligence de jeu : ", fetchedAuthorizations);
-
-	const handleExportRows = (rows: MRT_Row<Profile>[]) => {
-		const doc = new jsPDF("portrait", "pt", "A4");
-		const pageWidth = doc.internal.pageSize.getWidth();
-		const logoUrl = "/thumbnail.png";
-
-		// French Column (Left)
-		const frenchText = `
-      REPUBLIQUE DU CAMEROUN
-             Paix – Travail – Patrie
-              -------------------------
-        MINISTERE DES FINANCES
-              -------------------------
-         SECRETARIAT GENERAL
-              ------------------------
-          CENTRE NATIONAL DE
-           DEVELOPPEMENT DE
-               L’INFORMATIQUE
-               -------------------------
-    `;
-
-		const englishText = `
-          REPUBLIC OF CAMEROON
-           Peace – Work – Fatherland
-                  -------------------------
-             MINISTRY OF FINANCE
-                  -------------------------
-            GENERAL SECRETARIAT
-                  -------------------------
-          NATIONAL CENTRE FOR THE
-        DEVELOPMENT OF COMPUTER
-                           SERVICES
-              ------------------------------------
-    `;
-
-		doc.setFontSize(10);
-		doc.text(frenchText, 40, 50);
-		doc.addImage(logoUrl, "PNG", pageWidth / 2 - 30, 40, 60, 60);
-		doc.text(englishText, pageWidth - 250, 50);
-
-		const tableData = rows.map((row) => Object.values(row.original));
-		const tableHeaders = columns.map((c) => c.header);
-
-		autoTable(doc, {
-			startY: 200, // Start after the header
-			head: [tableHeaders],
-			body: [["name", "authorization"]],
-		});
-
-		doc.save("syrap-profiles.pdf");
-	};
-
-	const handleExportRowsAsCSV = (rows: MRT_Row<Profile>[]) => {
-		const rowData = rows.map((row) => ({
-			name: row.original.name,
-		}));
-		const csv = generateCsv(csvConfig)(rowData);
-		download(csvConfig)(csv);
-	};
-
-	const handleExportDataAsCSV = () => {
-		const allData = fetchedProfiles.map((row) => ({
-			name: row.name,
-		}));
-		const csv = generateCsv(csvConfig)(allData);
-		download(csvConfig)(csv);
-	};
 
 	const columns = useMemo<MRT_ColumnDef<Profile>[]>(
 		() => [
@@ -560,7 +478,7 @@ function useCreateProfile() {
 	return useMutation({
 		mutationFn: async (profile: Profile) => {
 			const response = await fetch(
-				"http://localhost:3000/api/profiles/create",
+				innerUrl("/api/profiles/create"),
 				{
 					method: "POST",
 					headers: {
@@ -607,7 +525,7 @@ function useUpdateProfile() {
 	return useMutation({
 		mutationFn: async (profile: Profile) => {
 			const response = await fetch(
-				`http://localhost:3000/api/profiles/${profile.id}/update`,
+				innerUrl(`/api/profiles/${profile.id}/update`),
 				{
 					method: "PUT",
 					headers: {
@@ -653,7 +571,7 @@ function useDeleteProfile() {
 	return useMutation({
 		mutationFn: async (profileId: string) => {
 			const response = await fetch(
-				`http://localhost:3000/api/profiles/${profileId}/delete`,
+				innerUrl(`/api/profiles/${profileId}/delete`),
 				{
 					method: "DELETE",
 					headers: {

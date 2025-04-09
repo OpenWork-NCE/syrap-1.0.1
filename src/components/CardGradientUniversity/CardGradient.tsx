@@ -11,7 +11,7 @@ export function CardGradient({ datas, title }: CardGradientProps) {
 			<Text size="xl" fw={900} mt="md" style={{ textTransform: "uppercase" }}>
 				{title}
 			</Text>
-			<Text size="sm" mt="md">
+			<Text size="md" mt="md">
 				Sigle de l'Université :{" "}
 				<span style={{ fontWeight: "bolder" }}>{datas.code}</span>
 			</Text>
@@ -34,8 +34,8 @@ export function CardGradient({ datas, title }: CardGradientProps) {
 				<span style={{ fontWeight: "bolder" }}>{datas.branches_count}</span>
 			</Text>
 			<Text size="md" mt="md">
-				Pourcentage moyen de matching IPES :{" "}
-				<span style={{ fontWeight: "bolder" }}>{datas.global_matching}</span>
+				Arrondissement :{" "}
+				<span style={{ fontWeight: "bolder" }}>{datas.arrondissement}</span>
 			</Text>
 		</Paper>
 	);

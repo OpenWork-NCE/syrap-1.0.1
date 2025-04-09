@@ -117,7 +117,7 @@ const baseThemeConfig = {
 export const themeMinesup = createTheme({
 	...baseThemeConfig,
 	colors: {
-		blue: [
+		minesup: [
 			"#e7f5ff",
 			"#d0ebff",
 			"#a5d8ff",
@@ -155,7 +155,7 @@ export const themeMinesup = createTheme({
 			"#212529",
 		] as MantineColorsTuple,
 	},
-	primaryColor: "blue",
+	primaryColor: "minesup",
 	other: {
 		...baseThemeConfig.other,
 		gradients: {
@@ -174,7 +174,7 @@ export const themeMinesup = createTheme({
 export const themeCenadi = createTheme({
 	...baseThemeConfig,
 	colors: {
-		minesup: [
+		cenadi: [
 			"#E6FAF0",
 			"#C3F2DE",
 			"#9FEACA",
@@ -212,7 +212,7 @@ export const themeCenadi = createTheme({
 			"#212529",
 		] as MantineColorsTuple,
 	},
-	primaryColor: "minesup",
+	primaryColor: "cenadi",
 	other: {
 		...baseThemeConfig.other,
 		gradients: {
@@ -232,7 +232,8 @@ export const themeIpes = createTheme({
 	...baseThemeConfig,
 	colors: {
 		ipes: [
-			"#E5EAEA",
+			"3F4F52",
+			"#4F6367",
 			"#C2CCCC",
 			"#9EADAF",
 			"#7B8F91",
@@ -241,7 +242,6 @@ export const themeIpes = createTheme({
 			"#3F4F52",
 			"#303B3D",
 			"#202729",
-			"#101314",
 		] as MantineColorsTuple,
 		emerald: [
 			"#f0fdf5",

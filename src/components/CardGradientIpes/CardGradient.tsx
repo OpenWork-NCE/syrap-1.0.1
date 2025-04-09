@@ -11,12 +11,12 @@ export function CardGradient({ datas, title }: CardGradientProps) {
 			<Text size="xl" fw={900} mt="md" style={{ textTransform: "uppercase" }}>
 				{title}
 			</Text>
-			<Text size="sm" mt="md">
-				Sigle de l'Université :{" "}
+			<Text size="md" mt="md">
+				Sigle de l'IPES :{" "}
 				<span style={{ fontWeight: "bolder" }}>{datas.code}</span>
 			</Text>
 			<Text size="md" mt="md">
-				Intitulé de l'Université :{" "}
+				Intitulé de l'IPES :{" "}
 				<span style={{ fontWeight: "bolder" }}>{datas.name}</span>
 			</Text>
 			<Text size="md" mt="md">

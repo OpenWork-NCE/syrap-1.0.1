@@ -131,7 +131,7 @@ interface InstitutionState {
 		id: string;
 		name: string;
 		slug: string;
-		code: string;
+		model: string;
 	};
 }
 
@@ -146,7 +146,7 @@ const initialState: InstitutionState = {
 		id: "",
 		name: "",
 		slug: "",
-		code: "",
+		model: "",
 	},
 };
 

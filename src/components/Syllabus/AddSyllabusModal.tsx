@@ -18,13 +18,14 @@ import {
 	Title,
 } from "@mantine/core";
 import { Branch, Level } from "@/components/Syllabus/Syllabus";
-import { ShowUniversitWihClassrooms } from "@/types";
+import { ShowUniversitWihClassrooms, ShowIpesWithClassrooms } from "@/types";
 import {
 	IconAlertCircle,
 	IconCheck,
 	IconInfoCircle,
 	IconCalendar,
 } from "@tabler/icons-react";
+import { innerUrl } from "@/app/lib/utils";
 
 interface Ue {
 	id: string;
@@ -53,8 +54,12 @@ interface AddProgramModalProps {
 	opened: boolean;
 	onClose: () => void;
 	onSubmitted: (program: any) => void;
-	universities: ShowUniversitWihClassrooms[];
+	universities: ShowUniversitWihClassrooms[] | ShowIpesWithClassrooms[];
 	existingPrograms: any[]; // Add this to check for existing programs
+	isCentralInstitution: boolean;
+	currentInstitute: string;
+	instituteName: string;
+	instituteType?: "IPES" | "University"; // Add instituteType prop
 }
 
 export function AddSyllabusModal({
@@ -63,22 +68,38 @@ export function AddSyllabusModal({
 	onSubmitted,
 	universities,
 	existingPrograms = [],
+	isCentralInstitution,
+	currentInstitute,
+	instituteName,
+	instituteType = "University", // Default to University for backward compatibility
 }: AddProgramModalProps) {
+	// Determine initial universityId based on institution type
+	const initialUniversityId = !isCentralInstitution 
+		? (universities).find(u => u.institute == currentInstitute)?.id || null
+		: null;
+	console.log("Initial university ID:", initialUniversityId, "Current institute:", currentInstitute);
+
+	// Get the appropriate institution label based on type
+	const getInstitutionLabel = () => {
+		return instituteType === "University" ? "Université" : "IPES";
+	};
+
 	const [formData, setFormData] = useState({
-		universityId: null as string | null,
+		universityId: initialUniversityId as string | null,
 		branchId: null as string | null,
 		levelId: null as string | null,
 		selectedUes: [] as string[],
+		year: new Date().getFullYear().toString(),
 		courseDetails: {} as Record<
 			string,
-			{ nbr_hrs: string; year: string; credit: string }
+			{ nbr_hrs: string; credit: string }
 		>,
 	});
 	const [ues, setUes] = useState<Ue[]>([]);
 	const [availableBranches, setAvailableBranches] = useState<Branch[]>([]);
 	const [availableLevels, setAvailableLevels] = useState<Level[]>([]);
 	const [filters, setFilters] = useState({
-		universityId: null as string | null,
+		universityId: initialUniversityId as string | null,
 		branchId: null as string | null,
 		levelId: null as string | null,
 	});
@@ -101,12 +122,33 @@ export function AddSyllabusModal({
 		setFilters(newFilters);
 	};
 
+	// When the modal is opened, ensure the proper initialization for non-central institutions
+	useEffect(() => {
+		if (opened && !isCentralInstitution && currentInstitute && universities.length > 0) {
+			const matchingUniversity = (universities).find(u => u.institute == currentInstitute);
+			if (matchingUniversity) {
+				const universityId = matchingUniversity.id;
+				console.log("Non-central institution: Setting initial university ID:", universityId);
+				
+				setFormData(prev => ({
+					...prev,
+					universityId: universityId
+				}));
+				
+				setFilters(prev => ({
+					...prev,
+					universityId: universityId
+				}));
+			}
+		}
+	}, [opened, universities, isCentralInstitution, currentInstitute]);
+
 	// Fetch all UEs
 	useEffect(() => {
 		async function getUes() {
 			try {
 				setIsLoading(true);
-				const u = await fetch("http://localhost:3000/api/ues").then((res) =>
+				const u = await fetch(innerUrl("/api/ues")).then((res) =>
 					res.json(),
 				);
 				const fetchedUes: Ue[] = u.data;
@@ -130,13 +172,43 @@ export function AddSyllabusModal({
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				if (filters.universityId) {
-					setIsLoading(true);
+				setIsLoading(true);
+				
+				// For non-central institutions, use the currentInstitute regardless of filters.universityId
+				if (!isCentralInstitution && currentInstitute) {
+					console.log("Modal - Non-central: Loading branches for institution with ID:", currentInstitute);
+					
 					const branches: Branch[] = [];
-					const university = universities.find(
-						(university: ShowUniversitWihClassrooms) =>
+					const matchingUniversities = (universities).filter(u => u.institute == currentInstitute);
+					
+					console.log("Modal - Non-central: Found matching universities:", matchingUniversities.length);
+					
+					matchingUniversities.forEach(university => {
+						university.salles.forEach((salle) => {
+							const filiere = salle.branch;
+							const exists = branches.some((branch) => branch.id === filiere.id);
+							if (!exists) {
+								branches.push({
+									id: filiere.id,
+									name: filiere.name,
+								});
+							}
+						});
+					});
+					
+					console.log("Modal - Non-central: Found branches:", branches);
+					setAvailableBranches(branches);
+				}
+				// For central institutions, use the selected university
+				else if (isCentralInstitution && filters.universityId) {
+					console.log("Modal - Central: Loading branches for university with ID:", filters.universityId);
+					
+					const branches: Branch[] = [];
+					const university = (universities).find(
+						(university: any) =>
 							university.id == filters.universityId,
 					);
+					
 					university?.salles.forEach((salle) => {
 						const filiere = salle.branch;
 						const exists = branches.some((branch) => branch.id === filiere.id);
@@ -147,6 +219,8 @@ export function AddSyllabusModal({
 							});
 						}
 					});
+					
+					console.log("Modal - Central: Found branches:", branches);
 					setAvailableBranches(branches);
 				}
 			} catch (error) {
@@ -161,34 +235,70 @@ export function AddSyllabusModal({
 		};
 
 		fetchData();
-	}, [filters.universityId, universities]);
+	}, [filters.universityId, universities, isCentralInstitution, currentInstitute]);
 
 	// Fetch levels when branch changes
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				if (filters.branchId && filters.universityId) {
+				if (filters.branchId) {
 					setIsLoading(true);
-					const levels: Level[] = [];
-					const university = universities.find(
-						(university: ShowUniversitWihClassrooms) =>
-							university.id == filters.universityId,
-					);
-
-					university?.salles.forEach((salle) => {
-						const filiere = salle.branch;
-						const niveau = salle.level;
-						if (filiere.id == filters.branchId) {
-							const exists = levels.some((level) => level.id === niveau.id);
-							if (!exists) {
-								levels.push({
-									id: niveau.id,
-									name: niveau.name,
-								});
+					
+					// For non-central institutions
+					if (!isCentralInstitution && currentInstitute) {
+						console.log("Modal - Non-central: Loading levels for branch with ID:", filters.branchId);
+						
+						const levels: Level[] = [];
+						const matchingUniversities = (universities).filter(u => u.institute == currentInstitute);
+						
+						matchingUniversities.forEach(university => {
+							university.salles.forEach((salle) => {
+								const filiere = salle.branch;
+								const niveau = salle.level;
+								
+								if (filiere.id == filters.branchId) {
+									const exists = levels.some((level) => level.id === niveau.id);
+									if (!exists) {
+										levels.push({
+											id: niveau.id,
+											name: niveau.name,
+										});
+									}
+								}
+							});
+						});
+						
+						console.log("Modal - Non-central: Found levels:", levels);
+						setAvailableLevels(levels);
+					}
+					// For central institutions
+					else if (isCentralInstitution && filters.universityId) {
+						console.log("Modal - Central: Loading levels for university with ID:", filters.universityId, "and branch with ID:", filters.branchId);
+						
+						const levels: Level[] = [];
+						const university = (universities).find(
+							(university: any) =>
+								university.id == filters.universityId,
+						);
+						
+						university?.salles.forEach((salle) => {
+							const filiere = salle.branch;
+							const niveau = salle.level;
+							
+							if (filiere.id == filters.branchId) {
+								const exists = levels.some((level) => level.id === niveau.id);
+								if (!exists) {
+									levels.push({
+										id: niveau.id,
+										name: niveau.name,
+									});
+								}
 							}
-						}
-					});
-					setAvailableLevels(levels);
+						});
+						
+						console.log("Modal - Central: Found levels:", levels);
+						setAvailableLevels(levels);
+					}
 				}
 			} catch (error) {
 				console.error("Error fetching levels:", error);
@@ -202,7 +312,7 @@ export function AddSyllabusModal({
 		};
 
 		fetchData();
-	}, [filters.branchId, filters.universityId, universities]);
+	}, [filters.branchId, filters.universityId, universities, isCentralInstitution, currentInstitute]);
 
 	// Check if program exists and fetch existing UEs when level changes
 	useEffect(() => {
@@ -212,8 +322,8 @@ export function AddSyllabusModal({
 					setIsLoading(true);
 
 					// Check if program already exists
-					const classrooms = universities.find(
-						(university: ShowUniversitWihClassrooms) =>
+					const classrooms = (universities).find(
+						(university: any) =>
 							university.id == filters.universityId,
 					)?.salles;
 
@@ -241,7 +351,7 @@ export function AddSyllabusModal({
 
 					// Fetch existing UEs for this classroom
 					const request = await fetch(
-						`http://localhost:3000/api/syllabus/${classroom.id}/classroom`,
+						innerUrl(`/api/syllabus/${classroom.id}/classroom`),
 					).then((res) => res.json());
 
 					const courses: FetchedCourse[] = request.data || [];
@@ -255,7 +365,6 @@ export function AddSyllabusModal({
 								...acc,
 								[course.id]: {
 									nbr_hrs: course.pivot.nbr_hrs,
-									year: course.pivot.year,
 									credit: course.pivot.credit,
 								},
 							}),
@@ -305,46 +414,49 @@ export function AddSyllabusModal({
 		try {
 			setIsLoading(true);
 
-			// Validate that all UEs have a valid year
-			const invalidYears = formData.selectedUes.filter((ueId) => {
-				const yearValue = formData.courseDetails[ueId]?.year;
-				return !yearValue || isNaN(Number(yearValue));
-			});
-
-			if (invalidYears.length > 0) {
+			// Remove year validation per UE since it's now at program level
+			if (!formData.year || isNaN(Number(formData.year))) {
 				setStatusMessage({
 					type: "error",
-					message: "Veuillez sélectionner une année valide pour toutes les UEs",
+					message: "Veuillez sélectionner une année valide pour le programme",
 				});
 				setIsLoading(false);
 				return;
 			}
 
-			// Check for duplicate UEs in the same year
-			const duplicateUesInSameYear = [];
-			const ueYearMap = new Map();
+			// Check for duplicate UEs
+			const duplicateUes = new Set();
+			const seenUes = new Set();
 
 			formData.selectedUes.forEach((ueId) => {
-				const year = formData.courseDetails[ueId]?.year;
-				const key = `${ueId}-${year}`;
-
-				if (ueYearMap.has(key)) {
-					duplicateUesInSameYear.push(ueId);
-				} else {
-					ueYearMap.set(key, true);
+				if (seenUes.has(ueId)) {
+					duplicateUes.add(ueId);
 				}
+				seenUes.add(ueId);
 			});
 
-			// Check if any UE already exists in the program with the same year
-			const duplicatesWithExisting = formData.selectedUes.filter((ueId) => {
-				const year = formData.courseDetails[ueId]?.year;
-				return existingUes.some(
+			if (duplicateUes.size > 0) {
+				const duplicateNames = Array.from(duplicateUes)
+					.map((id) => ues.find((ue) => ue.id === id)?.name)
+					.join(", ");
+
+				setStatusMessage({
+					type: "error",
+					message: `Les UEs suivantes sont en double: ${duplicateNames}`,
+				});
+				setIsLoading(false);
+				return;
+			}
+
+			// Check if any UE already exists in the program for the selected year
+			const duplicatesWithExisting = formData.selectedUes.filter((ueId) =>
+				existingUes.some(
 					(existingUe) =>
 						existingUe.id === ueId &&
-						existingUe.pivot.year === year &&
+						existingUe.pivot.year === formData.year &&
 						!formData.selectedUes.includes(existingUe.id),
-				);
-			});
+				),
+			);
 
 			if (duplicatesWithExisting.length > 0) {
 				const duplicateNames = duplicatesWithExisting
@@ -353,29 +465,28 @@ export function AddSyllabusModal({
 
 				setStatusMessage({
 					type: "error",
-					message: `Les UEs suivantes existent déjà pour la même année: ${duplicateNames}. Vous pouvez ajouter la même UE uniquement pour une année différente.`,
+					message: `Les UEs suivantes existent déjà pour l'année ${formData.year}: ${duplicateNames}`,
 				});
 				setIsLoading(false);
 				return;
 			}
 
 			const programCourses = formData.selectedUes.map((ueId) => {
-				const ue = ues.find((c) => c.id == ueId);
+				const ue = ues.find((c) => c.id.toString() === ueId);
 				const details = formData.courseDetails[ueId];
 
-				// Ensure we're using the selected year, not a hardcoded value
 				return {
 					courseId: Number.parseInt(ueId),
 					name: ue?.name,
 					description: ue?.description,
 					nbr_hrs: details.nbr_hrs,
 					credit: details.credit,
-					year: details.year, // Make sure we're using the selected year
+					year: formData.year, // Use the program level year
 				};
 			});
 
-			const classrooms = universities.find(
-				(university: ShowUniversitWihClassrooms) =>
+			const classrooms = (universities).find(
+				(university: any) =>
 					university.id == formData.universityId,
 			)?.salles;
 
@@ -402,7 +513,7 @@ export function AddSyllabusModal({
 
 			// Make API requests
 			const requests = datas.map((data) =>
-				fetch(`http://localhost:3000/api/syllabus/${classroomId}/addue`, {
+				fetch(innerUrl(`/api/syllabus/${classroomId}/addue`), {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -413,6 +524,15 @@ export function AddSyllabusModal({
 
 			await Promise.all(requests);
 
+			// Get the university of guardianship for IPES
+			let guardianUniversity = null;
+			if (instituteType === "IPES") {
+				const selectedIpes = (universities as ShowIpesWithClassrooms[]).find(
+					i => i.id == formData.universityId
+				);
+				guardianUniversity = selectedIpes?.university?.name;
+			}
+
 			// Notify parent component
 			onSubmitted({
 				universityId: formData.universityId,
@@ -421,16 +541,17 @@ export function AddSyllabusModal({
 				branchName: classroom.branch.name,
 				levelName: classroom.level.name,
 				classroomId: classroom.id,
-				institute: universities.find((u) => u.id == formData.universityId)
-					?.institute_id,
+				institute: (universities).find((u) => u.id == formData.universityId)
+					?.institute,
 				courses: programCourses,
+				guardianUniversity: guardianUniversity, // Add university of guardianship for IPES
 			});
 
 			setStatusMessage({
 				type: "success",
 				message: isUpdating
-					? "Programme mis à jour avec succès"
-					: "Programme créé avec succès",
+					? `Programme ${instituteType === "IPES" ? "IPES " : ""}mis à jour avec succès`
+					: `Programme ${instituteType === "IPES" ? "IPES " : ""}créé avec succès`,
 			});
 
 			// Reset form after a delay
@@ -440,6 +561,7 @@ export function AddSyllabusModal({
 					branchId: null,
 					levelId: null,
 					selectedUes: [],
+					year: currentYear.toString(),
 					courseDetails: {},
 				});
 				setFilters({
@@ -453,7 +575,7 @@ export function AddSyllabusModal({
 			console.error("Error submitting program:", e);
 			setStatusMessage({
 				type: "error",
-				message: "Erreur lors de l'enregistrement du programme",
+				message: `Erreur lors de l'enregistrement du programme ${instituteType === "IPES" ? "IPES" : ""}`,
 			});
 		} finally {
 			setIsLoading(false);
@@ -491,7 +613,6 @@ export function AddSyllabusModal({
 						// If this UE already exists in the program, use its values
 						existingUes.find((eu) => eu.id === courseId)?.pivot || {
 							nbr_hrs: "0",
-							year: currentYear.toString(), // Default to current year
 							credit: "0",
 						},
 				}),
@@ -504,10 +625,11 @@ export function AddSyllabusModal({
 		<Modal
 			opened={opened}
 			onClose={onClose}
-			title={isUpdating ? "Modifier un programme" : "Ajouter un programme"}
+			title={isUpdating ? `Modifier un programme ${instituteType === "IPES" ? "IPES" : ""}` : `Ajouter un programme ${instituteType === "IPES" ? "IPES" : ""}`}
 			size="xl"
 			padding="lg"
 			radius="md"
+			centered
 		>
 			{statusMessage && (
 				<Alert
@@ -553,19 +675,27 @@ export function AddSyllabusModal({
 			<Stack gap="md">
 				<Paper withBorder p="md">
 					<Title order={6} mb="xs">
-						Informations du programme
+						Informations du programme {instituteType === "IPES" ? "IPES" : ""}
 					</Title>
-					<Group grow>
+					{!isCentralInstitution && (
+						<Paper p="sm" withBorder mb="md">
+							<Group>
+								<Text size="sm" fw={500}>{getInstitutionLabel()} :</Text>
+								<Text>{instituteName}</Text>
+							</Group>
+						</Paper>
+					)}
+					{isCentralInstitution && (
 						<Select
-							label="Université"
-							placeholder="Sélectionner une université"
-							data={universities.map((u) => ({
+							label={getInstitutionLabel()}
+							placeholder={`Sélectionner ${instituteType === "University" ? "une université" : "un IPES"}`}
+							data={(universities).map((u) => ({
 								value: u.id.toString(),
 								label: u.name,
 							}))}
 							value={formData.universityId?.toString()}
 							onChange={(value) => {
-								handleFilter({
+								setFilters({
 									...filters,
 									universityId: value ? String(value) : null,
 								});
@@ -578,11 +708,12 @@ export function AddSyllabusModal({
 							}}
 							required
 							searchable
-							nothingFoundMessage="Aucune université trouvée"
+							nothingFoundMessage={`Aucun${instituteType === "IPES" ? "" : "e"} ${instituteType === "University" ? "université" : "IPES"} trouvé${instituteType === "IPES" ? "" : "e"}`}
 							disabled={isLoading}
 							size="md"
 						/>
-
+					)}
+					<Group grow>					
 						<Select
 							label="Filière"
 							placeholder="Sélectionner une filière"
@@ -592,17 +723,36 @@ export function AddSyllabusModal({
 							}))}
 							value={formData.branchId?.toString()}
 							onChange={(value) => {
-								handleFilter({
-									...filters,
-									branchId: value ? value : null,
-								});
-								setFormData((prev) => ({
-									...prev,
-									branchId: value ? value : null,
-									levelId: null,
-								}));
+								// For non-central institutions, ensure the universityId is properly set
+								if (!isCentralInstitution) {
+									const universityId = (universities).find(u => u.institute == currentInstitute)?.id || null;
+									
+									setFilters({
+										...filters,
+										universityId: universityId,
+										branchId: value ? value : null,
+									});
+									
+									setFormData((prev) => ({
+										...prev,
+										universityId: universityId,
+										branchId: value ? value : null,
+										levelId: null,
+									}));
+								} else {
+									setFilters({
+										...filters,
+										branchId: value ? value : null,
+									});
+									
+									setFormData((prev) => ({
+										...prev,
+										branchId: value ? value : null,
+										levelId: null,
+									}));
+								}
 							}}
-							disabled={!formData.universityId || isLoading}
+							disabled={(isCentralInstitution && !formData.universityId) || isLoading}
 							required
 							searchable
 							nothingFoundMessage="Aucune filière disponible"
@@ -618,7 +768,7 @@ export function AddSyllabusModal({
 							}))}
 							value={formData.levelId?.toString()}
 							onChange={(value) => {
-								handleFilter({
+								setFilters({
 									...filters,
 									levelId: value ? value : null,
 								});
@@ -634,6 +784,30 @@ export function AddSyllabusModal({
 							size="md"
 						/>
 					</Group>
+
+					{formData.levelId && (
+						<Select
+							label="Année académique"
+							placeholder="Sélectionner l'année"
+							data={availableYears.map((year) => ({
+								value: year,
+								label: year,
+							}))}
+							value={formData.year}
+							onChange={(value) =>
+								setFormData((prev) => ({
+									...prev,
+									year: value || currentYear.toString(),
+								}))
+							}
+							required
+							searchable
+							leftSection={<IconCalendar size={16} />}
+							disabled={isLoading}
+							size="md"
+							mt="md"
+						/>
+					)}
 				</Paper>
 
 				{programExists && (
@@ -642,7 +816,7 @@ export function AddSyllabusModal({
 						icon={<IconInfoCircle size={16} />}
 						variant="light"
 					>
-						Ce programme existe déjà. Les modifications seront appliquées au
+						Ce programme {instituteType === "IPES" ? "IPES " : ""}existe déjà. Les modifications seront appliquées au
 						programme existant.
 					</Alert>
 				)}
@@ -669,7 +843,7 @@ export function AddSyllabusModal({
 
 				<Paper withBorder p="md">
 					<Stack gap="md">
-						<Title order={6}>Sélection des UEs</Title>
+						<Title order={6}>Sélection des UEs {instituteType === "IPES" ? "IPES" : ""}</Title>
 						<MultiSelect
 							label="UEs"
 							placeholder="Sélectionner les UEs"
@@ -711,43 +885,14 @@ export function AddSyllabusModal({
 							return (
 								<Paper key={ueId} withBorder p="xs">
 									<Group grow>
-										<Select
-											label={
-												<Group gap="xs">
-													<Text fw={500}>{course?.name}</Text>
-													{isExisting && (
-														<Badge size="xs" color="blue" variant="light">
-															Existant
-														</Badge>
-													)}
-												</Group>
-											}
-											value={
-												formData.courseDetails[ueId]?.year ||
-												currentYear.toString()
-											}
-											onChange={(value) =>
-												setFormData((prev) => ({
-													...prev,
-													courseDetails: {
-														...prev.courseDetails,
-														[ueId]: {
-															...prev.courseDetails[ueId],
-															year: value || currentYear.toString(),
-														},
-													},
-												}))
-											}
-											data={availableYears.map((year) => ({
-												value: year,
-												label: year,
-											}))}
-											leftSection={<IconCalendar size={16} />}
-											searchable
-											disabled={isLoading}
-											required
-											size="md"
-										/>
+										<Text fw={500}>
+											{course?.name}
+											{isExisting && (
+												<Badge size="xs" color="blue" variant="light" ml="xs">
+													Existant
+												</Badge>
+											)}
+										</Text>
 										<NumberInput
 											label="Heures"
 											value={Number(formData.courseDetails[ueId]?.nbr_hrs) || 0}
@@ -807,6 +952,7 @@ export function AddSyllabusModal({
 								branchId: null,
 								levelId: null,
 								selectedUes: [],
+								year: currentYear.toString(),
 								courseDetails: {},
 							});
 							setStatusMessage(null);

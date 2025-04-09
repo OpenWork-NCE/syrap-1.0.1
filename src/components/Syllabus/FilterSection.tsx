@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { IconPlus, IconFilter, IconCalendar } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { ShowUniversitWihClassrooms } from "@/types";
+import { ShowUniversitWihClassrooms, ShowIpesWithClassrooms } from "@/types";
 import { Level, Branch } from "@/components/Syllabus/Syllabus";
 
 interface FilterSectionProps {
@@ -23,13 +23,17 @@ interface FilterSectionProps {
 	};
 	onFilter: (filters: any) => void;
 	onAddClick: () => void;
-	universities: ShowUniversitWihClassrooms[];
+	universities: ShowUniversitWihClassrooms[] | ShowIpesWithClassrooms[];
 	availableBranches: Branch[];
 	setAvailableBranches: (availableBranches: Branch[]) => void;
 	availableLevels: Level[];
 	setAvailableLevels: (availableLevels: Level[]) => void;
 	availableYears: string[];
 	setAvailableYears: (availableYears: string[]) => void;
+	isCentralInstitution: boolean;
+	currentInstitute: string;
+	instituteName: string;
+	instituteType?: "IPES" | "University";
 }
 
 export function FilterSection({
@@ -43,8 +47,24 @@ export function FilterSection({
 	setAvailableBranches,
 	availableYears,
 	setAvailableYears,
+	isCentralInstitution,
+	currentInstitute,
+	instituteName,
+	instituteType = "University",  // Default to University for backward compatibility
 }: FilterSectionProps) {
 	const [isLoading, setIsLoading] = useState(false);
+	//log all the parameters
+	console.log("filters", filters);
+	console.log("universities", universities);
+	console.log("availableBranches", availableBranches);
+	console.log("availableLevels", availableLevels);
+	console.log("availableYears", availableYears);
+	console.log("isCentralInstitution", isCentralInstitution);	
+
+	// Get the appropriate institution label based on type
+	const getInstitutionLabel = () => {
+		return instituteType === "University" ? "Université" : "IPES";
+	};
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -54,7 +74,7 @@ export function FilterSection({
 				if (filters.universityId) {
 					const branches: Branch[] = [];
 					const university = universities.find(
-						(university: ShowUniversitWihClassrooms) =>
+						(university: any) =>
 							university.id == filters.universityId,
 					);
 
@@ -72,13 +92,38 @@ export function FilterSection({
 					setAvailableBranches(branches);
 				}
 
+				// For non-central institutions, load branches for the current institution
+				if (!isCentralInstitution && currentInstitute) {
+					
+					const branches: Branch[] = [];
+					const university = universities.find(
+						(university: any) =>
+							university.institute == currentInstitute,
+					);
+					if (university) {
+						const salles = university.salles;
+						salles.forEach((salle) => {
+							const filiere = salle.branch;
+							const exists = branches.some((branch) => branch.id === filiere.id);
+							if (!exists) {
+								branches.push({
+									id: filiere.id,
+									name: filiere.name,
+								});
+							}
+						});
+					}
+					setAvailableBranches(branches);
+				}
+
 				if (filters.branchId && filters.universityId) {
 					const levels: Level[] = [];
 					const university = universities.find(
-						(university: ShowUniversitWihClassrooms) =>
+						(university: any) =>
 							university.id == filters.universityId,
 					);
-
+					
+					console.log("Voici la university dans laquelle on va extraire les niveaux : ", university)
 					university?.salles.forEach((salle) => {
 						const filiere = salle.branch;
 						const niveau = salle.level;
@@ -92,6 +137,7 @@ export function FilterSection({
 							}
 						}
 					});
+					console.log("Voici les niveaux que j'ai récupéré : ", levels)
 
 					setAvailableLevels(levels);
 				}
@@ -109,39 +155,55 @@ export function FilterSection({
 		universities,
 		setAvailableBranches,
 		setAvailableLevels,
+		isCentralInstitution,
+		currentInstitute,
 	]);
+
+	// Display the institution name for non-central institutions
+	const institutionDisplay = !isCentralInstitution ? (
+		<Paper p="sm" withBorder>
+			<Group>
+				<Text size="sm" fw={500}>{instituteType === "University" ? "Institution :" : "IPES :"}</Text>
+				<Text>{instituteName}</Text>
+			</Group>
+		</Paper>
+	) : null;
 
 	return (
 		<>
 			<Title order={4} mb="md">
-				Filtrer les programmes
+				Filtrer les programmes {instituteType === "IPES" ? "IPES" : ""}
 			</Title>
 
 			<Paper p="md" withBorder>
 				<Stack gap="md">
+					{institutionDisplay}
+
 					<Group grow align="flex-start">
-						<Select
-							label="Université"
-							placeholder="Choisir une université"
-							data={universities.map((u) => ({
-								value: u.id.toString(),
-								label: u.name,
-							}))}
-							value={filters.universityId?.toString() || null}
-							onChange={(value) =>
-								onFilter({
-									...filters,
-									universityId: value ? String(value) : null,
-									branchId: null,
-									levelId: null,
-								})
-							}
-							clearable
-							searchable
-							nothingFoundMessage="Aucune université trouvée"
-							disabled={isLoading}
-							size="md"
-						/>
+						{isCentralInstitution && (
+							<Select
+								label={getInstitutionLabel()}
+								placeholder={`Choisir ${instituteType === "University" ? "une université" : "un IPES"}`}
+								data={universities.map((u: any) => ({
+									value: u.id.toString(),
+									label: u.name,
+								}))}
+								value={filters.universityId?.toString() || null}
+								onChange={(value) =>
+									onFilter({
+										...filters,
+										universityId: value ? String(value) : null,
+										branchId: null,
+										levelId: null,
+									})
+								}
+								clearable
+								searchable
+								nothingFoundMessage={`Aucun${instituteType === "IPES" ? "" : "e"} ${instituteType === "University" ? "université" : "IPES"} trouvé${instituteType === "IPES" ? "" : "e"}`}
+								disabled={isLoading}
+								size="md"
+							/>
+						)}
 
 						<Select
 							label="Filière"
@@ -152,13 +214,27 @@ export function FilterSection({
 							}))}
 							value={filters.branchId?.toString() || null}
 							onChange={(value) =>
-								onFilter({
-									...filters,
-									branchId: value ? value : null,
-									levelId: null,
-								})
+							{
+								if(isCentralInstitution == false){
+									onFilter({
+										...filters,
+										universityId: String(universities.find(
+											(university: any) =>
+												university.institute == currentInstitute,
+										)?.id) || null,
+										branchId: value ? value : null,
+										levelId: null,
+									})
+								} else {
+									onFilter({
+										...filters,
+										branchId: value ? value : null,
+										levelId: null,
+									})
+								}
 							}
-							disabled={!filters.universityId || isLoading}
+							}
+							disabled={(isCentralInstitution && !filters.universityId) || isLoading}
 							clearable
 							searchable
 							nothingFoundMessage="Aucune filière disponible"
@@ -216,10 +292,10 @@ export function FilterSection({
 								filters.year) && (
 								<Text size="sm" c="dimmed">
 									Filtres actifs:{" "}
-									{filters.universityId && (
+									{filters.universityId && isCentralInstitution && (
 										<>
 											{
-												universities.find(
+												(universities as any[]).find(
 													(u) => u.id.toString() === filters.universityId,
 												)?.name
 											}
@@ -227,7 +303,7 @@ export function FilterSection({
 									)}
 									{filters.branchId && (
 										<>
-											{" > "}
+											{!isCentralInstitution || filters.universityId ? " > " : ""}
 											{
 												availableBranches.find(
 													(b) => b.id.toString() === filters.branchId,
@@ -256,14 +332,14 @@ export function FilterSection({
 								variant="light"
 								onClick={() =>
 									onFilter({
-										universityId: null,
+										universityId: isCentralInstitution ? null : currentInstitute,
 										branchId: null,
 										levelId: null,
 										year: null,
 									})
 								}
 								disabled={
-									!filters.universityId &&
+									(!isCentralInstitution || !filters.universityId) &&
 									!filters.branchId &&
 									!filters.levelId &&
 									!filters.year
@@ -276,7 +352,7 @@ export function FilterSection({
 								onClick={onAddClick}
 								variant="filled"
 							>
-								Ajouter un programme
+								Ajouter un programme{instituteType === "IPES" ? " IPES" : ""}
 							</Button>
 						</Group>
 					</Group>

@@ -10,8 +10,7 @@ export type Institution = {
 	id: string;
 	name: string;
 	slug: string;
-	code: string;
-	created_at: string;
+	model: string;
 };
 
 export type Authorization = {
@@ -38,7 +37,7 @@ export type User = {
 	password?: string;
 	roles: Profile[];
 	model_id?: string;
-	model: string;
+	model?: string;
 	// Additional properties for profile page
 	phone?: string;
 	position?: string;
@@ -80,27 +79,27 @@ export type Level = {
 	};
 };
 
+export type Localization = {
+	id: string;
+	name: string;
+	department: string;
+	region: string;
+	created_at: string;
+};
+
 export type University = {
 	id: string;
 	name: string;
 	code: string;
 	phone: string;
+	institute: string;
 	description: string;
 	email: string;
-	arrondissement_id: string;
+	arrondissement: Localization;
 	user_id: string;
 	cenadi_id: string;
 	branches_count: string;
 	levels_count: string;
-};
-
-export type Localization = {
-	id: string;
-	slug: string;
-	name: string;
-	department_id: string;
-	created_at: string;
-	updated_at: string;
 };
 
 export type Classroom = {
@@ -132,10 +131,8 @@ export type ShowUniversity = {
 	arrondissement?: Localization;
 	institute: string;
 	user: string;
-	salles?: Classroom;
 	branches_count: string;
 	levels_count: string;
-	global_matching: string;
 };
 
 export type ClassroomForWithSyllabus = {
@@ -159,7 +156,7 @@ export type ShowUniversitWihClassrooms = {
 	description: string;
 	email: string;
 	arrondissement?: Localization;
-	institute_id: string;
+	institute: string;
 	user: string;
 	salles: ClassroomForWithSyllabus[];
 };
@@ -177,6 +174,8 @@ export type Ipes = {
 	arrete_ouverture: string;
 	decret_creation: string;
 	promoteur_id: string;
+	levels_count: string;
+	branches_count: string;
 };
 
 export type ShowIpesWithClassrooms = {
@@ -185,14 +184,18 @@ export type ShowIpesWithClassrooms = {
 	code: string;
 	phone: string;
 	email: string;
+	user: string;
+	cenadi: string;
+	institute: string;
 	arrondissement?: Localization;
 	user_id: string;
 	cenadi_id: string;
-	university_id: string;
+	salles: ClassroomForWithSyllabus[];
+	university: ShowUniversitWihClassrooms;
 	arrete_ouverture: string;
 	decret_creation: string;
-	promoteur_id: string;
-	salles: ClassroomForWithSyllabus[];
+	levels_count: string;
+	branches_count	: string;
 };
 
 export type ShowIpes = {
@@ -201,14 +204,14 @@ export type ShowIpes = {
 	code: string;
 	phone: string;
 	email: string;
+	user: string;
+	cenadi: string;
+	institute: string;
+	university: ShowUniversity;
 	arrondissement?: Localization;
-	user_id: string;
-	cenadi_id: string;
-	salles?: Classroom;
-	university?: University;
 	arrete_ouverture: string;
 	decret_creation: string;
-	promoteur_id: string;
+	promoteur: string;
 };
 
 export type SyllabusUe = {

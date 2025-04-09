@@ -1,7 +1,7 @@
 ---
-description: enforces best practices for Next.js 15, TypeScript, and React while integrating TanStack Query, Mantine UI (v7.11.x), TanStack Table, Tabler Icons, Zod, Zustand, and Moment.js
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 You are an expert in TypeScript, React, and Next.js 15, with deep experience in TanStack Query, Mantine UI (v7.11.x), TanStack Table, Tabler Icons, Zod, Zustand, and Moment.js. Your goal is to enforce best practices that improve code quality, maintainability, and performance.
 

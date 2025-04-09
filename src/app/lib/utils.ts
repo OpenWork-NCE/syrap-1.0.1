@@ -8,12 +8,16 @@ import {
 	IconFileZip,
 	IconFileTypeJpg,
 	IconFile,
+	IconCheck,
 } from "@tabler/icons-react";
 import { MRT_Column, MRT_Row } from "mantine-react-table";
 import { jsPDF } from "jspdf";
 import autoTable, { RowInput } from "jspdf-autotable";
 import { download, generateCsv } from "export-to-csv";
 import { csvConfig } from "@/config";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { notifications } from "@mantine/notifications";
+import React from 'react';
 
 export function extractQueryParams(req: Request) {
 	const urlParsed = new URL(req.url);
@@ -79,6 +83,11 @@ export function backendUrl(path: string, queryParams?: any) {
 			url.searchParams.set(key, queryParams[key] ?? "");
 		}
 	}
+	return url.toString();
+}
+
+export function innerUrl(path: string) {
+	const url = new URL(`${process.env.NEXT_PUBLIC_APP_URL}${path}`);
 	return url.toString();
 }
 
@@ -282,7 +291,7 @@ export const handleExportRowsAsPDF = (
 		body: tableData,
 	});
 
-	doc.save(customFilename ? `${customFilename}.pdf` : "syrap-export.pdf");
+	doc.save(customFilename ? `${customFilename}.pdf` : "SYHPUI-export.pdf");
 };
 
 export const handleExportAsCSV = <T extends Record<string, any>>(
@@ -292,7 +301,7 @@ export const handleExportAsCSV = <T extends Record<string, any>>(
 	const csv = generateCsv(csvConfig)(rowsData);
 	download({
 		...csvConfig,
-		filename: customFilename ? `${customFilename}.csv` : "syrap-export.csv",
+		filename: customFilename ? `${customFilename}.csv` : "SYHPUI-export.csv",
 	})(csv);
 };
 
@@ -872,3 +881,204 @@ export const handleExportComparisonAsPDF = (
 		});
 	});
 };
+
+/**
+ * Format a date to French format (DD/MM/YYYY)
+ */
+export function formatDateToFrench(dateString: string): string {
+	const date = new Date(dateString);
+	return date.toLocaleDateString('fr-FR', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+	});
+}
+
+/**
+ * Show a confirmation dialog
+ */
+interface ConfirmationDialogProps {
+	title: string;
+	message: string;
+	confirmLabel: string;
+	cancelLabel: string;
+	onConfirm: () => void;
+	onCancel?: () => void;
+}
+
+export function showConfirmationDialog({
+	title,
+	message,
+	confirmLabel,
+	cancelLabel,
+	onConfirm,
+	onCancel,
+}: ConfirmationDialogProps): void {
+	// Simple implementation using window.confirm
+	// In a real app, you might want to use a modal from your UI library
+	const confirmed = window.confirm(`${title}\n\n${message}`);
+	if (confirmed) {
+		onConfirm();
+	} else if (onCancel) {
+		onCancel();
+	}
+}
+
+export type EntityConfig = {
+	entityName: string;        // API endpoint name (e.g., 'users', 'branches')
+	queryKey: string;          // React Query key (e.g., 'users')
+	entityLabel: string;       // Display name (e.g., 'Utilisateur')
+	entityLabelFeminine?: boolean; // Whether entity uses feminine form in French
+};
+
+/**
+ * Generic hook for creating entities
+ */
+export function useCreateAction<T extends { id?: string }>(config: EntityConfig) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (entity: T) => {
+			const response = await fetch(innerUrl(`/api/${config.entityName}/create`), {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(entity),
+			});
+
+			if (!response.ok) {
+				throw new Error(`Erreur lors de la création ${config.entityLabelFeminine ? "de la" : "du"} ${config.entityLabel}`);
+			}
+
+			notifications.show({
+				color: "teal",
+				title: `${config.entityLabel} créé${config.entityLabelFeminine ? 'e' : ''}`,
+				message: "Merci de votre patience",
+				loading: false,
+				autoClose: 2000,
+			});
+			return await response.json();
+		},
+		onMutate: (newEntityInfo: T) => {
+			queryClient.setQueryData([config.queryKey], (prevEntities: any) => {
+				const entityList = Array.isArray(prevEntities) ? prevEntities : [];
+				return [
+					...entityList,
+					{
+						...newEntityInfo,
+						id: newEntityInfo.id || (Math.random() + 1).toString(36).substring(7),
+					},
+				];
+			});
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: [config.queryKey] });
+		},
+	});
+}
+
+/**
+ * Generic hook for updating entities
+ */
+export function useUpdateAction<T extends { id: string }>(config: EntityConfig) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (entity: T) => {
+			const response = await fetch(
+				innerUrl(`/api/${config.entityName}/${entity.id}/update`),
+				{
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(entity),
+				}
+			);
+
+			if (!response.ok) {
+				throw new Error(`Erreur lors de la mise à jour ${config.entityLabelFeminine ? "de la" : "du"} ${config.entityLabel}`);
+			}
+
+			notifications.show({
+				color: "green",
+				title: `${config.entityLabel} mis${config.entityLabelFeminine ? 'e' : ''} à jour`,
+				message: "Merci de votre patience",
+				loading: false,
+				autoClose: 2000,
+			});
+			return await response.json();
+		},
+		onMutate: (updatedEntityInfo: T) => {
+			queryClient.setQueryData([config.queryKey], (prevEntities: any) => {
+				const entityList = Array.isArray(prevEntities) ? prevEntities : [];
+
+				return entityList.map((entity: any) =>
+					entity.id === updatedEntityInfo.id
+						? { ...entity, ...updatedEntityInfo }
+						: entity
+				);
+			});
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: [config.queryKey] });
+		},
+	});
+}
+
+/**
+ * Generic hook for deleting entities
+ */
+export function useDeleteAction(config: EntityConfig) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (entityId: string) => {
+			const response = await fetch(
+				innerUrl(`/api/${config.entityName}/${entityId}/delete`),
+				{
+					method: "DELETE",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ id: entityId }),
+				}
+			);
+
+			if (!response.ok) {
+				throw new Error(`Erreur lors de la suppression ${config.entityLabelFeminine ? "de la" : "du"} ${config.entityLabel}`);
+			}
+
+			notifications.show({
+				color: "red",
+				title: `${config.entityLabel} supprimé${config.entityLabelFeminine ? 'e' : ''}`,
+				message: "Merci de votre patience",
+				loading: false,
+				autoClose: 2000,
+			});
+			return await response.json();
+		},
+		onMutate: (entityId: string) => {
+			queryClient.cancelQueries({ queryKey: [config.queryKey] });
+
+			const previousEntities = queryClient.getQueryData([config.queryKey]);
+
+			queryClient.setQueryData(
+				[config.queryKey],
+				(prevEntities: any | undefined) => {
+					return prevEntities?.data?.filter(
+						(entity: any) => entity.id !== entityId
+					);
+				}
+			);
+
+			return { previousEntities };
+		},
+		onError: (err, entityId, context: any) => {
+			if (context?.previousEntities) {
+				queryClient.setQueryData([config.queryKey], context.previousEntities);
+			}
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: [config.queryKey] });
+		},
+	});
+}

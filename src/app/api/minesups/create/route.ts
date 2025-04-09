@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   return accessTokenMiddleware(async ({ authHeaders }) => {
     try {
       const bodyPayload = createSchema.parse(await requestJsonBody(request));
-      const branch = await fetchJson<any>(backendUrl(`/api/acteurs/minesup`), {
+      const branch = await fetchJson<any>(backendUrl(`/api/acteurs/minsup`), {
         method: 'POST',
         body: JSON.stringify(bodyPayload),
         headers: {

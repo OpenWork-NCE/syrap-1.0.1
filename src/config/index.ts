@@ -1,4 +1,5 @@
 import {
+	IconAdjustmentsBolt,
 	IconAffiliate,
 	IconAlertCircle,
 	IconChartArea,
@@ -69,6 +70,7 @@ export const navLinks = (authorizations: string[]) => {
 					{
 						label: "Universités de Tutelle",
 						icon: IconSchool,
+						initiallyOpened: true,
 						links: [
 							{
 								label: "Toutes les universités",
@@ -82,11 +84,12 @@ export const navLinks = (authorizations: string[]) => {
 					},
 				]
 			: []),
-		// ...(authorizations.includes("list-ipes")
-		// 	? [
+		...(authorizations.includes("list-ipes")
+			? [
 		{
 			label: "IPES",
 			icon: IconNotebook,
+			initiallyOpened: true,
 			links: [
 				{
 					label: "Toutes les IPES",
@@ -98,50 +101,42 @@ export const navLinks = (authorizations: string[]) => {
 				},
 			],
 		},
-		// 	]
-		// : []),
-		// ...(authorizations.includes("list-ues")
-		// 	? [
+			]
+		: []),
+		...(((authorizations.includes("list-ues")) && (authorizations.includes("show-universities")))
+		 	? [
 		{
 			label: "Croiser et Comparer",
 			icon: IconGitCompare,
 			link: `${PATH_SECTIONS.crosscompare}`,
 		},
-		// 	]
-		// : []),
-		{
-			label: "Utilisateurs & Rôles",
-			icon: IconUsers,
-			links: [
-				...(authorizations.includes("list-ues")
-					? [
-							{
-								label: "Utilisateurs",
-								icon: IconUsers,
-								link: `${PATH_SECTIONS.users}`,
-							},
-						]
-					: []),
-				...(authorizations.includes("list-ues")
-					? [
-							{
-								label: "Rôles",
-								icon: IconUserCheck,
-								link: `${PATH_SECTIONS.profiles}`,
-							},
-						]
-					: []),
-				// ...(authorizations.includes("list-ues")
-				// 	? [
-				// 			{
-				// 				label: "Permissions",
-				// 				icon: IconAffiliate,
-				// 				link: `${PATH_SECTIONS.authorizations}`,
-				// 			},
-				// 		]
-				// 	: []),
-			],
-		},
+		 	]
+		 : []),
+
+		// ...(authorizations.includes("list-ues")
+		// 	? [
+			{
+				label: "Documents",
+				icon: IconChartArea,
+				initiallyOpened: true,
+				links: [
+					{
+						label: "Rapports",
+						link: `${PATH_SECTIONS.reports}`,
+					},
+					{
+						label: "Logs",
+						link: `${PATH_SECTIONS.logs}`,
+					},
+				],
+			},
+			// ]
+			// : []),
+	] as NavItem[];
+};
+
+export const adminNavLinks = (authorizations: string[]) => {
+	return [
 		{
 			label: "Institutions",
 			icon: IconHomeEdit,
@@ -165,65 +160,39 @@ export const navLinks = (authorizations: string[]) => {
 					: []),
 			],
 		},
-		// ...(authorizations.includes("list-ues")
-		// 	? [
 		{
-			label: "Documents",
-			icon: IconChartArea,
+			label: "Utilisateurs & Rôles",
+			icon: IconUsers,
 			links: [
-				{
-					label: "Rapports",
-					link: `${PATH_SECTIONS.reports}`,
-				},
-				{
-					label: "Logs",
-					link: `${PATH_SECTIONS.logs}`,
-				},
+				...(authorizations.includes("list-ues")
+					? [
+							{
+								label: "Utilisateurs",
+								icon: IconUsers,
+								link: `${PATH_SECTIONS.users}`,
+							},
+						]
+					: []),
+				...(authorizations.includes("list-ues")
+					? [
+							{
+								label: "Rôles",
+								icon: IconUserCheck,
+								link: `${PATH_SECTIONS.profiles}`,
+							},
+						]
+					: []),
+				// ...(authorizations.includes("list-ues")
+				// // 	? [
+							{
+								label: "Permissions",
+								icon: IconAffiliate,
+								link: `${PATH_SECTIONS.authorizations}`,
+							},
+				// 		]
+				// 	: []),
 			],
 		},
-		// ]
-		// : []),
-
-		// {
-		// 	label: "Components",
-		// 	icon: IconComponents,
-		// 	links: [
-		// 		{
-		// 			label: "Table",
-		// 			link: "/dashboard/table",
-		// 		},
-		// 		{
-		// 			label: "Form",
-		// 			link: "/dashboard/form",
-		// 		},
-		// 	],
-		// },
-		// {
-		// 	label: "Auth",
-		// 	icon: IconLock,
-		// 	initiallyOpened: true,
-		// 	links: [
-		// 		{
-		// 			label: "Login",
-		// 			link: "/login",
-		// 		},
-		// 		{
-		// 			label: "Register",
-		// 			link: "/register",
-		// 		},
-		// 	],
-		// },
-		// {
-		// 	label: "Sample",
-		// 	icon: IconMoodSmile,
-		// 	initiallyOpened: true,
-		// 	links: [
-		// 		{
-		// 			label: "Landing",
-		// 			link: "/",
-		// 		},
-		// 	],
-		// },
 	] as NavItem[];
 };
 

@@ -16,6 +16,7 @@ import {
 } from "@mantine/core";
 import { Course } from "./Syllabus";
 import { IconAlertCircle, IconCheck, IconCalendar } from "@tabler/icons-react";
+import { innerUrl } from "@/app/lib/utils";
 
 interface EditCourseModalProps {
 	course: Course | null;
@@ -23,6 +24,7 @@ interface EditCourseModalProps {
 	onClose: () => void;
 	onSubmit: (updatedCourse: Course) => void;
 	classroomId: string;
+	instituteType?: "IPES" | "University";
 }
 
 export function EditCourseModal({
@@ -31,6 +33,7 @@ export function EditCourseModal({
 	onClose,
 	onSubmit,
 	classroomId,
+	instituteType = "University",
 }: EditCourseModalProps) {
 	const [formData, setFormData] = useState<Course | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
@@ -113,7 +116,7 @@ export function EditCourseModal({
 
 			// Make API request to update UE
 			const response = await fetch(
-				`http://localhost:3000/api/syllabus/${classroomId}/addue`,
+				innerUrl(`/api/syllabus/${classroomId}/addue`),
 				{
 					method: "POST",
 					headers: {
@@ -129,7 +132,7 @@ export function EditCourseModal({
 			// Show success message
 			setStatusMessage({
 				type: "success",
-				message: "UE mise à jour avec succès",
+				message: `UE ${instituteType === "IPES" ? "IPES " : ""}mise à jour avec succès`,
 			});
 
 			// Notify parent component
@@ -144,7 +147,7 @@ export function EditCourseModal({
 			console.error("Error updating UE:", error);
 			setStatusMessage({
 				type: "error",
-				message: "Erreur lors de la mise à jour de l'UE",
+				message: `Erreur lors de la mise à jour de l'UE ${instituteType === "IPES" ? "IPES" : ""}`,
 			});
 		} finally {
 			setIsLoading(false);
@@ -155,10 +158,11 @@ export function EditCourseModal({
 		<Modal
 			opened={opened}
 			onClose={onClose}
-			title={`Modifier ${formData.name}`}
+			title={`Modifier ${instituteType === "IPES" ? "l'UE IPES" : "l'UE"} ${formData.name}`}
 			size="lg"
 			padding="lg"
 			radius="md"
+			centered
 		>
 			{statusMessage && (
 				<Alert
@@ -191,7 +195,7 @@ export function EditCourseModal({
 				<Paper withBorder p="md">
 					<Stack gap="md">
 						<Title order={6} mb="xs">
-							Détails de l'UE
+							Détails de l'UE {instituteType === "IPES" ? "IPES" : ""}
 						</Title>
 						<Textarea
 							label="Description"

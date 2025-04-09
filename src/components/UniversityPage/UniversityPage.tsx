@@ -12,27 +12,9 @@ import { CardGradient } from "@/components/CardGradientUniversity/CardGradient";
 import { ShowUniversity } from "@/types";
 import { useEffect, useState } from "react";
 import { internalApiUrl } from "@/app/lib/utils";
-import { undefined } from "zod";
+import PageHeader from "@/components/PageHeader/PageHeader";
 import ClassroomsTable from "@/components/ClassroomsTable/ClassroomsTable";
 import { useInstitution } from "@/app/context/InstitutionContext";
-
-const mockStats = [
-	{
-		icon: IconSchool,
-		title: "Nombre d'IPES",
-		count: 10,
-	},
-	{
-		icon: IconCategory,
-		title: "Nombre de filières",
-		count: 15,
-	},
-	{
-		icon: IconStack3,
-		title: "Nombre de niveaux",
-		count: 7,
-	},
-];
 
 interface CardDataProps {
 	icon: React.FC<any>;
@@ -49,10 +31,9 @@ const UniversityPage = ({ id }: UniversityPageProps) => {
 		arrondissement: {
 			id: "",
 			name: "",
-			slug: "",
 			created_at: "",
-			department_id: "",
-			updated_at: "",
+			department: "",
+			region: "",
 		},
 		code: "",
 		description: "",
@@ -61,27 +42,8 @@ const UniversityPage = ({ id }: UniversityPageProps) => {
 		institute: "",
 		name: "",
 		phone: "",
-		salles: {
-			id: "",
-			designation: "",
-			branch: {
-				id: "",
-				name: "",
-				author: { user_id: "" },
-				description: "",
-				validate: "",
-			},
-			level: {
-				id: "",
-				name: "",
-				description: "",
-				author: { user_id: "" },
-				validate: "",
-			},
-		},
 		user: "",
 		branches_count: "",
-		global_matching: "",
 		levels_count: "",
 	});
 	console.log("Voici l'université ", university);
@@ -137,9 +99,10 @@ const UniversityPage = ({ id }: UniversityPageProps) => {
 					email: university.email,
 					levels_count: university.levels_count,
 					branches_count: university.branches_count,
-					global_matching: university.global_matching,
+					arrondissement: university.arrondissement?.name,
 				}}
 			/>
+			<PageHeader title="Salles" />
 			<ClassroomsTable
 				institute={"University"}
 				instituteId={id}

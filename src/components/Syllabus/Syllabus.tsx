@@ -10,6 +10,7 @@ import {
 	Alert,
 	Loader,
 	Group,
+	Button,
 } from "@mantine/core";
 import { FilterSection } from "@/components/Syllabus/FilterSection";
 import { ProgramTable } from "@/components/Syllabus/ProgramTable";
@@ -21,8 +22,10 @@ import { AddSyllabusModal } from "@/components/Syllabus/AddSyllabusModal";
 // 	levels,
 // 	courses,
 // } from "@/components/Syllabus/universities";
-import { ShowUniversitWihClassrooms } from "@/types";
-import { IconAlertCircle, IconInfoCircle } from "@tabler/icons-react";
+import { Institution, ShowUniversitWihClassrooms, ShowIpesWithClassrooms } from "@/types";
+import { IconAlertCircle, IconInfoCircle, IconRefresh, IconCheck } from "@tabler/icons-react";
+import { Primary } from "../Footer/Footer.stories";
+import { innerUrl } from "@/app/lib/utils";
 
 export interface Program {
 	id: string;
@@ -41,6 +44,7 @@ export interface Program {
 		year: string;
 		credit: string;
 	}[];
+	guardianUniversity?: string; // University of guardianship for IPES
 }
 
 export interface Course {
@@ -75,19 +79,65 @@ interface UE {
 	};
 }
 
-export default function ProgramsPage() {
+type ProgramTableProps = {
+	instituteId: string;
+	instituteName: string;
+	classroomId?: string;
+	instituteType: "IPES" | "University";
+	userType: "Cenadi" | "Minesup" | "IPES" | "University"
+};
+/**
+ * Validates the properties passed to the ProgramTable component.
+ * Ensures that if a classroomId is provided, a universityId must also be provided.
+ *
+ * @param {ProgramTableProps} props - The properties to validate.
+ * @throws {Error} If classroomId is provided without a universityId.
+ */
+
+export default function ProgramsPage({
+	instituteId,	
+	instituteName,
+	classroomId,
+	instituteType,
+	userType
+}: ProgramTableProps) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [filteredPrograms, setFilteredPrograms] = useState<Program[]>([]);
 	const [programs, setPrograms] = useState<Program[]>([]);
-	const [universities, setUniversities] = useState<
-		ShowUniversitWihClassrooms[]
-	>([]);
+	const [universities, setUniversities] = useState<ShowUniversitWihClassrooms[]>([]);
+	const [ipes, setIpes] = useState<ShowIpesWithClassrooms[]>([]);
 	const [availableBranches, setAvalaibleBranches] = useState<Branch[]>([]);
 	const [availableLevels, setAvalaibleLevels] = useState<Level[]>([]);
 	const [availableYears, setAvailableYears] = useState<string[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [statusMessage, setStatusMessage] = useState<{
+		type: "info" | "success" | "error";
+		message: string;
+	} | null>(null);
+	
+	// Determine if this is a central institution based on the new conditions
+	const determineIsCentralInstitution = (): boolean => {
+		// Base condition: CENADI or MINESUP are always central institutions
+		const isCenadiOrMinesup = instituteName.toLowerCase().includes('cenadi') || 
+								 instituteName.toLowerCase().includes('minesup');
+		
+		if (isCenadiOrMinesup) return true;
+		
+		// New conditions based on userType and instituteType
+		if (userType === "IPES" && instituteType === "University") return true;
+		if (userType === "IPES" && instituteType === "IPES") return false;
+		if (userType === "University" && instituteType === "IPES") return true;
+		if (userType === "University" && instituteType === "University") return false;
+		
+		// Default to false for any other cases
+		return false;
+	};
+	
+	const isCentralInstitution = determineIsCentralInstitution();
+	
 	const [filters, setFilters] = useState({
+		// universityId: isCentralInstitution ? null : null,
 		universityId: null as string | null,
 		branchId: null as string | null,
 		levelId: null as string | null,
@@ -103,119 +153,43 @@ export default function ProgramsPage() {
 		return program.courses.some((course) => course.year === year);
 	};
 
-	// Function to fetch data from the API
+	// Function to fetch data from the API based on instituteType
 	const fetchData = async () => {
 		try {
 			setIsLoading(true);
 			setError(null);
 
-			const u = await fetch("http://localhost:3000/api/universities").then(
-				(res) => res.json(),
-			);
+			// Fetch the appropriate data based on instituteType
+			if (instituteType === "University") {
+				const u = await fetch(innerUrl("/api/universities")).then(
+					(res) => res.json(),
+				);
 
-			console.log("Fetched universities data:", u.data);
+				console.log("Fetched universities data:", u.data);
 
-			if (!u.data) {
-				throw new Error("Failed to fetch universities data");
-			}
-
-			const universities: ShowUniversitWihClassrooms[] = u.data;
-			setUniversities(universities);
-
-			// Extract years and programs
-			const yearsSet = new Set<string>();
-			const programs: Program[] = [];
-
-			console.log("Processing universities:", universities.length);
-
-			universities.forEach((university) => {
-				university.salles.forEach((salle) => {
-					// Group UEs by year
-					const coursesByYear: Record<string, Course[]> = {};
-
-					salle.ues.forEach((ue: UE) => {
-						// For each UE, determine its year (default to current year if not specified)
-						const year = ue.pivot?.year || new Date().getFullYear().toString();
-
-						// Add year to the set of available years
-						yearsSet.add(year);
-
-						// Create course object
-						const course: Course = {
-							courseId: ue.id,
-							name: ue.name,
-							description: ue.description,
-							nbr_hrs: ue.pivot?.nbr_hrs || "30",
-							year: year,
-							credit: ue.pivot?.credit || "3",
-						};
-
-						// Add course to the appropriate year group
-						if (!coursesByYear[year]) {
-							coursesByYear[year] = [];
-						}
-						coursesByYear[year].push(course);
-					});
-
-					// Create a program for each classroom, including all courses
-					const allCourses = Object.values(coursesByYear).flat();
-					if (allCourses.length > 0) {
-						programs.push({
-							id: salle.id,
-							universityId: university.id,
-							branchId: salle.branch.id,
-							branchName: salle.branch.name,
-							levelId: salle.level.id,
-							levelName: salle.level.name,
-							classroomId: salle.id,
-							institute: university.institute_id,
-							courses: allCourses,
-						});
-					}
-				});
-			});
-
-			// Convert Set to Array and sort years in descending order
-			const sortedYears = Array.from(yearsSet).sort(
-				(a, b) => parseInt(b) - parseInt(a),
-			);
-			setAvailableYears(sortedYears);
-
-			console.log("Available years:", sortedYears);
-			console.log("Generated programs:", programs);
-
-			// Sort programs by university, branch, level
-			const sortedPrograms = programs.sort((a, b) => {
-				// First sort by university
-				if (a.universityId !== b.universityId) {
-					return a.universityId.localeCompare(b.universityId);
+				if (!u.data) {
+					throw new Error("Failed to fetch universities data");
 				}
 
-				// Then by branch
-				if (a.branchId !== b.branchId) {
-					return a.branchName.localeCompare(b.branchName);
+				const universities: ShowUniversitWihClassrooms[] = u.data;
+				setUniversities(universities);
+
+				processUniversitiesData(universities);
+			} else if (instituteType === "IPES") {
+				const ipesResponse = await fetch(innerUrl("/api/ipess")).then(
+					(res) => res.json(),
+				);
+
+				console.log("Fetched IPES data:", ipesResponse.data);
+
+				if (!ipesResponse.data) {
+					throw new Error("Failed to fetch IPES data");
 				}
 
-				// Then by level
-				if (a.levelId !== b.levelId) {
-					return a.levelName.localeCompare(b.levelName);
-				}
+				const ipesData: ShowIpesWithClassrooms[] = ipesResponse.data;
+				setIpes(ipesData);
 
-				return 0;
-			});
-
-			setPrograms(sortedPrograms);
-
-			// Apply current filters if they exist
-			if (
-				filters.universityId ||
-				filters.branchId ||
-				filters.levelId ||
-				filters.year
-			) {
-				handleFilter(filters);
-			} else {
-				setFilteredPrograms(sortedPrograms);
+				processIPESData(ipesData);
 			}
 		} catch (error) {
 			console.error("Error fetching data:", error);
@@ -227,22 +201,246 @@ export default function ProgramsPage() {
 		}
 	};
 
+	// Helper function to process universities data
+	const processUniversitiesData = (universities: ShowUniversitWihClassrooms[]) => {
+		// Extract years and programs
+		const yearsSet = new Set<string>();
+		const programs: Program[] = [];
+
+		console.log("Processing universities:", universities.length);
+
+		universities.forEach((university) => {
+			// For non-central institutions, only process the current instituteId
+			if (!isCentralInstitution && university.institute != instituteId) {
+				return;
+			}
+			
+			university.salles.forEach((salle) => {
+				// Group UEs by year
+				const coursesByYear: Record<string, Course[]> = {};
+
+				salle.ues.forEach((ue: UE) => {
+					// For each UE, determine its year (default to current year if not specified)
+					const year = ue.pivot?.year || new Date().getFullYear().toString();
+
+					// Add year to the set of available years
+					yearsSet.add(year);
+
+					// Create course object
+					const course: Course = {
+						courseId: ue.id,
+						name: ue.name,
+						description: ue.description,
+						nbr_hrs: ue.pivot?.nbr_hrs || "30",
+						year: year,
+						credit: ue.pivot?.credit || "3",
+					};
+
+					// Add course to the appropriate year group
+					if (!coursesByYear[year]) {
+						coursesByYear[year] = [];
+					}
+					coursesByYear[year].push(course);
+				});
+
+				// Create a program for each classroom, including all courses
+				const allCourses = Object.values(coursesByYear).flat();
+				if (allCourses.length > 0) {
+					programs.push({
+						id: salle.id,
+						universityId: university.id,
+						branchId: salle.branch.id,
+						branchName: salle.branch.name,
+						levelId: salle.level.id,
+						levelName: salle.level.name,
+						classroomId: salle.id,
+						institute: university.institute,
+						courses: allCourses,
+					});
+				}
+			});
+		});
+
+		// Convert Set to Array and sort years in descending order
+		const sortedYears = Array.from(yearsSet).sort(
+			(a, b) => parseInt(b) - parseInt(a),
+		);
+		setAvailableYears(sortedYears);
+		
+		// Sort programs by university, branch, level
+		const sortedPrograms = programs.sort((a, b) => {
+			// First sort by university
+			if (a.universityId !== b.universityId) {
+				return a.universityId.localeCompare(b.universityId);
+			}
+
+			// Then by branch
+			if (a.branchId !== b.branchId) {
+				return a.branchName.localeCompare(b.branchName);
+			}
+
+			// Then by level
+			if (a.levelId !== b.levelId) {
+				return a.levelName.localeCompare(b.levelName);
+			}
+
+			return 0;
+		});
+
+		setPrograms(sortedPrograms);
+
+		// Apply current filters if they exist
+		if (
+			filters.universityId ||
+			filters.branchId ||
+			filters.levelId ||
+			filters.year
+		) {
+			handleFilter(filters);
+		} else {
+			setFilteredPrograms(sortedPrograms);
+		}
+	};
+
+	// Helper function to process IPES data
+	const processIPESData = (ipesData: ShowIpesWithClassrooms[]) => {
+		// Extract years and programs
+		const yearsSet = new Set<string>();
+		const programs: Program[] = [];
+
+		console.log("Processing IPES:", ipesData.length);
+
+		ipesData.forEach((ipes) => {
+			// For non-central institutions, only process the current instituteId
+			if (!isCentralInstitution && ipes.institute != instituteId) {
+				return;
+			}
+			
+			ipes.salles.forEach((salle) => {
+				// Group UEs by year
+				const coursesByYear: Record<string, Course[]> = {};
+
+				salle.ues.forEach((ue: UE) => {
+					// For each UE, determine its year (default to current year if not specified)
+					const year = ue.pivot?.year || new Date().getFullYear().toString();
+
+					// Add year to the set of available years
+					yearsSet.add(year);
+
+					// Create course object
+					const course: Course = {
+						courseId: ue.id,
+						name: ue.name,
+						description: ue.description,
+						nbr_hrs: ue.pivot?.nbr_hrs || "30",
+						year: year,
+						credit: ue.pivot?.credit || "3",
+					};
+
+					// Add course to the appropriate year group
+					if (!coursesByYear[year]) {
+						coursesByYear[year] = [];
+					}
+					coursesByYear[year].push(course);
+				});
+
+				// Create a program for each classroom, including all courses
+				const allCourses = Object.values(coursesByYear).flat();
+				if (allCourses.length > 0) {
+					programs.push({
+						id: salle.id,
+						universityId: ipes.id,
+						branchId: salle.branch.id,
+						branchName: salle.branch.name,
+						levelId: salle.level.id,
+						levelName: salle.level.name,
+						classroomId: salle.id,
+						institute: ipes.institute,
+						courses: allCourses,
+						guardianUniversity: ipes.university?.name, // Add the university of guardianship
+					});
+				}
+			});
+		});
+
+		// Convert Set to Array and sort years in descending order
+		const sortedYears = Array.from(yearsSet).sort(
+			(a, b) => parseInt(b) - parseInt(a),
+		);
+		setAvailableYears(sortedYears);
+		
+		// Sort programs by ipes, branch, level
+		const sortedPrograms = programs.sort((a, b) => {
+			// First sort by ipes
+			if (a.universityId !== b.universityId) {
+				return a.universityId.localeCompare(b.universityId);
+			}
+
+			// Then by branch
+			if (a.branchId !== b.branchId) {
+				return a.branchName.localeCompare(b.branchName);
+			}
+
+			// Then by level
+			if (a.levelId !== b.levelId) {
+				return a.levelName.localeCompare(b.levelName);
+			}
+
+			return 0;
+		});
+
+		setPrograms(sortedPrograms);
+
+		// Apply current filters if they exist
+		if (
+			filters.universityId ||
+			filters.branchId ||
+			filters.levelId ||
+			filters.year
+		) {
+			handleFilter(filters);
+		} else {
+			setFilteredPrograms(sortedPrograms);
+		}
+	};
+
 	// Initial data fetch
 	useEffect(() => {
 		fetchData();
-	}, []);
+	}, [instituteType]);
+
+	// Update filters when data is loaded
+	useEffect(() => {
+		if (programs.length > 0) {
+			// For non-central institutions, set the default universityId
+			if (!isCentralInstitution) {
+				const defaultUniversityId = programs.find(p => p.institute === instituteId)?.universityId;
+				if (defaultUniversityId) {
+					handleFilter({
+						...filters,
+						universityId: defaultUniversityId,
+						branchId: null,
+						levelId: null,
+					});
+				}
+			}
+		}
+	}, [programs, isCentralInstitution, instituteId]);
 
 	const handleFilter = (newFilters: typeof filters) => {
 		console.log("Applying filters:", newFilters);
 		setFilters(newFilters);
 		let filtered = [...programs];
 
-		if (newFilters.universityId) {
+		// For non-central institutions, always filter by the institution's ID
+		if (!isCentralInstitution) {
+			filtered = filtered.filter(p => p.institute == instituteId);
+		} else if (newFilters.universityId) {
 			filtered = filtered.filter(
 				(p) => p.universityId == newFilters.universityId,
 			);
-			console.log("After university filter:", filtered.length, "programs");
 		}
+		
 		if (newFilters.branchId) {
 			filtered = filtered.filter((p) => p.branchId == newFilters.branchId);
 		}
@@ -295,24 +493,100 @@ export default function ProgramsPage() {
 		handleFilter(filters);
 	};
 
+	const handleRefresh = async () => {
+		setIsLoading(true);
+		setError(null);
+		setStatusMessage(null);
+		try {
+			await fetchData();
+			setStatusMessage({
+				type: "success",
+				message: "Les programmes ont été rechargés avec succès",
+			});
+			// Clear success message after 3 seconds
+			setTimeout(() => {
+				setStatusMessage(null);
+			}, 3000);
+		} catch (error) {
+			console.error("Error refreshing data:", error);
+			setError("Une erreur est survenue lors du rechargement des données.");
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	// Get the institutions list based on instituteType
+	const getInstitutions = () => {
+		return instituteType === "University" ? universities : ipes;
+	};
+
 	return (
 		<>
 			{/*<Container size="xl" py="md">*/}
 			<Stack gap="md">
 				<Paper p="md" shadow="md" withBorder>
+					<Group mb="md">
+						<Button
+							variant="light"
+							leftSection={<IconRefresh size={16} />}
+							onClick={handleRefresh}
+							loading={isLoading}
+							disabled={isLoading}
+						>
+							Actualiser les programmes
+						</Button>
+					</Group>
 					<FilterSection
 						filters={filters}
 						onFilter={handleFilter}
 						onAddClick={() => setIsModalOpen(true)}
-						universities={universities}
+						universities={getInstitutions()}
 						availableBranches={availableBranches}
 						setAvailableBranches={setAvalaibleBranches}
 						availableLevels={availableLevels}
 						setAvailableLevels={setAvalaibleLevels}
 						availableYears={availableYears}
 						setAvailableYears={setAvailableYears as any}
+						isCentralInstitution={isCentralInstitution}
+						currentInstitute={instituteId}
+						instituteName={instituteName}
+						instituteType={instituteType}
 					/>
 				</Paper>
+
+				{statusMessage && (
+					<Alert
+						icon={
+							statusMessage.type === "error" ? (
+								<IconAlertCircle size={16} />
+							) : statusMessage.type === "success" ? (
+								<IconCheck size={16} />
+							) : (
+								<IconInfoCircle size={16} />
+							)
+						}
+						title={
+							statusMessage.type === "error"
+								? "Erreur"
+								: statusMessage.type === "success"
+									? "Succès"
+									: "Information"
+						}
+						color={
+							statusMessage.type === "error"
+								? "red"
+								: statusMessage.type === "success"
+									? "green"
+									: "blue"
+						}
+						mb="md"
+						withCloseButton
+						onClose={() => setStatusMessage(null)}
+						variant="light"
+					>
+						{statusMessage.message}
+					</Alert>
+				)}
 
 				{isLoading && (
 					<Group justify="center" py="xl">
@@ -342,38 +616,52 @@ export default function ProgramsPage() {
 					</Alert>
 				)}
 
-				{filteredPrograms.map((program) => (
-					<ProgramTable
-						key={program.id}
-						university={String(
-							universities.find((u) => u.id === program.universityId)?.name,
-						)}
-						year={
-							program.courses[0]?.year || new Date().getFullYear().toString()
-						}
-						program={program}
-						filteredPrograms={filteredPrograms}
-						setFilteredPrograms={setFilteredPrograms}
-						onUpdate={async (updatedProgram) => {
-							// Refresh data after updating a program
-							await fetchData();
-							handleFilter(filters);
-						}}
-						onDelete={async (programId) => {
-							// Refresh data after deleting a program
-							await fetchData();
-							handleFilter(filters);
-						}}
-					/>
-				))}
+				{filteredPrograms.map((program) => {
+					// Find institution name based on type
+					let institutionName = "";
+					if (instituteType === "University") {
+						institutionName = universities.find(u => u.id === program.universityId)?.name || "";
+					} else {
+						const ipesObj = ipes.find(i => i.id === program.universityId);
+						institutionName = ipesObj?.name || "";
+					}
+					
+					return (
+						<ProgramTable
+							key={program.id}
+							university={institutionName}
+							year={
+								program.courses[0]?.year || new Date().getFullYear().toString()
+							}
+							program={program}
+							filteredPrograms={filteredPrograms}
+							setFilteredPrograms={setFilteredPrograms}
+							onUpdate={async (updatedProgram) => {
+								// Refresh data after updating a program
+								await fetchData();
+								handleFilter(filters);
+							}}
+							onDelete={async (programId) => {
+								// Refresh data after deleting a program
+								await fetchData();
+								handleFilter(filters);
+							}}
+							instituteType={instituteType}
+						/>
+					);
+				})}
 			</Stack>
 
 			<AddSyllabusModal
 				opened={isModalOpen}
 				onClose={() => setIsModalOpen(false)}
 				onSubmitted={handleAddProgram}
-				universities={universities}
+				universities={getInstitutions()}
 				existingPrograms={programs}
+				isCentralInstitution={isCentralInstitution}
+				currentInstitute={instituteId}
+				instituteName={instituteName}
+				instituteType={instituteType}
 			/>
 			{/*</Container>*/}
 		</>

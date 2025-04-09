@@ -11,7 +11,7 @@ export async function DELETE(
   return accessTokenMiddleware(async ({ authHeaders }) => {
     try {
       const branch = await fetchJson<any>(
-        backendUrl(`/api/acteurs/minesup/${id}`),
+        backendUrl(`/api/acteurs/minsup/${id}`),
         {
           method: 'DELETE',
           headers: {

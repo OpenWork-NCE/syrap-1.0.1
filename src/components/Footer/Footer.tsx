@@ -14,8 +14,8 @@ export function Footer() {
 			<Container className={classes.inner}>
 				<Text c="dimmed" fz="sm">
 					Fait pour vous par{" "}
-					<Anchor href="https://github.com/jotyy" size="sm">
-						SYRAP.
+					<Anchor href="https://github.com/" size="sm">
+						SYHPUI.
 					</Anchor>
 				</Text>
 				<Group

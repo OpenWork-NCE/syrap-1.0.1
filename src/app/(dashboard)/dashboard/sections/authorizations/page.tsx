@@ -18,7 +18,7 @@ function Page() {
 	return (
 		<>
 			<>
-				<title>Permissions | SYRAP</title>
+				<title>Permissions | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>

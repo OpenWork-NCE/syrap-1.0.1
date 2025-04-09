@@ -7,6 +7,7 @@ import { useAuthorizations } from "@/app/context/AuthorizationsContext";
 import UniversitiesTable from "@/components/UniversitiesTable/UniversitiesTable";
 import { useInstitution } from "@/app/context/InstitutionContext";
 import { useUser } from "@/app/context/UserContext";
+import Syllabus from "@/components/Syllabus/Syllabus";
 
 const items = [{ title: "Syllabus", href: "#" }].map((item, index) => (
 	<Anchor href={item.href} key={index}>
@@ -22,12 +23,25 @@ function Page() {
 	return (
 		<>
 			<>
-				<title>Programmes d'Ipes | SYRAP</title>
+				<title>Programmes d'Ipes | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>
 				<Stack gap="lg">
-					<PageHeader title="Programmes d'Ipes" breadcrumbItems={items} />
+					<PageHeader
+						title="Programmes d'IPES"
+						breadcrumbItems={items}
+					/>
+					<Syllabus
+						instituteId={institution.id}
+						instituteName={institution.name}
+						instituteType={"IPES"}
+						userType={(institution.model).includes("cenadi") ? "Cenadi" : (institution.model).includes("minsup") ? "Minesup" : (institution.model).includes("University") ? "University" : "IPES"}
+					/>
+					{/* <Syllabus
+						instituteId={"16"}
+						instituteName={"Université de Yaoundé 1"}
+					/> */}
 				</Stack>
 			</Container>
 		</>

@@ -15,6 +15,7 @@ import {
 	Alert,
 	Loader,
 	Title,
+	Badge,
 } from "@mantine/core";
 import {
 	IconUpload,
@@ -22,6 +23,7 @@ import {
 	IconCheck,
 	IconFileDescription,
 	IconEye,
+	IconBuilding,
 } from "@tabler/icons-react";
 import { FileDocument, FileFormData } from "@/types";
 import {
@@ -35,6 +37,7 @@ interface FileFormProps {
 	initialData?: FileDocument;
 	onSubmit: (values: FileFormData) => Promise<void>;
 	onCancel: () => void;
+	institution?: { id: string; name: string; slug: string; model: string; };
 }
 
 const FileValueComponent: React.FC<{ value: File | File[] | null }> = ({
@@ -58,10 +61,31 @@ const FileValueComponent: React.FC<{ value: File | File[] | null }> = ({
 	);
 };
 
-export function FileForm({ initialData, onSubmit, onCancel }: FileFormProps) {
+export function FileForm({ initialData, onSubmit, onCancel, institution }: FileFormProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<string | null>(null);
+	
+	// Determine model type based on institution
+	const getModelInfo = () => {
+		if (!institution) return null;
+		
+		let modelType;
+		if (institution.slug.includes('cenadi')) {
+			modelType = 'CENADI';
+		} else if (institution.slug.includes('minsup')) {
+			modelType = 'MINESUP';
+		} else {
+			modelType = 'IPES';
+		}
+		
+		return {
+			type: modelType,
+			name: institution.name
+		};
+	};
+	
+	const modelInfo = getModelInfo();
 
 	const form = useForm<{
 		title: string;
@@ -88,8 +112,6 @@ export function FileForm({ initialData, onSubmit, onCancel }: FileFormProps) {
 					: value.length < 10
 						? "La description doit être plus détaillée"
 						: null,
-			visibility: (value) =>
-				!value.length ? "Sélectionnez au moins une visibilité" : null,
 			file: (value, values) =>
 				!initialData && !value ? "Le fichier est requis" : null,
 		},
@@ -187,6 +209,22 @@ export function FileForm({ initialData, onSubmit, onCancel }: FileFormProps) {
 							? "Modifier le document"
 							: "Télécharger un nouveau document"}
 					</Title>
+					
+					{modelInfo && !initialData && (
+						<Alert
+							icon={<IconBuilding size={16} />}
+							title="Information"
+							color="blue"
+							variant="light"
+							mb="md"
+						>
+							<Group>
+								<Text>Ce document sera associé à l'institution:</Text>
+								<Badge color="blue">{modelInfo.name}</Badge>
+								<Text>({modelInfo.type})</Text>
+							</Group>
+						</Alert>
+					)}
 
 					<TextInput
 						label="Titre"

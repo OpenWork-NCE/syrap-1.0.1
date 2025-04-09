@@ -18,7 +18,7 @@ function Page() {
 	return (
 		<>
 			<>
-				<title>Unitées d'Enseignement | SYRAP</title>
+				<title>Unitées d'Enseignement | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>

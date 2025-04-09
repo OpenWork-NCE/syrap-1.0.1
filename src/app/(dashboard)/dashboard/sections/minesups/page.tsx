@@ -17,7 +17,7 @@ function Page() {
 	return (
 		<>
 			<>
-				<title>Minesups | SYRAP</title>
+				<title>Minesups | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>

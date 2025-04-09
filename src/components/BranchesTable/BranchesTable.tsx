@@ -51,7 +51,7 @@ import autoTable from "jspdf-autotable";
 import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Branch } from "@/types";
-import {handleExportAsCSV, handleExportRowsAsPDF} from "@/app/lib/utils";
+import {handleExportAsCSV, handleExportRowsAsPDF, innerUrl} from "@/app/lib/utils";
 
 const csvConfig = mkConfig({
 	fieldSeparator: ",",
@@ -80,16 +80,9 @@ interface Params {
 }
 
 const useGetBranches = () => {
-	const fetchURL = new URL(
-		"/api/branches",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<BranchApiResponse>({
 		queryKey: ["branches"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/branches")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
@@ -461,7 +454,7 @@ function useCreateBranch() {
 	return useMutation({
 		mutationFn: async (branch: Branch) => {
 			const response = await fetch(
-				"http://localhost:3000/api/branches/create",
+				innerUrl("/api/branches/create"),
 				{
 					method: "POST",
 					headers: {
@@ -508,7 +501,7 @@ function useUpdateBranch() {
 	return useMutation({
 		mutationFn: async (branch: Branch) => {
 			const response = await fetch(
-				`http://localhost:3000/api/branches/${branch.id}/update`,
+				innerUrl(`/api/branches/${branch.id}/update`),
 				{
 					method: "PUT",
 					headers: {
@@ -554,7 +547,7 @@ function useDeleteBranch() {
 	return useMutation({
 		mutationFn: async (branchId: string) => {
 			const response = await fetch(
-				`http://localhost:3000/api/branches/${branchId}/delete`,
+				innerUrl(`/api/branches/${branchId}/delete`),
 				{
 					method: "DELETE",
 					headers: {

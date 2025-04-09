@@ -50,6 +50,7 @@ interface ProgramTableProps {
 	setFilteredPrograms: (filteredPrograms: Program[]) => void;
 	onUpdate: (program: Program) => void;
 	onDelete: (programId: string) => void;
+	instituteType?: "IPES" | "University";
 }
 
 export function ProgramTable({
@@ -60,6 +61,7 @@ export function ProgramTable({
 	year,
 	setFilteredPrograms,
 	filteredPrograms,
+	instituteType = "University",
 }: ProgramTableProps) {
 	const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 	const [
@@ -422,7 +424,7 @@ export function ProgramTable({
 								{university}
 							</Title>
 							<Group gap="xs">
-								<Text fw={500}>Filière :</Text>
+								<Text fw={500}>{instituteType === "IPES" ? "Filière IPES :" : "Filière :"}</Text>
 								<Text>{program.branchName}</Text>
 								<Divider orientation="vertical" />
 								<Text fw={500}>Niveau :</Text>
@@ -433,6 +435,13 @@ export function ProgramTable({
 									<Text fw={500}>Année :</Text>
 									<Text>{activeTab === "all" ? "Toutes" : activeTab}</Text>
 								</Group>
+								{instituteType === "IPES" && program.guardianUniversity && (
+									<>
+										<Divider orientation="vertical" />
+										<Text fw={500}>Université de tutelle :</Text>
+										<Text>{program.guardianUniversity}</Text>
+									</>
+								)}
 							</Group>
 						</Stack>
 						<Group>

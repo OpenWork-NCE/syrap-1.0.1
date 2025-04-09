@@ -51,13 +51,8 @@ import autoTable from "jspdf-autotable";
 import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Cenadi } from "@/types";
-import { getInstitutionName } from "@/app/lib/utils";
-
-const csvConfig = mkConfig({
-	fieldSeparator: ",",
-	decimalSeparator: ".",
-	useKeysAsHeaders: true,
-});
+import { getInstitutionName, handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/utils";
+import { useCreateCenadi, useUpdateCenadi, useDeleteCenadi } from "@/app/lib/actionHooks";
 
 type CenadiApiResponse = {
 	data: Array<Cenadi>;
@@ -65,25 +60,10 @@ type CenadiApiResponse = {
 	success: string;
 };
 
-interface Params {
-	columnFilterFns: MRT_ColumnFilterFnsState;
-	columnFilters: MRT_ColumnFiltersState;
-	globalFilter: string;
-	sorting: MRT_SortingState;
-	// pagination: MRT_PaginationState;
-}
-
 const useGetCenadis = () => {
-	const fetchURL = new URL(
-		"/api/cenadis",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<CenadiApiResponse>({
 		queryKey: ["cenadis"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/cenadis")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
@@ -94,75 +74,6 @@ const Section = (props: any) => {
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string | undefined>
 	>({});
-
-	const handleExportRows = (rows: MRT_Row<Cenadi>[]) => {
-		const doc = new jsPDF("portrait", "pt", "A4");
-		const pageWidth = doc.internal.pageSize.getWidth();
-		const logoUrl = "/thumbnail.png";
-
-		// French Column (Left)
-		const frenchText = `
-      REPUBLIQUE DU CAMEROUN
-             Paix – Travail – Patrie
-              -------------------------
-        MINISTERE DES FINANCES
-              -------------------------
-         SECRETARIAT GENERAL
-              ------------------------
-          CENTRE NATIONAL DE
-           DEVELOPPEMENT DE
-               L’INFORMATIQUE
-               -------------------------
-    `;
-
-		const englishText = `
-          REPUBLIC OF CAMEROON
-           Peace – Work – Fatherland
-                  -------------------------
-             MINISTRY OF FINANCE
-                  -------------------------
-            GENERAL SECRETARIAT
-                  -------------------------
-          NATIONAL CENTRE FOR THE
-        DEVELOPMENT OF COMPUTER
-                           SERVICES
-              ------------------------------------
-    `;
-
-		doc.setFontSize(10);
-		doc.text(frenchText, 40, 50);
-		doc.addImage(logoUrl, "PNG", pageWidth / 2 - 30, 40, 60, 60);
-		doc.text(englishText, pageWidth - 250, 50);
-
-		const tableData = rows.map((row) => Object.values(row.original));
-		const tableHeaders = columns.map((c) => c.header);
-
-		autoTable(doc, {
-			startY: 200, // Start after the header
-			head: [tableHeaders],
-			body: [["name", "code"]],
-		});
-
-		doc.save("syrap-cenadis.pdf");
-	};
-
-	const handleExportRowsAsCSV = (rows: MRT_Row<Cenadi>[]) => {
-		const rowData = rows.map((row) => ({
-			name: row.original.name,
-			code: row.original.code,
-		}));
-		const csv = generateCsv(csvConfig)(rowData);
-		download(csvConfig)(csv);
-	};
-
-	const handleExportDataAsCSV = () => {
-		const allData = fetchedCenadis.map((row) => ({
-			name: row.name,
-			code: row.code,
-		}));
-		const csv = generateCsv(csvConfig)(allData);
-		download(csvConfig)(csv);
-	};
 
 	const columns = useMemo<MRT_ColumnDef<Cenadi>[]>(
 		() => [
@@ -228,12 +139,9 @@ const Section = (props: any) => {
 	const fetchedCenadis = data?.data ?? [];
 	console.log("Voici les cenadis : ", fetchedCenadis);
 
-	const { mutateAsync: createCenadi, isPending: isCreatingCenadi } =
-		useCreateCenadi();
-	const { mutateAsync: updateCenadi, isPending: isUpdatingCenadi } =
-		useUpdateCenadi();
-	const { mutateAsync: deleteCenadi, isPending: isDeletingCenadi } =
-		useDeleteCenadi();
+	const { mutateAsync: createCenadi, isPending: isCreatingCenadi } = useCreateCenadi<Cenadi>();
+	const { mutateAsync: updateCenadi, isPending: isUpdatingCenadi } = useUpdateCenadi<Cenadi>();
+	const { mutateAsync: deleteCenadi, isPending: isDeletingCenadi } = useDeleteCenadi();
 
 	const handleCreateCenadi: MRT_TableOptions<Cenadi>["onCreatingRowSave"] =
 		async ({ values, exitCreatingMode }) => {
@@ -418,7 +326,7 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getPrePaginationRowModel().rows)
+									handleExportRowsAsPDF(["name", "code"], table.getPrePaginationRowModel().rows.map(row => [row.original.name, row.original.code]))
 								}
 							>
 								Exporter tout
@@ -427,7 +335,7 @@ const Section = (props: any) => {
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
 								leftSection={<IconFileTypePdf />}
-								onClick={() => handleExportRows(table.getRowModel().rows)}
+								onClick={() => handleExportRowsAsPDF(["name", "code"], table.getRowModel().rows.map(row => [row.original.name, row.original.code]))}
 							>
 								Exporter la page
 							</Menu.Item>
@@ -439,7 +347,7 @@ const Section = (props: any) => {
 								//only export selected rows
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getSelectedRowModel().rows)
+									handleExportRowsAsPDF(["name", "code"], table.getSelectedRowModel().rows.map(row => [row.original.name, row.original.code]))
 								}
 							>
 								Exporter la selection
@@ -448,7 +356,10 @@ const Section = (props: any) => {
 							<Menu.Label>Format Excel</Menu.Label>
 							<Menu.Item
 								//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
-								onClick={handleExportDataAsCSV}
+								onClick={() => handleExportAsCSV(fetchedCenadis.map(row => ({
+									name: row.name,
+									code: row.code,
+								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter tout
@@ -457,7 +368,10 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								//export all rows, including from the next page, (still respects filtering and sorting)
 								onClick={() =>
-									handleExportRowsAsCSV(table.getPrePaginationRowModel().rows)
+									handleExportAsCSV(table.getPrePaginationRowModel().rows.map(row => ({
+										name: row.original.name,
+										code: row.original.code,
+									})))
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -466,7 +380,10 @@ const Section = (props: any) => {
 							<Menu.Item
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								onClick={() => handleExportRowsAsCSV(table.getRowModel().rows)}
+								onClick={() => handleExportAsCSV(table.getRowModel().rows.map(row => ({
+									name: row.original.name,
+									code: row.original.code,
+								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter toutes la pages
@@ -478,7 +395,10 @@ const Section = (props: any) => {
 								}
 								//only export selected rows
 								onClick={() =>
-									handleExportRowsAsCSV(table.getSelectedRowModel().rows)
+									handleExportAsCSV(table.getSelectedRowModel().rows.map(row => ({
+										name: row.original.name,
+										code: row.original.code,
+									})))
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -504,151 +424,6 @@ const Section = (props: any) => {
 
 	return <MantineReactTable table={table} />;
 };
-
-function useCreateCenadi() {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: async (cenadi: Cenadi) => {
-			const response = await fetch("http://localhost:3000/api/cenadis/create", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(cenadi),
-			});
-
-			if (!response.ok) {
-				throw new Error("Erreur lors de la création de l'Institution Cenadi");
-			}
-
-			notifications.show({
-				color: "teal",
-				title: "Institution Cenadi créee",
-				message: "Merci de votre patience",
-				icon: <IconCheck />,
-				loading: false,
-				autoClose: 2000,
-			});
-			return await response.json();
-		},
-		onMutate: (newCenadiInfo: Cenadi) => {
-			queryClient.setQueryData(["cenadis"], (prevCenadis: any) => {
-				const cenadiList = Array.isArray(prevCenadis) ? prevCenadis : [];
-				return [
-					...cenadiList,
-					{
-						...newCenadiInfo,
-						id: (Math.random() + 1).toString(36).substring(7),
-					},
-				] as Cenadi[];
-			});
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ["cenadis"] });
-		},
-	});
-}
-
-function useUpdateCenadi() {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: async (cenadi: Cenadi) => {
-			const response = await fetch(
-				`http://localhost:3000/api/cenadis/${cenadi.id}/update`,
-				{
-					method: "PUT",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify(cenadi),
-				},
-			);
-
-			if (!response.ok) {
-				throw new Error(
-					"Erreur lors de la mise à jour de l'Institution Cenadi",
-				);
-			}
-
-			notifications.show({
-				color: "green",
-				title: "Institution Cenadi mise à jour",
-				message: "Merci de votre patience",
-				icon: <IconCheck />,
-				loading: false,
-				autoClose: 2000,
-			});
-			return await response.json();
-		},
-		onMutate: (newCenadiInfo: Cenadi) => {
-			queryClient.setQueryData(["cenadis"], (prevCenadis: any) => {
-				const cenadiList = Array.isArray(prevCenadis) ? prevCenadis : [];
-
-				return cenadiList.map((cenadi: Cenadi) =>
-					cenadi.id === newCenadiInfo.id
-						? { ...cenadi, ...newCenadiInfo }
-						: cenadi,
-				);
-			});
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ["cenadis"] });
-		},
-	});
-}
-
-function useDeleteCenadi() {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: async (cenadiId: string) => {
-			const response = await fetch(
-				`http://localhost:3000/api/cenadis/${cenadiId}/delete`,
-				{
-					method: "DELETE",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({ id: cenadiId }),
-				},
-			);
-
-			if (!response.ok) {
-				throw new Error("Erreur lors de la suppression du rôle");
-			}
-
-			notifications.show({
-				color: "red",
-				title: "Institution Cenadi supprimée",
-				message: "Merci de votre patience",
-				icon: <IconCheck />,
-				loading: false,
-				autoClose: 2000,
-			});
-			return await response.json();
-		},
-		onMutate: (cenadiId: string) => {
-			queryClient.cancelQueries({ queryKey: ["cenadis"] });
-
-			const previousCenadis = queryClient.getQueryData(["cenadis"]);
-
-			queryClient.setQueryData(["cenadis"], (prevCenadis: any | undefined) => {
-				return prevCenadis?.data?.filter(
-					(cenadi: Cenadi) => cenadi.id !== cenadiId,
-				);
-			});
-
-			return { previousCenadis };
-		},
-		onError: (err, cenadiId, context: any) => {
-			if (context?.previousCenadis) {
-				queryClient.setQueryData(["cenadis"], context.previousCenadis);
-			}
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ["cenadis"] });
-		},
-	});
-}
 
 const queryClient = new QueryClient();
 

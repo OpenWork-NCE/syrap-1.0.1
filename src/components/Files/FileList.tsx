@@ -22,6 +22,7 @@ import {
 	Divider,
 	Box,
 	ScrollArea,
+	UnstyledButton,
 } from "@mantine/core";
 import {
 	IconDotsVertical,
@@ -32,10 +33,9 @@ import {
 	IconRefresh,
 	IconFilter,
 	IconAlertCircle,
-	IconSortAscending,
-	IconSortDescending,
 	IconFileUpload,
-	IconPlus,
+	IconChevronUp,
+	IconChevronDown,
 } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -45,6 +45,8 @@ import {
 	formatDate,
 	getFileTypeIcon,
 	getFileTypeColor,
+	formatDateToFrench,
+	showConfirmationDialog,
 } from "@/app/lib/utils";
 import { FileForm } from "./FileForm";
 
@@ -55,11 +57,13 @@ interface FileListProps {
 	onPageChange: (page: number) => void;
 	onSearch: (query: string) => void;
 	onRefresh: () => void;
-	onDelete: (id: string) => Promise<void>;
-	onEdit: (id: string, data: Partial<FileDocument>) => Promise<void>;
+	onDelete: (id: string) => void;
+	onEdit: (id: string, data: Partial<FileDocument>) => void;
 	onSort: (type: FileType | "all") => void;
 	onUpload: () => void;
 	isLoading: boolean;
+	sortOrder: "asc" | "desc";
+	onToggleSort: () => void;
 }
 
 export function FileList({
@@ -74,6 +78,8 @@ export function FileList({
 	onSort,
 	onUpload,
 	isLoading,
+	sortOrder,
+	onToggleSort,
 }: FileListProps) {
 	// Ensure files is always an array, even if undefined is passed
 	const filesList = Array.isArray(files) ? files : [];
@@ -82,17 +88,14 @@ export function FileList({
 	const [deleteConfirmFile, setDeleteConfirmFile] =
 		useState<FileDocument | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+	const [fileTypeFilter, setFileTypeFilter] = useState<FileType | "all">("all");
 	const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
 		useDisclosure(false);
 	const [
 		deleteModalOpened,
 		{ open: openDeleteModal, close: closeDeleteModal },
 	] = useDisclosure(false);
-	const [
-		uploadModalOpened,
-		{ open: openUploadModal, close: closeUploadModal },
-	] = useDisclosure(false);
+	const [localLoading, setLocalLoading] = useState(false);
 
 	// Handle search with debounce
 	useEffect(() => {
@@ -106,11 +109,11 @@ export function FileList({
 	const handleEdit = async (values: FileFormData) => {
 		if (editingFile) {
 			try {
+				setLocalLoading(true);
 				// Convert FileFormData to the format expected by the API
 				const fileData: Partial<FileDocument> = {
 					title: values.title,
 					description: values.description,
-					visibility: values.visibility as ("CENADI" | "MINESUP" | "IPES")[],
 				};
 
 				await onEdit(editingFile.id, fileData);
@@ -120,13 +123,14 @@ export function FileList({
 					color: "green",
 				});
 				closeEditModal();
-				onRefresh(); // Refresh the list
 			} catch (error) {
 				notifications.show({
 					title: "Erreur",
 					message: "Erreur lors de la modification du document",
 					color: "red",
 				});
+			} finally {
+				setLocalLoading(false);
 			}
 		}
 	};
@@ -134,6 +138,7 @@ export function FileList({
 	const handleDelete = async () => {
 		if (deleteConfirmFile) {
 			try {
+				setLocalLoading(true);
 				await onDelete(deleteConfirmFile.id);
 				notifications.show({
 					title: "Succès",
@@ -141,44 +146,65 @@ export function FileList({
 					color: "green",
 				});
 				closeDeleteModal();
-				onRefresh(); // Refresh the list
 			} catch (error) {
 				notifications.show({
 					title: "Erreur",
 					message: "Erreur lors de la suppression du document",
 					color: "red",
 				});
+			} finally {
+				setLocalLoading(false);
 			}
 		}
 	};
 
-	const handleDownload = (id: string, filename: string) => {
+	const handleDownload = async (downloadUrl: string, fileName: string) => {
 		try {
-			// Create a link to download the file
-			const link = document.createElement("a");
-			link.href = `/api/files/${id}/download`;
-			link.download = filename;
+			// Make API call to download
+			const response = await fetch(`/api/files/download?download_url=${encodeURIComponent(downloadUrl)}`);
+			
+			if (!response.ok) {
+				throw new Error('Download failed');
+			}
+			
+			// Create a blob from the response
+			const blob = await response.blob();
+			
+			// Create a download link and trigger download
+			const url = window.URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = fileName;
 			document.body.appendChild(link);
 			link.click();
+			window.URL.revokeObjectURL(url);
 			document.body.removeChild(link);
-
-			notifications.show({
-				title: "Téléchargement",
-				message: "Téléchargement démarré",
-				color: "blue",
-			});
 		} catch (error) {
-			notifications.show({
-				title: "Erreur",
-				message: "Erreur lors du téléchargement du document",
-				color: "red",
-			});
+			console.error("Download error:", error);
+			// Show error notification
 		}
 	};
 
 	const toggleSortOrder = () => {
-		setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-		// Implement sorting logic here if needed
+		if (onToggleSort) {
+			onToggleSort();
+		}
+	};
+
+	const handleFileTypeChange = (value: string | null) => {
+		const newType = (value || "all") as FileType | "all";
+		setFileTypeFilter(newType);
+		onSort(newType);
+	};
+
+	const confirmDelete = (id: string) => {
+		showConfirmationDialog({
+			title: "Confirmer la suppression",
+			message: "Êtes-vous sûr de vouloir supprimer ce fichier?",
+			confirmLabel: "Supprimer",
+			cancelLabel: "Annuler",
+			onConfirm: () => onDelete(id),
+		});
 	};
 
 	return (
@@ -186,40 +212,55 @@ export function FileList({
 			<Stack gap="md">
 				<Group justify="space-between">
 					<Title order={3}>Liste des documents</Title>
+					<Button 
+						leftSection={<IconFileUpload/>}
+						onClick={onUpload}
+						disabled={isLoading || localLoading}
+					>
+						Ajouter un document
+					</Button>
 				</Group>
 
 				<Group>
 					<TextInput
+						size={"md"}
 						placeholder="Rechercher..."
-						leftSection={<IconSearch size={16} />}
+						leftSection={<IconSearch size={18} />}
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.currentTarget.value)}
 						style={{ flex: 1 }}
+						disabled={isLoading || localLoading}
 					/>
 					<Tooltip label="Actualiser">
 						<ActionIcon
 							variant="light"
 							color="blue"
 							onClick={onRefresh}
-							loading={isLoading}
+							loading={isLoading || localLoading}
 						>
-							<IconRefresh size={20} />
+							<IconRefresh />
 						</ActionIcon>
 					</Tooltip>
 					<Tooltip
 						label={`Trier par date (${sortOrder === "asc" ? "croissant" : "décroissant"})`}
 					>
-						<ActionIcon variant="light" color="blue" onClick={toggleSortOrder}>
+						<ActionIcon 
+							variant="light" 
+							color="blue" 
+							onClick={toggleSortOrder}
+							disabled={isLoading || localLoading}
+						>
 							{sortOrder === "asc" ? (
-								<IconSortAscending size={20} />
+								<IconChevronUp />
 							) : (
-								<IconSortDescending size={20} />
+								<IconChevronDown />
 							)}
 						</ActionIcon>
 					</Tooltip>
 					<Select
 						placeholder="Filtrer par type"
-						leftSection={<IconFilter size={16} />}
+						leftSection={<IconFilter size={18} />}
+						size={"md"}
 						data={[
 							{ value: "all", label: "Tous les types" },
 							{ value: "pdf", label: "PDF" },
@@ -229,10 +270,12 @@ export function FileList({
 							{ value: "zip", label: "ZIP" },
 							{ value: "image", label: "Image" },
 						]}
-						onChange={(value) => onSort(value as FileType | "all")}
-						clearable
+						value={fileTypeFilter}
+						onChange={handleFileTypeChange}
+						clearable={false}
 						searchable
 						style={{ width: 200 }}
+						disabled={isLoading || localLoading}
 					/>
 				</Group>
 
@@ -243,7 +286,7 @@ export function FileList({
 					</Group>
 				) : filesList.length === 0 ? (
 					<Alert
-						icon={<IconAlertCircle size={16} />}
+						icon={<IconAlertCircle size={20} />}
 						title="Aucun document"
 						color="gray"
 						variant="light"
@@ -252,8 +295,8 @@ export function FileList({
 						télécharger un nouveau document.
 					</Alert>
 				) : (
-					<ScrollArea h={400}>
-						<Table striped highlightOnHover withTableBorder withColumnBorders>
+					<ScrollArea h={'60vh'}>
+						<Table striped highlightOnHover withColumnBorders verticalSpacing={'sm'} >
 							<Table.Thead>
 								<Table.Tr>
 									<Table.Th>Type</Table.Th>
@@ -275,7 +318,7 @@ export function FileList({
 											<Table.Td>
 												<Tooltip label={file.type.toUpperCase()}>
 													<Box>
-														<Icon size={20} color={color} />
+														<Icon color={color} />
 													</Box>
 												</Tooltip>
 											</Table.Td>
@@ -307,8 +350,9 @@ export function FileList({
 																setEditingFile(file);
 																openEditModal();
 															}}
+															disabled={localLoading}
 														>
-															<IconEdit size={18} />
+															<IconEdit />
 														</ActionIcon>
 													</Tooltip>
 													<Tooltip label="Supprimer">
@@ -319,8 +363,9 @@ export function FileList({
 																setDeleteConfirmFile(file);
 																openDeleteModal();
 															}}
+															disabled={localLoading}
 														>
-															<IconTrash size={18} />
+															<IconTrash />
 														</ActionIcon>
 													</Tooltip>
 													<Tooltip label="Télécharger">
@@ -328,10 +373,11 @@ export function FileList({
 															variant="subtle"
 															color="green"
 															onClick={() =>
-																handleDownload(file.id, file.title)
+																handleDownload(file.url, file.title)
 															}
+															disabled={localLoading}
 														>
-															<IconDownload size={18} />
+															<IconDownload />
 														</ActionIcon>
 													</Tooltip>
 												</Group>
@@ -352,6 +398,7 @@ export function FileList({
 							onChange={onPageChange}
 							radius="md"
 							withEdges
+							disabled={isLoading || localLoading}
 						/>
 						<Text size="sm" c="dimmed">
 							Affichage de {filesList.length} sur {total} documents
@@ -403,69 +450,14 @@ export function FileList({
 						</Text>
 					</Alert>
 					<Group justify="flex-end" mt="md">
-						<Button variant="light" onClick={closeDeleteModal}>
+						<Button variant="light" onClick={closeDeleteModal} disabled={localLoading}>
 							Annuler
 						</Button>
-						<Button color="red" onClick={handleDelete}>
+						<Button color="red" onClick={handleDelete} loading={localLoading}>
 							Supprimer
 						</Button>
 					</Group>
 				</Stack>
-			</Modal>
-
-			{/* Upload Modal */}
-			<Modal
-				opened={uploadModalOpened}
-				onClose={closeUploadModal}
-				title="Ajouter un document"
-				size="lg"
-				padding="lg"
-				radius="md"
-				centered
-			>
-				<FileForm
-					onSubmit={async (values) => {
-						try {
-							// Create FormData
-							const formData = new FormData();
-							if (values.file) {
-								formData.append("file", values.file);
-							}
-							formData.append("title", values.title);
-							formData.append("description", values.description);
-							values.visibility.forEach((v) => {
-								formData.append("visibility[]", v);
-							});
-
-							// Make API request
-							const response = await fetch("/api/files/upload", {
-								method: "POST",
-								body: formData,
-							});
-
-							if (!response.ok) {
-								throw new Error("Failed to upload file");
-							}
-
-							// Close modal and refresh list
-							closeUploadModal();
-							onRefresh();
-
-							notifications.show({
-								title: "Succès",
-								message: "Document téléchargé avec succès",
-								color: "green",
-							});
-						} catch (error) {
-							notifications.show({
-								title: "Erreur",
-								message: "Erreur lors du téléchargement du document",
-								color: "red",
-							});
-						}
-					}}
-					onCancel={closeUploadModal}
-				/>
 			</Modal>
 		</Paper>
 	);

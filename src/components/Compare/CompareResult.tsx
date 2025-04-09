@@ -429,7 +429,7 @@ export function CompareResult({
 					}
 
 					<div class="footer">
-						<p>Rapport généré le ${new Date().toLocaleDateString("fr-FR")} via SYRAP - Système de Rapprochement Automatique des Programmes</p>
+						<p>Rapport généré le ${new Date().toLocaleDateString("fr-FR")} via SYHPUI - Système d'Harmonisation des Programmes d'Universités et IPES</p>
 					</div>
 
 					<div style="text-align: center; margin-top: 20px;">

@@ -51,7 +51,7 @@ import autoTable from "jspdf-autotable";
 import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Authorization } from "@/types";
-import { getInstitutionName } from "@/app/lib/utils";
+import { getInstitutionName, innerUrl } from "@/app/lib/utils";
 
 const csvConfig = mkConfig({
 	fieldSeparator: ",",
@@ -74,16 +74,9 @@ interface Params {
 }
 
 const useGetAuthorizations = () => {
-	const fetchURL = new URL(
-		"/api/authorizations",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<AuthorizationApiResponse>({
 		queryKey: ["authorizations"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl('/api/authorizations')).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
@@ -94,73 +87,6 @@ const Section = (props: any) => {
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string | undefined>
 	>({});
-
-	const handleExportRows = (rows: MRT_Row<Authorization>[]) => {
-		const doc = new jsPDF("portrait", "pt", "A4");
-		const pageWidth = doc.internal.pageSize.getWidth();
-		const logoUrl = "/thumbnail.png";
-
-		// French Column (Left)
-		const frenchText = `
-      REPUBLIQUE DU CAMEROUN
-             Paix – Travail – Patrie
-              -------------------------
-        MINISTERE DES FINANCES
-              -------------------------
-         SECRETARIAT GENERAL
-              ------------------------
-          CENTRE NATIONAL DE
-           DEVELOPPEMENT DE
-               L’INFORMATIQUE
-               -------------------------
-    `;
-
-		const englishText = `
-          REPUBLIC OF CAMEROON
-           Peace – Work – Fatherland
-                  -------------------------
-             MINISTRY OF FINANCE
-                  -------------------------
-            GENERAL SECRETARIAT
-                  -------------------------
-          NATIONAL CENTRE FOR THE
-        DEVELOPMENT OF COMPUTER
-                           SERVICES
-              ------------------------------------
-    `;
-
-		doc.setFontSize(10);
-		doc.text(frenchText, 40, 50);
-		doc.addImage(logoUrl, "PNG", pageWidth / 2 - 30, 40, 60, 60);
-		doc.text(englishText, pageWidth - 250, 50);
-
-		const tableData = rows.map((row) => Object.values(row.original));
-		const tableHeaders = columns.map((c) => c.header);
-
-		autoTable(doc, {
-			startY: 200, // Start after the header
-			head: [tableHeaders],
-			body: [["name", "slug"]],
-		});
-
-		doc.save("syrap-authorizations.pdf");
-	};
-
-	const handleExportRowsAsCSV = (rows: MRT_Row<Authorization>[]) => {
-		const rowData = rows.map((row) => ({
-			name: row.original.name,
-		}));
-		const csv = generateCsv(csvConfig)(rowData);
-		download(csvConfig)(csv);
-	};
-
-	const handleExportDataAsCSV = () => {
-		const allData = fetchedAuthorizations.map((row) => ({
-			name: row.name,
-		}));
-		const csv = generateCsv(csvConfig)(allData);
-		download(csvConfig)(csv);
-	};
 
 	const columns = useMemo<MRT_ColumnDef<Authorization>[]>(
 		() => [
@@ -379,98 +305,6 @@ const Section = (props: any) => {
 						Nouvelle permission
 					</Button>
 					{/*)}*/}
-					<Menu
-						shadow={"md"}
-						// width={130}
-						trigger="hover"
-						openDelay={100}
-						closeDelay={400}
-					>
-						<Menu.Target>
-							<Button
-								leftSection={<IconTableExport />}
-								rightSection={<IconDownload size={14} />}
-								variant={"filled"}
-							>
-								Exporter
-							</Button>
-						</Menu.Target>
-
-						<Menu.Dropdown>
-							<Menu.Label>Format PDF</Menu.Label>
-							<Menu.Item
-								//export all rows, including from the next page, (still respects filtering and sorting)
-								disabled={table.getPrePaginationRowModel().rows.length === 0}
-								leftSection={<IconFileTypePdf />}
-								onClick={() =>
-									handleExportRows(table.getPrePaginationRowModel().rows)
-								}
-							>
-								Exporter tout
-							</Menu.Item>
-							<Menu.Item
-								disabled={table.getRowModel().rows.length === 0}
-								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								leftSection={<IconFileTypePdf />}
-								onClick={() => handleExportRows(table.getRowModel().rows)}
-							>
-								Exporter la page
-							</Menu.Item>
-							<Menu.Item
-								disabled={
-									!table.getIsSomeRowsSelected() &&
-									!table.getIsAllRowsSelected()
-								}
-								//only export selected rows
-								leftSection={<IconFileTypePdf />}
-								onClick={() =>
-									handleExportRows(table.getSelectedRowModel().rows)
-								}
-							>
-								Exporter la selection
-							</Menu.Item>
-							<Menu.Divider />
-							<Menu.Label>Format Excel</Menu.Label>
-							<Menu.Item
-								//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
-								onClick={handleExportDataAsCSV}
-								leftSection={<IconFileTypeCsv />}
-							>
-								Exporter tout
-							</Menu.Item>
-							<Menu.Item
-								disabled={table.getPrePaginationRowModel().rows.length === 0}
-								//export all rows, including from the next page, (still respects filtering and sorting)
-								onClick={() =>
-									handleExportRowsAsCSV(table.getPrePaginationRowModel().rows)
-								}
-								leftSection={<IconFileTypeCsv />}
-							>
-								Exporter toute les lignes
-							</Menu.Item>
-							<Menu.Item
-								disabled={table.getRowModel().rows.length === 0}
-								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								onClick={() => handleExportRowsAsCSV(table.getRowModel().rows)}
-								leftSection={<IconFileTypeCsv />}
-							>
-								Exporter toutes la pages
-							</Menu.Item>
-							<Menu.Item
-								disabled={
-									!table.getIsSomeRowsSelected() &&
-									!table.getIsAllRowsSelected()
-								}
-								//only export selected rows
-								onClick={() =>
-									handleExportRowsAsCSV(table.getSelectedRowModel().rows)
-								}
-								leftSection={<IconFileTypeCsv />}
-							>
-								Exporter la selection
-							</Menu.Item>
-						</Menu.Dropdown>
-					</Menu>
 				</Flex>
 			</>
 		),
@@ -498,7 +332,7 @@ function useCreateAuthorization() {
 	return useMutation({
 		mutationFn: async (authorization: Authorization) => {
 			const response = await fetch(
-				"http://localhost:3000/api/authorizations/create",
+				innerUrl("/api/authorizations/create"),
 				{
 					method: "POST",
 					headers: {
@@ -550,7 +384,7 @@ function useUpdateAuthorization() {
 	return useMutation({
 		mutationFn: async (authorization: Authorization) => {
 			const response = await fetch(
-				`http://localhost:3000/api/authorizations/${authorization.id}/update`,
+				innerUrl(`/api/authorizations/${authorization.id}/update`),
 				{
 					method: "PUT",
 					headers: {
@@ -601,7 +435,7 @@ function useDeleteAuthorization() {
 	return useMutation({
 		mutationFn: async (authorizationId: string) => {
 			const response = await fetch(
-				`http://localhost:3000/api/authorizations/${authorizationId}/delete`,
+				innerUrl(`/api/authorizations/${authorizationId}/delete`),
 				{
 					method: "DELETE",
 					headers: {

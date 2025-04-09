@@ -18,7 +18,7 @@ function Page() {
 	return (
 		<>
 			<>
-				<title>Cenadis | SYRAP</title>
+				<title>Cenadis | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>

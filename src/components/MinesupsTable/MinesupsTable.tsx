@@ -51,7 +51,8 @@ import autoTable from "jspdf-autotable";
 import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Minesup } from "@/types";
-import { getInstitutionName } from "@/app/lib/utils";
+import { getInstitutionName, innerUrl } from "@/app/lib/utils";
+import { handleExportAsCSV, handleExportRowsAsPDF } from "@/app/lib/utils";
 
 const csvConfig = mkConfig({
 	fieldSeparator: ",",
@@ -74,16 +75,9 @@ interface Params {
 }
 
 const useGetMinesups = () => {
-	const fetchURL = new URL(
-		"/api/minesups",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<MinesupApiResponse>({
 		queryKey: ["minesups"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/minesups")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
@@ -94,75 +88,6 @@ const Section = (props: any) => {
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string | undefined>
 	>({});
-
-	const handleExportRows = (rows: MRT_Row<Minesup>[]) => {
-		const doc = new jsPDF("portrait", "pt", "A4");
-		const pageWidth = doc.internal.pageSize.getWidth();
-		const logoUrl = "/thumbnail.png";
-
-		// French Column (Left)
-		const frenchText = `
-      REPUBLIQUE DU CAMEROUN
-             Paix – Travail – Patrie
-              -------------------------
-        MINISTERE DES FINANCES
-              -------------------------
-         SECRETARIAT GENERAL
-              ------------------------
-          CENTRE NATIONAL DE
-           DEVELOPPEMENT DE
-               L’INFORMATIQUE
-               -------------------------
-    `;
-
-		const englishText = `
-          REPUBLIC OF CAMEROON
-           Peace – Work – Fatherland
-                  -------------------------
-             MINISTRY OF FINANCE
-                  -------------------------
-            GENERAL SECRETARIAT
-                  -------------------------
-          NATIONAL CENTRE FOR THE
-        DEVELOPMENT OF COMPUTER
-                           SERVICES
-              ------------------------------------
-    `;
-
-		doc.setFontSize(10);
-		doc.text(frenchText, 40, 50);
-		doc.addImage(logoUrl, "PNG", pageWidth / 2 - 30, 40, 60, 60);
-		doc.text(englishText, pageWidth - 250, 50);
-
-		const tableData = rows.map((row) => Object.values(row.original));
-		const tableHeaders = columns.map((c) => c.header);
-
-		autoTable(doc, {
-			startY: 200, // Start after the header
-			head: [tableHeaders],
-			body: [["name", "code"]],
-		});
-
-		doc.save("syrap-minesups.pdf");
-	};
-
-	const handleExportRowsAsCSV = (rows: MRT_Row<Minesup>[]) => {
-		const rowData = rows.map((row) => ({
-			name: row.original.name,
-			code: row.original.code,
-		}));
-		const csv = generateCsv(csvConfig)(rowData);
-		download(csvConfig)(csv);
-	};
-
-	const handleExportDataAsCSV = () => {
-		const allData = fetchedMinesups.map((row) => ({
-			name: row.name,
-			code: row.code,
-		}));
-		const csv = generateCsv(csvConfig)(allData);
-		download(csvConfig)(csv);
-	};
 
 	const columns = useMemo<MRT_ColumnDef<Minesup>[]>(
 		() => [
@@ -418,7 +343,7 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getPrePaginationRowModel().rows)
+									handleExportRowsAsPDF(["name", "code"], table.getPrePaginationRowModel().rows.map(row => [row.original.name, row.original.code]))
 								}
 							>
 								Exporter tout
@@ -427,7 +352,7 @@ const Section = (props: any) => {
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
 								leftSection={<IconFileTypePdf />}
-								onClick={() => handleExportRows(table.getRowModel().rows)}
+								onClick={() => handleExportRowsAsPDF(["name", "code"], table.getRowModel().rows.map(row => [row.original.name, row.original.code]))}
 							>
 								Exporter la page
 							</Menu.Item>
@@ -439,7 +364,7 @@ const Section = (props: any) => {
 								//only export selected rows
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getSelectedRowModel().rows)
+									handleExportRowsAsPDF(["name", "code"], table.getSelectedRowModel().rows.map(row => [row.original.name, row.original.code]))
 								}
 							>
 								Exporter la selection
@@ -448,7 +373,10 @@ const Section = (props: any) => {
 							<Menu.Label>Format Excel</Menu.Label>
 							<Menu.Item
 								//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
-								onClick={handleExportDataAsCSV}
+								onClick={() => handleExportAsCSV(fetchedMinesups.map(row => ({
+									name: row.name,
+									code: row.code,
+								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter tout
@@ -457,7 +385,10 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								//export all rows, including from the next page, (still respects filtering and sorting)
 								onClick={() =>
-									handleExportRowsAsCSV(table.getPrePaginationRowModel().rows)
+									handleExportAsCSV(table.getPrePaginationRowModel().rows.map(row => ({
+										name: row.original.name,
+										code: row.original.code,
+									})))
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -466,7 +397,10 @@ const Section = (props: any) => {
 							<Menu.Item
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								onClick={() => handleExportRowsAsCSV(table.getRowModel().rows)}
+								onClick={() => handleExportAsCSV(table.getRowModel().rows.map(row => ({
+									name: row.original.name,
+									code: row.original.code,
+								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter toutes la pages
@@ -478,7 +412,10 @@ const Section = (props: any) => {
 								}
 								//only export selected rows
 								onClick={() =>
-									handleExportRowsAsCSV(table.getSelectedRowModel().rows)
+									handleExportAsCSV(table.getSelectedRowModel().rows.map(row => ({
+										name: row.original.name,
+										code: row.original.code,
+									})))
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -510,7 +447,7 @@ function useCreateMinesup() {
 	return useMutation({
 		mutationFn: async (minesup: Minesup) => {
 			const response = await fetch(
-				"http://localhost:3000/api/minesups/create",
+				innerUrl("/api/minesups/create"),
 				{
 					method: "POST",
 					headers: {
@@ -557,7 +494,7 @@ function useUpdateMinesup() {
 	return useMutation({
 		mutationFn: async (minesup: Minesup) => {
 			const response = await fetch(
-				`http://localhost:3000/api/minesups/${minesup.id}/update`,
+				innerUrl(`/api/minesups/${minesup.id}/update`),
 				{
 					method: "PUT",
 					headers: {
@@ -605,7 +542,7 @@ function useDeleteMinesup() {
 	return useMutation({
 		mutationFn: async (minesupId: string) => {
 			const response = await fetch(
-				`http://localhost:3000/api/minesups/${minesupId}/delete`,
+				innerUrl(`/api/minesups/${minesupId}/delete`),
 				{
 					method: "DELETE",
 					headers: {

@@ -1,11 +1,186 @@
 ---
-description: SYRAP UI Design Patterns
+description: 
 globs: 
 alwaysApply: false
 ---
-# SYRAP UI Design Patterns
+## Overview
 
-This rule file defines standardized UI design patterns for the SYRAP application to ensure consistency across all components.
+This rule provides guidance on how to properly use the global theme configuration defined in `src/styles/theme.ts` when creating new UI components. Following these guidelines ensures visual consistency across the application and leverages the predefined design system.
+
+## Theme Structure
+
+The application uses Mantine UI with custom themes defined in `src/styles/theme.ts`:
+
+- `themeCenadi` - Blue color scheme
+- `themeMinesup` - Green color scheme
+- `themeIpes` - Gray color scheme
+
+Each theme extends a `baseThemeConfig` that includes common styling for components, transitions, shadows, and other design elements.
+
+## Using Theme Variables
+
+### Colors
+
+Always use theme color variables instead of hardcoded values:
+
+```tsx
+// ❌ Don't use hardcoded colors
+<Box sx={{ color: '#228be6' }} />
+
+// ✅ Use theme variables instead
+<Box sx={{ color: 'var(--mantine-color-primary-6)' }} />
+```
+
+### Spacing
+
+Use Mantine's spacing variables for consistent layout:
+
+```tsx
+// ❌ Don't use arbitrary pixel values
+<Box sx={{ padding: '15px' }} />
+
+// ✅ Use theme spacing variables
+<Box sx={{ padding: 'var(--mantine-spacing-md)' }} />
+```
+
+### Gradients
+
+Use predefined gradients from the theme:
+
+```tsx
+// ❌ Don't create custom gradients
+<Box sx={{ background: 'linear-gradient(45deg, blue, lightblue)' }} />
+
+// ✅ Use theme gradients
+<Box sx={{ background: 'var(--mantine-other-gradients-primary)' }} />
+```
+
+### Transitions
+
+Use consistent transitions from the theme:
+
+```tsx
+// ❌ Don't use custom transitions
+<Box sx={{ transition: 'all 0.4s ease-in-out' }} />
+
+// ✅ Use theme transitions
+<Box sx={{ transition: 'var(--mantine-other-transitions-default)' }} />
+```
+
+### Shadows
+
+Apply consistent shadows from the theme:
+
+```tsx
+// ❌ Don't use custom shadows
+<Box sx={{ boxShadow: '0 5px 10px rgba(0,0,0,0.2)' }} />
+
+// ✅ Use theme shadows
+<Box sx={{ boxShadow: 'var(--mantine-other-shadows-md)' }} />
+```
+
+## CSS Modules Best Practices
+
+When using CSS modules (like `EmailSection.module.css`), access theme variables with the `var()` function:
+
+```css
+.wrapper {
+	/* Use theme colors */
+	background-color: light-dark(
+		var(--mantine-color-white),
+		var(--mantine-color-dark-8)
+	);
+
+	/* Use theme spacing */
+	padding: calc(var(--mantine-spacing-xl) * 2);
+
+	/* Use theme breakpoints for responsive design */
+	@media (max-width: var(--mantine-breakpoint-sm)) {
+		flex-direction: column;
+	}
+}
+```
+
+## Component Styling
+
+### Styled Components
+
+When creating styled components, leverage the theme properties:
+
+```tsx
+import { createStyles } from "@mantine/core";
+
+const useStyles = createStyles((theme) => ({
+	container: {
+		backgroundColor:
+			theme.colorScheme === "dark"
+				? theme.colors.dark[6]
+				: theme.colors.gray[0],
+		padding: theme.spacing.md,
+		borderRadius: theme.radius.md,
+		boxShadow: theme.other.shadows.md,
+		transition: theme.other.transitions.default,
+	},
+}));
+```
+
+### Component Props
+
+Use theme-consistent props when configuring Mantine components:
+
+```tsx
+// ✅ Use consistent component configuration
+<Button
+	radius="md"
+	color="primary"
+	variant="gradient"
+	gradient={{ from: "primary.6", to: "primary.4", deg: 45 }}
+>
+	Submit
+</Button>
+```
+
+## Responsive Design
+
+Use Mantine's breakpoint variables for consistent responsive behavior:
+
+```tsx
+<Box
+	sx={(theme) => ({
+		padding: theme.spacing.xl,
+
+		// Use theme breakpoints
+		[`@media (max-width: ${theme.breakpoints.sm})`]: {
+			padding: theme.spacing.md,
+		},
+	})}
+/>
+```
+
+## Theme Switching
+
+When implementing theme switching functionality, use the predefined themes:
+
+```tsx
+import { MantineProvider } from "@mantine/core";
+import { themeCenadi, themeMinesup, themeIpes } from "@/styles/theme";
+
+// Example of theme switching based on user preference
+function App({ userTheme }) {
+	const theme =
+		userTheme === "minesup"
+			? themeMinesup
+			: userTheme === "ipes"
+				? themeIpes
+				: themeCenadi; // default
+
+	return <MantineProvider theme={theme}>{/* App content */}</MantineProvider>;
+}
+```
+
+# SYHPUI UI Design Patterns
+
+This rule file defines standardized UI design patterns for the SYHPUI application to ensure consistency across all components.
 
 ## Color Schemes and Theming
 

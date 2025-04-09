@@ -1,11 +1,12 @@
 .navbar {
 	background-color: light-dark(var(--bg-light), var(--bg-dark));
-	height: 100vh;
+	height: 90vh;
 	width: rem(300px);
 	padding: var(--spacing-md);
-	padding-bottom: calc(var(--spacing-md) + 60px); /* Add space for footer */
-	display: flex;
+	padding-bottom: calc(var(--spacing-md)); /* Add space for footer */
+	display: flex;	
 	flex-direction: column;
+	justify-content: space-between;
 	border-right: rem(1px) solid
 		light-dark(var(--border-light), var(--border-dark));
 	position: relative;
@@ -45,19 +46,12 @@
 
 .footer {
 	border-top: rem(1px) solid light-dark(var(--border-light), var(--border-dark));
-	padding: var(--spacing-md);
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
 	background-color: light-dark(var(--bg-light), var(--bg-dark));
-	z-index: 10;
-	height: 60px; /* Fixed height for footer */
-	display: flex;
 	align-items: center;
+	height: fit-content;
 }
 
-.footer::before {
+/* .footer::before {
 	content: "";
 	position: absolute;
 	top: -1px;
@@ -73,4 +67,4 @@
 	);
 	transform: scaleX(0.8);
 	opacity: 0.5;
-}
+} */

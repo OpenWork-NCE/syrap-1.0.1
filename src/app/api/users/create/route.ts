@@ -41,7 +41,7 @@ const createSchema = z.object({
 			/[\W_]/,
 			"Le mot de passe doit contenir au moins un caractère spécial (ex. @, !, #, etc.)",
 		),
-	Roles: z.array(z.string()).optional(),
+	roles: z.array(z.string()).optional(),
 	model_id: z.string(),
 	model: z.string(),
 });
@@ -50,7 +50,8 @@ export async function POST(request: Request) {
 	return accessTokenMiddleware(async ({ authHeaders }) => {
 		try {
 			const bodyPayload = createSchema.parse(await requestJsonBody(request));
-			const parsedRoles = bodyPayload.Roles?.map((roles) => Number(roles));
+			console.log("Voici le bodyPayload : ", bodyPayload);
+			const parsedRoles = bodyPayload.roles?.map((roles) => Number(roles));
 			const body = JSON.stringify({
 				name: bodyPayload.name,
 				email: bodyPayload.email,

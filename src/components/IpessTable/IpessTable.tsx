@@ -52,15 +52,10 @@ import autoTable from "jspdf-autotable";
 import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Institution, Localization, Ipes, User, University } from "@/types";
-import { getInstitutionName } from "@/app/lib/utils";
+import { getInstitutionName, innerUrl } from "@/app/lib/utils";
 import { PATH_SECTIONS } from "@/routes";
 import { useRouter } from "next/navigation";
-
-const csvConfig = mkConfig({
-	fieldSeparator: ",",
-	decimalSeparator: ".",
-	useKeysAsHeaders: true,
-});
+import { handleExportAsCSV, handleExportRowsAsPDF } from "@/app/lib/utils";
 
 type LocalizationApiResponse = {
 	data: Array<Localization>;
@@ -89,16 +84,9 @@ interface Params {
 }
 
 const useGetUniversities = () => {
-	const fetchURL = new URL(
-		"/api/universities",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<UniversityApiResponse>({
 		queryKey: ["universities"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/universities")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
@@ -106,32 +94,18 @@ const useGetUniversities = () => {
 
 //custom react-query hook
 const useGetIpess = ({}: Params) => {
-	const fetchURL = new URL(
-		"/api/ipess",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<IpesApiResponse>({
 		queryKey: ["ipess"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/ipess")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
 };
 
 const useGetLocalizations = () => {
-	const fetchURL = new URL(
-		"/api/localizations",
-		process.env.NODE_ENV === "production"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: "http://localhost:3000",
-	);
-
 	return useQuery<LocalizationApiResponse>({
 		queryKey: ["localizations"],
-		queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
+		queryFn: () => fetch(innerUrl("/api/localizations")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
 		staleTime: 30_000,
 	});
@@ -164,101 +138,6 @@ const Section = (props: any) => {
 	} = useGetUniversities();
 
 	const fetchedUniversities = uData?.data ?? [];
-
-	const handleExportRows = (rows: MRT_Row<Ipes>[]) => {
-		const doc = new jsPDF("portrait", "pt", "A4");
-		const pageWidth = doc.internal.pageSize.getWidth();
-		const logoUrl = "/thumbnail.png";
-
-		// French Column (Left)
-		const frenchText = `
-      REPUBLIQUE DU CAMEROUN
-             Paix – Travail – Patrie
-              -------------------------
-        MINISTERE DES FINANCES
-              -------------------------
-         SECRETARIAT GENERAL
-              ------------------------
-          CENTRE NATIONAL DE
-           DEVELOPPEMENT DE
-               L’INFORMATIQUE
-               -------------------------
-    `;
-
-		const englishText = `
-          REPUBLIC OF CAMEROON
-           Peace – Work – Fatherland
-                  -------------------------
-             MINISTRY OF FINANCE
-                  -------------------------
-            GENERAL SECRETARIAT
-                  -------------------------
-          NATIONAL CENTRE FOR THE
-        DEVELOPMENT OF COMPUTER
-                           SERVICES
-              ------------------------------------
-    `;
-
-		doc.setFontSize(10);
-		doc.text(frenchText, 40, 50);
-		doc.addImage(logoUrl, "PNG", pageWidth / 2 - 30, 40, 60, 60);
-		doc.text(englishText, pageWidth - 250, 50);
-
-		const tableData = rows.map((row) => Object.values(row.original));
-		const tableHeaders = columns.map((c) => c.header);
-
-		autoTable(doc, {
-			startY: 200, // Start after the header
-			head: [tableHeaders],
-			body: [
-				[
-					"code",
-					"name",
-					"description",
-					"phone",
-					"email",
-					"university",
-					"arrondissement",
-				],
-			],
-		});
-
-		doc.save("syrap-ipes.pdf");
-	};
-
-	const handleExportRowsAsCSV = (rows: MRT_Row<Ipes>[]) => {
-		const rowData = rows.map((row) => ({
-			code: row.original.code,
-			name: row.original.name,
-			phone: row.original.phone,
-			email: row.original.email,
-			university: fetchedUniversities.find(
-				(university) => university.id === row.original.university_id,
-			)?.name,
-			arrondissement: fetchedLocalizations.find(
-				(localization) => localization.id === row.original.arrondissement_id,
-			)?.name,
-		}));
-		const csv = generateCsv(csvConfig)(rowData);
-		download(csvConfig)(csv);
-	};
-
-	const handleExportDataAsCSV = () => {
-		const allData = fetchedIpess.map((row) => ({
-			code: row.code,
-			name: row.name,
-			phone: row.phone,
-			email: row.email,
-			university: fetchedUniversities.find(
-				(university) => university.id === row.university_id,
-			)?.name,
-			arrondissement: fetchedLocalizations.find(
-				(localization) => localization.id === row.arrondissement_id,
-			)?.name,
-		}));
-		const csv = generateCsv(csvConfig)(allData);
-		download(csvConfig)(csv);
-	};
 
 	const columns = useMemo<MRT_ColumnDef<Ipes>[]>(
 		() => [
@@ -675,7 +554,21 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getPrePaginationRowModel().rows)
+									handleExportRowsAsPDF([
+										"code",
+										"name",
+										"phone",
+										"email",
+										"university",
+										"arrondissement",
+									], table.getPrePaginationRowModel().rows.map(row => [
+										row.original.code,
+										row.original.name,
+										row.original.phone,
+										row.original.email,
+										fetchedUniversities.find((university) => university.id === row.original.university_id,)?.name || "", 
+										fetchedLocalizations.find((localization) => localization.id === row.original.arrondissement_id,)?.name || "",
+									]))
 								}
 							>
 								Exporter tout
@@ -684,7 +577,21 @@ const Section = (props: any) => {
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
 								leftSection={<IconFileTypePdf />}
-								onClick={() => handleExportRows(table.getRowModel().rows)}
+								onClick={() => handleExportRowsAsPDF([
+									"code",
+									"name",
+									"phone",
+									"email",
+									"university",
+									"arrondissement",
+								], table.getRowModel().rows.map(row => [
+									row.original.code,
+									row.original.name,
+									row.original.phone,
+									row.original.email,
+									fetchedUniversities.find((university) => university.id === row.original.university_id,)?.name || "", 
+									fetchedLocalizations.find((localization) => localization.id === row.original.arrondissement_id,)?.name || "",
+								]))}
 							>
 								Exporter la page
 							</Menu.Item>
@@ -696,7 +603,21 @@ const Section = (props: any) => {
 								//only export selected rows
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRows(table.getSelectedRowModel().rows)
+									handleExportRowsAsPDF([
+										"code",
+										"name",
+										"phone",
+										"email",
+										"university",
+										"arrondissement",
+									], table.getSelectedRowModel().rows.map(row => [
+										row.original.code,
+										row.original.name,
+										row.original.phone,
+										row.original.email,
+										fetchedUniversities.find((university) => university.id === row.original.university_id,)?.name || "", 
+										fetchedLocalizations.find((localization) => localization.id === row.original.arrondissement_id,)?.name || "",
+									]))
 								}
 							>
 								Exporter la selection
@@ -705,7 +626,18 @@ const Section = (props: any) => {
 							<Menu.Label>Format Excel</Menu.Label>
 							<Menu.Item
 								//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
-								onClick={handleExportDataAsCSV}
+								onClick={() => handleExportAsCSV(fetchedIpess.map(row => ({
+									code: row.code,
+									name: row.name,
+									phone: row.phone,
+									email: row.email,
+									university: fetchedUniversities.find(
+										(university) => university.id === row.university_id,
+									)?.name,
+									arrondissement: fetchedLocalizations.find(
+										(localization) => localization.id === row.arrondissement_id,
+									)?.name,
+								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter tout
@@ -714,7 +646,18 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								//export all rows, including from the next page, (still respects filtering and sorting)
 								onClick={() =>
-									handleExportRowsAsCSV(table.getPrePaginationRowModel().rows)
+									handleExportAsCSV(table.getPrePaginationRowModel().rows.map(row => ({
+										code: row.original.code,
+										name: row.original.name,
+										phone: row.original.phone,
+										email: row.original.email,
+										university: fetchedUniversities.find(
+											(university) => university.id === row.original.university_id,
+										)?.name,
+										arrondissement: fetchedLocalizations.find(
+											(localization) => localization.id === row.original.arrondissement_id,
+										)?.name,
+									})))
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -723,7 +666,18 @@ const Section = (props: any) => {
 							<Menu.Item
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								onClick={() => handleExportRowsAsCSV(table.getRowModel().rows)}
+								onClick={() => handleExportAsCSV(table.getRowModel().rows.map(row => ({
+									code: row.original.code,
+									name: row.original.name,
+									phone: row.original.phone,
+									email: row.original.email,
+									university: fetchedUniversities.find(
+										(university) => university.id === row.original.university_id,
+									)?.name,
+									arrondissement: fetchedLocalizations.find(
+										(localization) => localization.id === row.original.arrondissement_id,
+									)?.name,
+								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
 								Exporter toutes la pages
@@ -735,7 +689,18 @@ const Section = (props: any) => {
 								}
 								//only export selected rows
 								onClick={() =>
-									handleExportRowsAsCSV(table.getSelectedRowModel().rows)
+									handleExportAsCSV(table.getSelectedRowModel().rows.map(row => ({
+										code: row.original.code,
+										name: row.original.name,
+										phone: row.original.phone,
+										email: row.original.email,
+										university: fetchedUniversities.find(
+											(university) => university.id === row.original.university_id,
+										)?.name,
+										arrondissement: fetchedLocalizations.find(
+											(localization) => localization.id === row.original.arrondissement_id,
+										)?.name,
+									})))
 								}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -766,7 +731,7 @@ function useCreateIpes() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (ipes: Ipes) => {
-			const response = await fetch("http://localhost:3000/api/ipess/create", {
+			const response = await fetch(innerUrl("/api/ipess/create"), {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -811,7 +776,7 @@ function useUpdateIpes() {
 	return useMutation({
 		mutationFn: async (ipes: Ipes) => {
 			const response = await fetch(
-				`http://localhost:3000/api/ipess/${ipes.id}/update`,
+				innerUrl(`/api/ipess/${ipes.id}/update`),
 				{
 					method: "PUT",
 					headers: {
@@ -855,7 +820,7 @@ function useDeleteIpes() {
 	return useMutation({
 		mutationFn: async (ipesId: string) => {
 			const response = await fetch(
-				`http://localhost:3000/api/ipess/${ipesId}/delete`,
+				innerUrl(`/api/ipess/${ipesId}/delete`),
 				{
 					method: "DELETE",
 					headers: {
@@ -909,7 +874,7 @@ type IpesProps = {
 		id: string;
 		name: string;
 		slug: string;
-		code: string;
+		model: string;
 	};
 	user: {
 		id: string;

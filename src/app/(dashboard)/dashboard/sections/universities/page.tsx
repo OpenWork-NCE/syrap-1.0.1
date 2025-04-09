@@ -22,7 +22,7 @@ function Page() {
 	return (
 		<>
 			<>
-				<title>Universités | SYRAP</title>
+				<title>Universités | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>

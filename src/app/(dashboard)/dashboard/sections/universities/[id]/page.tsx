@@ -16,7 +16,7 @@ function Page({ params }: { params: { id: string } }) {
 	return (
 		<>
 			<>
-				<title>Université | SYRAP</title>
+				<title>Université | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>

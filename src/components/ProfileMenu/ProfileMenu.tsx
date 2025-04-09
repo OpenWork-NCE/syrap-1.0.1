@@ -109,7 +109,7 @@ export function ProfileMenu({ image, name, email }: ProfileMenuProps) {
 					href="/profile"
 					className={classes.menuItem}
 				>
-					Profile Settings
+					Préférences
 				</Menu.Item>
 
 				<Menu.Item
@@ -130,7 +130,7 @@ export function ProfileMenu({ image, name, email }: ProfileMenuProps) {
 					onClick={handleLogout}
 					className={classes.menuItem}
 				>
-					Logout
+					Se deconnecter
 				</Menu.Item>
 			</Menu.Dropdown>
 		</Menu>

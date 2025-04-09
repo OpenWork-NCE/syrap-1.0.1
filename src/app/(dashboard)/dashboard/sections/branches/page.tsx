@@ -18,7 +18,7 @@ function Page() {
 	return (
 		<>
 			<>
-				<title>Niveaux | SYRAP</title>
+				<title>Niveaux | SYHPUI</title>
 				<meta name="description" content="" />
 			</>
 			<Container fluid>

@@ -64,10 +64,10 @@ export default function AuthLayout({ children }: Props) {
 				<Stack className={classes.formContainer} justify="center">
 					<Box className={classes.logoContainer}>
 						<ThemedTitle order={1} fw={900} className={classes.logo} gradient>
-							SYRAP
+							SYHPUI
 						</ThemedTitle>
 						<ThemedText size="sm" c="dimmed" className={classes.subtitle}>
-							Système de Gestion Académique
+							Système d'Harmonisation des Programmes d'Universités et IPES
 						</ThemedText>
 					</Box>
 					<Box className={classes.formWrapper}>{children}</Box>
@@ -78,7 +78,7 @@ export default function AuthLayout({ children }: Props) {
 						mt="xl"
 						className={classes.footer}
 					>
-						© {new Date().getFullYear()} SYRAP. Tous droits réservés.
+						© {new Date().getFullYear()} SYHPUI. Tous droits réservés.
 					</ThemedText>
 				</Stack>
 
@@ -90,7 +90,7 @@ export default function AuthLayout({ children }: Props) {
 								? "/static/images/dark-thumbnail.png"
 								: "/static/images/thumbnail.png"
 						}
-						alt="SYRAP"
+						alt="SYHPUI"
 						fill
 						priority
 						style={{ objectFit: "cover" }}
@@ -99,11 +99,10 @@ export default function AuthLayout({ children }: Props) {
 					<Box className={classes.imageContent}>
 						<div className={classes.glowEffect} />
 						<ThemedTitle order={2} c="white" className={classes.imageTitle}>
-							Plateforme de gestion académique
+							Système d'Harmonisation des Programmes d'Universités et IPES
 						</ThemedTitle>
 						<ThemedText c="white" opacity={0.8} className={classes.imageText}>
-							Simplifiez la gestion de vos données académiques avec notre
-							solution complète
+							Simplifiez la gestion des entités de structuration des programmes des institution du Cameroun
 						</ThemedText>
 						<ThemedGroup mt="xl" className={classes.featureIcons}>
 							<div className={classes.featureIcon}>

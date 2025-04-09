@@ -15,17 +15,17 @@ const mockStats = [
 	{
 		icon: IconSchool,
 		title: "Nombre d'IPES",
-		count: 10,
+		count: "10",
 	},
 	{
 		icon: IconCategory,
 		title: "Nombre de filières",
-		count: 15,
+		count: "15",
 	},
 	{
 		icon: IconStack3,
 		title: "Nombre de niveaux",
-		count: 7,
+		count: "7",
 	},
 ];
 
@@ -38,34 +38,9 @@ const IpesPage = ({ id }: IpesPageProps) => {
 		arrondissement: {
 			id: "",
 			name: "",
-			slug: "",
 			created_at: "",
-			department_id: "",
-			updated_at: "",
-		},
-		code: "",
-		email: "",
-		id: "",
-		// institute_id: "",
-		name: "",
-		phone: "",
-		salles: {
-			id: "",
-			designation: "",
-			filiere: {
-				id: "",
-				name: "",
-				author: { user_id: "" },
-				description: "",
-				validate: "",
-			},
-			niveau: {
-				id: "",
-				name: "",
-				description: "",
-				author: { user_id: "" },
-				validate: "",
-			},
+			department: "",
+			region: "",
 		},
 		university: {
 			id: "",
@@ -74,15 +49,29 @@ const IpesPage = ({ id }: IpesPageProps) => {
 			phone: "",
 			description: "",
 			email: "",
-			arrondissement_id: "",
-			user_id: "",
-			cenadi_id: "",
+			arrondissement:  {
+				id: "",
+				name: "",
+				created_at: "",
+				department: "",
+				region: "",
+			},
+			institute: "",
+			user: "",
+			branches_count: "",
+			levels_count: "",
 		},
-		user_id: "",
+		code: "",
+		email: "",
+		id: "",
+		institute: "",
+		name: "",
+		phone: "",
+		user: "",
+		cenadi: "",
 		arrete_ouverture: "",
 		decret_creation: "",
-		promoteur_id: "",
-		cenadi_id: "",
+		promoteur: "",
 	});
 
 	useEffect(() => {
@@ -125,7 +114,7 @@ const IpesPage = ({ id }: IpesPageProps) => {
 					university: ipes.university?.name,
 				}}
 			/>
-			<ClassroomsTable institute={"Ipes"} instituteId={id} />
+			<ClassroomsTable institute={"Ipes"} instituteId={id} parentInstitute={ipes.institute} />
 		</>
 	);
 };
