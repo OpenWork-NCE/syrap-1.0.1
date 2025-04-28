@@ -44,7 +44,7 @@ import { useDisclosure } from "@mantine/hooks";
 
 interface ProgramTableProps {
 	program: Program;
-	university: string;
+	institutionName: string;
 	year: string;
 	filteredPrograms: Program[];
 	setFilteredPrograms: (filteredPrograms: Program[]) => void;
@@ -57,7 +57,7 @@ export function ProgramTable({
 	program,
 	onUpdate,
 	onDelete,
-	university,
+	institutionName,
 	year,
 	setFilteredPrograms,
 	filteredPrograms,
@@ -196,8 +196,8 @@ export function ProgramTable({
 		// Export as CSV with year in filename if filtering by year
 		const filename =
 			activeTab !== "all"
-				? `programme_${university.replace(/\s+/g, "_")}_${program.branchName.replace(/\s+/g, "_")}_${program.levelName.replace(/\s+/g, "_")}_${activeTab}`
-				: `programme_${university.replace(/\s+/g, "_")}_${program.branchName.replace(/\s+/g, "_")}_${program.levelName.replace(/\s+/g, "_")}`;
+				? `programme_${institutionName.replace(/\s+/g, "_")}_${program.branchName.replace(/\s+/g, "_")}_${program.levelName.replace(/\s+/g, "_")}_${activeTab}`
+				: `programme_${institutionName.replace(/\s+/g, "_")}_${program.branchName.replace(/\s+/g, "_")}_${program.levelName.replace(/\s+/g, "_")}`;
 
 		handleExportAsCSV(exportData, filename);
 	};
@@ -219,13 +219,13 @@ export function ProgramTable({
 		// Export as PDF with program details and year in filename if filtering by year
 		const title =
 			activeTab !== "all"
-				? `Programme: ${university} - ${program.branchName} - ${program.levelName} - Année ${activeTab}`
-				: `Programme: ${university} - ${program.branchName} - ${program.levelName}`;
+				? `Programme: ${institutionName} - ${program.branchName} - ${program.levelName} - Année ${activeTab}`
+				: `Programme: ${institutionName} - ${program.branchName} - ${program.levelName}`;
 
 		const filename =
 			activeTab !== "all"
-				? `programme_${university.replace(/\s+/g, "_")}_${program.branchName.replace(/\s+/g, "_")}_${program.levelName.replace(/\s+/g, "_")}_${activeTab}`
-				: `programme_${university.replace(/\s+/g, "_")}_${program.branchName.replace(/\s+/g, "_")}_${program.levelName.replace(/\s+/g, "_")}`;
+				? `programme_${institutionName.replace(/\s+/g, "_")}_${program.branchName.replace(/\s+/g, "_")}_${program.levelName.replace(/\s+/g, "_")}_${activeTab}`
+				: `programme_${institutionName.replace(/\s+/g, "_")}_${program.branchName.replace(/\s+/g, "_")}_${program.levelName.replace(/\s+/g, "_")}`;
 
 		handleExportRowsAsPDF(headers, data, title, filename);
 	};
@@ -243,8 +243,8 @@ export function ProgramTable({
 
 		const title =
 			activeTab !== "all"
-				? `Programme: ${university} - ${program.branchName} - ${program.levelName} - Année ${activeTab}`
-				: `Programme: ${university} - ${program.branchName} - ${program.levelName}`;
+				? `Programme: ${institutionName} - ${program.branchName} - ${program.levelName} - Année ${activeTab}`
+				: `Programme: ${institutionName} - ${program.branchName} - ${program.levelName}`;
 
 		const html = `
 			<html>
@@ -274,7 +274,7 @@ export function ProgramTable({
 						<h2>${title}</h2>
 					</div>
 					<div class="program-info">
-						<p><strong>Université:</strong> ${university}</p>
+						<p><strong>Université:</strong> ${institutionName}</p>
 						<p><strong>Filière:</strong> ${program.branchName}</p>
 						<p><strong>Niveau:</strong> ${program.levelName}</p>
 						<p><strong>Total UEs:</strong> ${program.courses.length}</p>
@@ -421,7 +421,7 @@ export function ProgramTable({
 					<Group justify="space-between" align="flex-start">
 						<Stack gap={5}>
 							<Title order={3} fw={600}>
-								{university}
+								{institutionName}
 							</Title>
 							<Group gap="xs">
 								<Text fw={500}>{instituteType === "IPES" ? "Filière IPES :" : "Filière :"}</Text>

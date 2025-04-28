@@ -16,7 +16,7 @@ import { Level, Branch } from "@/components/Syllabus/Syllabus";
 
 interface FilterSectionProps {
 	filters: {
-		universityId: string | null;
+		instituteId: string | null;
 		branchId: string | null;
 		levelId: string | null;
 		year: string | null;
@@ -71,11 +71,11 @@ export function FilterSection({
 			try {
 				setIsLoading(true);
 
-				if (filters.universityId) {
+				if (filters.instituteId) {
 					const branches: Branch[] = [];
 					const university = universities.find(
 						(university: any) =>
-							university.id == filters.universityId,
+							university.id == filters.instituteId,
 					);
 
 					university?.salles.forEach((salle) => {
@@ -116,11 +116,11 @@ export function FilterSection({
 					setAvailableBranches(branches);
 				}
 
-				if (filters.branchId && filters.universityId) {
+				if (filters.branchId && filters.instituteId) {
 					const levels: Level[] = [];
 					const university = universities.find(
 						(university: any) =>
-							university.id == filters.universityId,
+							university.id == filters.instituteId,
 					);
 					
 					console.log("Voici la university dans laquelle on va extraire les niveaux : ", university)
@@ -150,7 +150,7 @@ export function FilterSection({
 
 		fetchData();
 	}, [
-		filters.universityId,
+		filters.instituteId,
 		filters.branchId,
 		universities,
 		setAvailableBranches,
@@ -188,7 +188,7 @@ export function FilterSection({
 									value: u.id.toString(),
 									label: u.name,
 								}))}
-								value={filters.universityId?.toString() || null}
+								value={filters.instituteId?.toString() || null}
 								onChange={(value) =>
 									onFilter({
 										...filters,
@@ -234,7 +234,7 @@ export function FilterSection({
 								}
 							}
 							}
-							disabled={(isCentralInstitution && !filters.universityId) || isLoading}
+							disabled={(isCentralInstitution && !filters.instituteId) || isLoading}
 							clearable
 							searchable
 							nothingFoundMessage="Aucune filière disponible"
@@ -286,24 +286,24 @@ export function FilterSection({
 
 					<Group justify="space-between" align="center">
 						<Group>
-							{(filters.universityId ||
+							{(filters.instituteId ||
 								filters.branchId ||
 								filters.levelId ||
 								filters.year) && (
 								<Text size="sm" c="dimmed">
 									Filtres actifs:{" "}
-									{filters.universityId && isCentralInstitution && (
+									{filters.instituteId && isCentralInstitution && (
 										<>
 											{
 												(universities as any[]).find(
-													(u) => u.id.toString() === filters.universityId,
+													(u) => u.id.toString() === filters.instituteId,
 												)?.name
 											}
 										</>
 									)}
 									{filters.branchId && (
 										<>
-											{!isCentralInstitution || filters.universityId ? " > " : ""}
+											{!isCentralInstitution || filters.instituteId ? " > " : ""}
 											{
 												availableBranches.find(
 													(b) => b.id.toString() === filters.branchId,
@@ -339,7 +339,7 @@ export function FilterSection({
 									})
 								}
 								disabled={
-									(!isCentralInstitution || !filters.universityId) &&
+									(!isCentralInstitution || !filters.instituteId) &&
 									!filters.branchId &&
 									!filters.levelId &&
 									!filters.year

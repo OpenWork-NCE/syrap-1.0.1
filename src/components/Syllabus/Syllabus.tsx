@@ -24,13 +24,13 @@ import { AddSyllabusModal } from "@/components/Syllabus/AddSyllabusModal";
 // } from "@/components/Syllabus/universities";
 import { Institution, ShowUniversitWihClassrooms, ShowIpesWithClassrooms } from "@/types";
 import { IconAlertCircle, IconInfoCircle, IconRefresh, IconCheck } from "@tabler/icons-react";
-import { Primary } from "../Footer/Footer.stories";
 import { innerUrl } from "@/app/lib/utils";
 
 export interface Program {
 	id: string;
 	institute: string;
-	universityId: string;
+	instituteId: string;
+	instituteName: string;
 	branchId: string;
 	branchName: string;
 	levelId: string;
@@ -79,7 +79,7 @@ interface UE {
 	};
 }
 
-type ProgramTableProps = {
+type ProgramPageProps = {
 	instituteId: string;
 	instituteName: string;
 	classroomId?: string;
@@ -87,10 +87,10 @@ type ProgramTableProps = {
 	userType: "Cenadi" | "Minesup" | "IPES" | "University"
 };
 /**
- * Validates the properties passed to the ProgramTable component.
+ * Validates the properties passed to the ProgramPage component.
  * Ensures that if a classroomId is provided, a universityId must also be provided.
  *
- * @param {ProgramTableProps} props - The properties to validate.
+ * @param {ProgramPageProps} props - The properties to validate.
  * @throws {Error} If classroomId is provided without a universityId.
  */
 
@@ -100,7 +100,7 @@ export default function ProgramsPage({
 	classroomId,
 	instituteType,
 	userType
-}: ProgramTableProps) {
+}: ProgramPageProps) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [filteredPrograms, setFilteredPrograms] = useState<Program[]>([]);
 	const [programs, setPrograms] = useState<Program[]>([]);
@@ -137,8 +137,8 @@ export default function ProgramsPage({
 	const isCentralInstitution = determineIsCentralInstitution();
 	
 	const [filters, setFilters] = useState({
-		// universityId: isCentralInstitution ? null : null,
-		universityId: null as string | null,
+		// instituteId: isCentralInstitution ? null : null,
+		instituteId: null as string | null,
 		branchId: null as string | null,
 		levelId: null as string | null,
 		year: null as string | null,
@@ -164,6 +164,7 @@ export default function ProgramsPage({
 				const u = await fetch(innerUrl("/api/universities")).then(
 					(res) => res.json(),
 				);
+				console.log("Voici les universités : ", u.data);
 
 				console.log("Fetched universities data:", u.data);
 
@@ -231,9 +232,9 @@ export default function ProgramsPage({
 						courseId: ue.id,
 						name: ue.name,
 						description: ue.description,
-						nbr_hrs: ue.pivot?.nbr_hrs || "30",
+						nbr_hrs: ue.pivot?.nbr_hrs || "Non renseigné",
 						year: year,
-						credit: ue.pivot?.credit || "3",
+						credit: ue.pivot?.credit || "Non renseigné",
 					};
 
 					// Add course to the appropriate year group
@@ -248,7 +249,8 @@ export default function ProgramsPage({
 				if (allCourses.length > 0) {
 					programs.push({
 						id: salle.id,
-						universityId: university.id,
+						instituteId: university.id,
+						instituteName: university.name,
 						branchId: salle.branch.id,
 						branchName: salle.branch.name,
 						levelId: salle.level.id,
@@ -268,10 +270,14 @@ export default function ProgramsPage({
 		setAvailableYears(sortedYears);
 		
 		// Sort programs by university, branch, level
-		const sortedPrograms = programs.sort((a, b) => {
+		const normalizedPrograms = programs.map(p => ({
+			...p,
+			instituteId: String(p.instituteId),
+		}));
+		const sortedPrograms = normalizedPrograms.sort((a, b) => {
 			// First sort by university
-			if (a.universityId !== b.universityId) {
-				return a.universityId.localeCompare(b.universityId);
+			if (a.instituteId !== b.instituteId) {
+				return a.instituteId.localeCompare(b.instituteId);
 			}
 
 			// Then by branch
@@ -287,11 +293,17 @@ export default function ProgramsPage({
 			return 0;
 		});
 
+		sortedPrograms.forEach(p => {
+			if (typeof p.instituteId !== 'string') {
+				console.warn('Non-string instituteId:', p.instituteId, typeof p.instituteId, p);
+			}
+		});
+
 		setPrograms(sortedPrograms);
 
 		// Apply current filters if they exist
 		if (
-			filters.universityId ||
+			filters.instituteId ||
 			filters.branchId ||
 			filters.levelId ||
 			filters.year
@@ -332,9 +344,9 @@ export default function ProgramsPage({
 						courseId: ue.id,
 						name: ue.name,
 						description: ue.description,
-						nbr_hrs: ue.pivot?.nbr_hrs || "30",
+						nbr_hrs: ue.pivot?.nbr_hrs || "Non renseigné",
 						year: year,
-						credit: ue.pivot?.credit || "3",
+						credit: ue.pivot?.credit || "Non renseigné",
 					};
 
 					// Add course to the appropriate year group
@@ -349,7 +361,8 @@ export default function ProgramsPage({
 				if (allCourses.length > 0) {
 					programs.push({
 						id: salle.id,
-						universityId: ipes.id,
+						instituteId: ipes.id,
+						instituteName: ipes.name,
 						branchId: salle.branch.id,
 						branchName: salle.branch.name,
 						levelId: salle.level.id,
@@ -370,10 +383,14 @@ export default function ProgramsPage({
 		setAvailableYears(sortedYears);
 		
 		// Sort programs by ipes, branch, level
-		const sortedPrograms = programs.sort((a, b) => {
+		const normalizedPrograms = programs.map(p => ({
+			...p,
+			instituteId: String(p.instituteId),
+		}));
+		const sortedPrograms = normalizedPrograms.sort((a, b) => {
 			// First sort by ipes
-			if (a.universityId !== b.universityId) {
-				return a.universityId.localeCompare(b.universityId);
+			if (a.instituteId !== b.instituteId) {
+				return a.instituteId.localeCompare(b.instituteId);
 			}
 
 			// Then by branch
@@ -389,11 +406,17 @@ export default function ProgramsPage({
 			return 0;
 		});
 
+		sortedPrograms.forEach(p => {
+			if (typeof p.instituteId !== 'string') {
+				console.warn('Non-string instituteId:', p.instituteId, typeof p.instituteId, p);
+			}
+		});
+
 		setPrograms(sortedPrograms);
 
 		// Apply current filters if they exist
 		if (
-			filters.universityId ||
+			filters.instituteId ||
 			filters.branchId ||
 			filters.levelId ||
 			filters.year
@@ -414,11 +437,11 @@ export default function ProgramsPage({
 		if (programs.length > 0) {
 			// For non-central institutions, set the default universityId
 			if (!isCentralInstitution) {
-				const defaultUniversityId = programs.find(p => p.institute === instituteId)?.universityId;
+				const defaultUniversityId = programs.find(p => p.institute === instituteId)?.instituteId;
 				if (defaultUniversityId) {
 					handleFilter({
 						...filters,
-						universityId: defaultUniversityId,
+						instituteId: defaultUniversityId,
 						branchId: null,
 						levelId: null,
 					});
@@ -435,9 +458,9 @@ export default function ProgramsPage({
 		// For non-central institutions, always filter by the institution's ID
 		if (!isCentralInstitution) {
 			filtered = filtered.filter(p => p.institute == instituteId);
-		} else if (newFilters.universityId) {
+		} else if (newFilters.instituteId) {
 			filtered = filtered.filter(
-				(p) => p.universityId == newFilters.universityId,
+				(p) => p.instituteId == newFilters.instituteId,
 			);
 		}
 		
@@ -617,19 +640,11 @@ export default function ProgramsPage({
 				)}
 
 				{filteredPrograms.map((program) => {
-					// Find institution name based on type
-					let institutionName = "";
-					if (instituteType === "University") {
-						institutionName = universities.find(u => u.id === program.universityId)?.name || "";
-					} else {
-						const ipesObj = ipes.find(i => i.id === program.universityId);
-						institutionName = ipesObj?.name || "";
-					}
 					
 					return (
 						<ProgramTable
 							key={program.id}
-							university={institutionName}
+							institutionName={program.instituteName || program.branchName + " - " + program.levelName}
 							year={
 								program.courses[0]?.year || new Date().getFullYear().toString()
 							}

@@ -16,9 +16,7 @@ const items = [{ title: "Syllabus", href: "#" }].map((item, index) => (
 ));
 
 function Page() {
-	const { authorizations } = useAuthorizations();
 	const { institution } = useInstitution();
-	const { user } = useUser();
 	console.log("institution : ", institution);
 
 	return (

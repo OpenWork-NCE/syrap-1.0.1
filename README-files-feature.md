@@ -1,6 +1,6 @@
 # Files Feature Implementation
 
-This document outlines the implementation of the Files feature in the SYRAP application, which allows users to upload, view, download, edit, and delete files.
+This document outlines the implementation of the Files feature in the SYHPUI application, which allows users to upload, view, download, edit, and delete files.
 
 ## API Routes
 

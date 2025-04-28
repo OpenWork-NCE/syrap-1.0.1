@@ -40,7 +40,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 			</ThemedTitle>
 		</Box>
 	) : (
-		<MantineProvider theme={institution?.slug.includes("minsup") ? themeMinesup : institution?.slug.includes("cenadi") ? themeCenadi : themeIpes} defaultColorScheme="auto">
+		<MantineProvider theme={(institution?.model)?.includes("Minesup") ? themeMinesup : ((institution?.model)?.includes("University") || (institution?.model)?.includes("Ipes")) ? themeIpes : themeCenadi}>
 			<ThemeProvider>
 					{children}
 					{/* <ReactQueryDevtools initialIsOpen={false} /> */}
