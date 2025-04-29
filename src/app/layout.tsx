@@ -36,6 +36,8 @@ export default function RootLayout({
 					name="viewport"
 					content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
 				/>
+				<link rel="icon" href="/favicon.jpeg" type="image/jpeg" />
+				<link rel="apple-touch-icon" href="/favicon.jpeg" />
 			</head>
 			<body className={interFont.className}>
 				{/*<DirectionProvider>*/}

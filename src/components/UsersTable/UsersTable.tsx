@@ -247,8 +247,8 @@ const Section = (props: any) => {
 				},
 			];
 
-			// These columns are only shown if user has create-all-users permission
-			const modelColumns = authorizations.includes("create-all-users") ? [
+			// These columns are only shown if user has create-users-anywhere permission
+			const modelColumns = authorizations.includes("create-users-anywhere") ? [
 				{
 					accessorKey: "model",
 					header: "Entité",
@@ -360,8 +360,8 @@ const Section = (props: any) => {
 			return;
 		}
 		
-		// For users with create-all-users permission, validate model fields
-		if (authorizations.includes("create-all-users")) {
+		// For users with create-users-anywhere permission, validate model fields
+		if (authorizations.includes("create-users-anywhere")) {
 			// Validate model selection
 			if (!values.model) {
 				setValidationErrors({
@@ -547,20 +547,20 @@ const Section = (props: any) => {
 
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
-				{/*{authorizations.includes("update-users") && (*/}
-				{/*<Tooltip label="Editer">*/}
-				{/*	<ActionIcon color={"green"} onClick={() => table.setEditingRow(row)}>*/}
-				{/*		<IconEdit />*/}
-				{/*	</ActionIcon>*/}
-				{/*</Tooltip>*/}
-				{/*)}*/}
-				{/*{authorizations.includes("delete-users") && (*/}
+				{authorizations.includes("update-users") && (
+				<Tooltip label="Mettre à jour">
+				<ActionIcon color={"green"} onClick={() => table.setEditingRow(row)}>
+						<IconEdit />
+				</ActionIcon>
+				</Tooltip>
+				)}
+				{authorizations.includes("delete-users") && (
 				<Tooltip label="Supprimer">
 					<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
 						<IconTrash />
 					</ActionIcon>
 				</Tooltip>
-				{/*)}*/}
+				)}
 			</Flex>
 		),
 
@@ -572,7 +572,7 @@ const Section = (props: any) => {
 							<IconRefresh />
 						</ActionIcon>
 					</Tooltip>
-					{/* {authorizations.includes("create-users") && ( */}
+					{authorizations.includes("create-users") && (
 						<Button
 							onClick={() => {
 								handleRowActionClick('create');
@@ -582,7 +582,7 @@ const Section = (props: any) => {
 						>
 							Nouvelle Utilisateur
 						</Button>
-					{/* )} */}
+					)}
 					{/*{authorizations.includes("create-users") && (*/}
 					{/*<Menu*/}
 					{/*	shadow={"md"}*/}
@@ -913,8 +913,8 @@ function validateUser(user: User, auths: string[] = []) {
 			: undefined,
 	};
 	
-	// Additional validation for users with create-all-users permission
-	if (auths.includes("create-all-users")) {
+	// Additional validation for users with create-users-anywhere permission
+	if (auths.includes("create-users-anywhere")) {
 		return {
 			...baseValidation,
 			// Additional model validations would be handled in the form submission

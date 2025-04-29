@@ -270,20 +270,20 @@ const Section = (props: any) => {
 
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
-				{/*{authorizations.includes("update-authorizations") && (*/}
+				{authorizations.includes("update-authorizations") && (
 				<Tooltip label="Editer">
 					<ActionIcon color={"green"} onClick={() => table.setEditingRow(row)}>
 						<IconEdit />
 					</ActionIcon>
 				</Tooltip>
-				{/*)}*/}
-				{/*{authorizations.includes("delete-authorizations") && (*/}
+				)}
+				{authorizations.includes("delete-authorizations") && (
 				<Tooltip label="Supprimer">
 					<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
 						<IconTrash />
 					</ActionIcon>
 				</Tooltip>
-				{/*)}*/}
+				)}
 			</Flex>
 		),
 
@@ -295,7 +295,7 @@ const Section = (props: any) => {
 							<IconRefresh />
 						</ActionIcon>
 					</Tooltip>
-					{/*{authorizations.includes("create-authorizations") && (*/}
+					{authorizations.includes("create-authorizations") && (
 					<Button
 						onClick={() => {
 							table.setCreatingRow(true);
@@ -304,7 +304,7 @@ const Section = (props: any) => {
 					>
 						Nouvelle permission
 					</Button>
-					{/*)}*/}
+					)}
 				</Flex>
 			</>
 		),

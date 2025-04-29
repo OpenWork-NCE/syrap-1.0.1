@@ -213,12 +213,20 @@ const Section = (props: any) => {
 					)?.name,
 				header: "Localisation",
 				editVariant: "select",
-				mantineEditSelectProps: {
+				mantineEditSelectProps: ({ row }) => ({
 					data: fetchedLocalizations.map((localization) => ({
 						value: String(localization.id),
 						label: localization.name,
 					})),
-				},
+					required: true,
+					error: validationErrors?.arrondissement_id,
+					//remove any previous validation errors when user focuses on the input
+					onFocus: () =>
+						setValidationErrors({
+							...validationErrors,
+							arrondissement_id: undefined,
+						}),
+				}),
 			},
 		],
 		[validationErrors, fetchedLocalizations],
@@ -309,8 +317,8 @@ const Section = (props: any) => {
 	const table = useCustomTable({
 		columns,
 		data: fetchedUniversities,
-		createDisplayMode: "row",
-		editDisplayMode: "row",
+		createDisplayMode: "modal",
+		editDisplayMode: "modal",
 
 		mantineSearchTextInputProps: {
 			placeholder: "Rechercher des Utilisateurs",
@@ -396,7 +404,7 @@ const Section = (props: any) => {
 						</Text>
 						<Text size={'sm'}>
 							Arrondissement :{' '}
-							<span style={{ fontWeight: 'bolder' }}>{row.original.arrondissement.name}</span>
+							<span style={{ fontWeight: 'bolder' }}>{row.original.arrondissement?.name}</span>
 						</Text>
 						<Divider pb={1} mb={10} />
 						<Button
@@ -795,25 +803,16 @@ const validateRequired = (value: string) => !!value.length;
 // 			/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
 // 		);
 
-function validateUniversity(universities: University) {
+function validateUniversity(university: University) {
 	return {
-		code: !validateRequired(universities.code)
+		code: !validateRequired(university.code)
 			? "Le sigle de l'Université est requis"
 			: "",
-		name: !validateRequired(universities.name)
+		name: !validateRequired(university.name)
 			? "L'intitulé de l'Université est requis"
 			: "",
-		// description: !validateRequired(universities.description)
-		//   ? "L'intitulé de l'Université est requis"
-		//   : '',
-		// phone: !validateRequired(universities.phone)
-		//   ? "Le nombre d'heures est requis : "
-		//   : '',
-		// email: !validateEmail(universities.email)
-		//   ? "L'intitulé de l'Université est requis"
-		//   : '',
-		// localization: !validateRequired(universities.localization)
-		//   ? "Le nombre d'heures est requis : "
-		//   : '',
+		arrondissement_id: university.arrondissement?.id == undefined
+			? "La localisation est requise"
+			: "",
 	};
 }

@@ -327,20 +327,20 @@ const Section = (props: any) => {
 
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
-				{/*{authorizations.includes("update-profiles") && (*/}
+				{authorizations.includes("update-profiles") && (
 				<Tooltip label="Editer">
 					<ActionIcon color={"green"} onClick={() => table.setEditingRow(row)}>
 						<IconEdit />
 					</ActionIcon>
 				</Tooltip>
-				{/*)}*/}
-				{/*{authorizations.includes("delete-profiles") && (*/}
+				)}
+				{authorizations.includes("delete-profiles") && (
 				<Tooltip label="Supprimer">
 					<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
 						<IconTrash />
 					</ActionIcon>
 				</Tooltip>
-				{/*)}*/}
+				)}
 			</Flex>
 		),
 
@@ -352,7 +352,7 @@ const Section = (props: any) => {
 							<IconRefresh />
 						</ActionIcon>
 					</Tooltip>
-					{/*{authorizations.includes("create-profiles") && (*/}
+					{authorizations.includes("create-profiles") && (
 					<Button
 						onClick={() => {
 							table.setCreatingRow(true);
@@ -361,7 +361,7 @@ const Section = (props: any) => {
 					>
 						Nouveau rôle
 					</Button>
-					{/*)}*/}
+					)}
 					{/*<Menu*/}
 					{/*	shadow={"md"}*/}
 					{/*	// width={130}*/}

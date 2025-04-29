@@ -284,20 +284,20 @@ const Section = (props: any) => {
 
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
-				{/*{minesups.includes("update-minesups") && (*/}
+				{authorizations.includes("update-minesups") && (
 				<Tooltip label="Editer">
 					<ActionIcon color={"green"} onClick={() => table.setEditingRow(row)}>
 						<IconEdit />
 					</ActionIcon>
 				</Tooltip>
-				{/*)}*/}
-				{/*{minesups.includes("delete-minesups") && (*/}
+				)}
+				{authorizations.includes("delete-minesups") && (
 				<Tooltip label="Supprimer">
 					<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
 						<IconTrash />
 					</ActionIcon>
 				</Tooltip>
-				{/*)}*/}
+				)}
 			</Flex>
 		),
 

@@ -65,7 +65,7 @@ export const navLinks = (authorizations: string[]) => {
 					},
 				]
 			: []),
-		...(authorizations.includes("show-universities")
+		...(((authorizations.includes("list-universities")) || (authorizations.includes("show-universities")))
 			? [
 					{
 						label: "Universités de Tutelle",
@@ -84,7 +84,7 @@ export const navLinks = (authorizations: string[]) => {
 					},
 				]
 			: []),
-		...(authorizations.includes("list-ipes")
+		...((authorizations.includes("list-ipes")) || (authorizations.includes("show-ipes"))
 			? [
 		{
 			label: "IPES",
@@ -103,7 +103,7 @@ export const navLinks = (authorizations: string[]) => {
 		},
 			]
 		: []),
-		...(((authorizations.includes("list-ues")) && (authorizations.includes("show-universities")))
+		...(((authorizations.includes("show-ipes")) && (authorizations.includes("show-universities")))
 		 	? [
 		{
 			label: "Croiser et Comparer",
@@ -113,7 +113,7 @@ export const navLinks = (authorizations: string[]) => {
 		 	]
 		 : []),
 
-		// ...(authorizations.includes("list-ues")
+		// ...(authorizations.includes("list-files")
 		// 	? [
 			{
 				label: "Documents",
@@ -130,8 +130,8 @@ export const navLinks = (authorizations: string[]) => {
 					},
 				],
 			},
-			// ]
-			// : []),
+		// ]
+		// : []),
 	] as NavItem[];
 };
 
@@ -164,7 +164,7 @@ export const adminNavLinks = (authorizations: string[]) => {
 			label: "Utilisateurs & Rôles",
 			icon: IconUsers,
 			links: [
-				...(authorizations.includes("list-ues")
+				...(authorizations.includes("list-users")
 					? [
 							{
 								label: "Utilisateurs",
@@ -173,7 +173,7 @@ export const adminNavLinks = (authorizations: string[]) => {
 							},
 						]
 					: []),
-				...(authorizations.includes("list-ues")
+				...(authorizations.includes("list-profiles")
 					? [
 							{
 								label: "Rôles",
@@ -182,15 +182,15 @@ export const adminNavLinks = (authorizations: string[]) => {
 							},
 						]
 					: []),
-				// ...(authorizations.includes("list-ues")
-				// // 	? [
+				...(authorizations.includes("list-authorizations")
+				? [
 							{
 								label: "Permissions",
 								icon: IconAffiliate,
 								link: `${PATH_SECTIONS.authorizations}`,
 							},
-				// 		]
-				// 	: []),
+						]
+					: []),
 			],
 		},
 	] as NavItem[];

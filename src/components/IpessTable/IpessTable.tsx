@@ -217,6 +217,14 @@ const Section = (props: any) => {
 						value: String(localization.id),
 						label: localization.name,
 					})),
+					required: true,
+					error: validationErrors?.arrondissement_id,
+					//remove any previous validation errors when user focuses on the input
+					onFocus: () =>
+						setValidationErrors({
+							...validationErrors,
+							arrondissement_id: undefined,
+						}),
 				},
 			},
 			{
@@ -267,7 +275,7 @@ const Section = (props: any) => {
 				},
 			},
 		],
-		[validationErrors],
+		[validationErrors, fetchedLocalizations],
 	);
 
 	const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
@@ -921,8 +929,8 @@ function validateIpes(ipess: Ipes) {
 		// email: !validateEmail(ipess.email)
 		//   ? "L'intitulé de l'Université est requis"
 		//   : '',
-		// localization: !validateRequired(ipess.localization)
-		//   ? "Le nombre d'heures est requis : "
-		//   : '',
+		arrondissement_id: ipess.arrondissement_id == undefined
+		  ? "La localisation est requise"
+		  : '',
 	};
 }

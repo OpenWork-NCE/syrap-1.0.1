@@ -267,20 +267,20 @@ const Section = (props: any) => {
 
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
-				{/*{cenadis.includes("update-cenadis") && (*/}
+				{authorizations.includes("update-cenadis") && (
 				<Tooltip label="Editer">
 					<ActionIcon color={"green"} onClick={() => table.setEditingRow(row)}>
 						<IconEdit />
 					</ActionIcon>
 				</Tooltip>
-				{/*)}*/}
-				{/*{cenadis.includes("delete-cenadis") && (*/}
+				)}
+				{authorizations.includes("delete-cenadis") && (
 				<Tooltip label="Supprimer">
 					<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
 						<IconTrash />
 					</ActionIcon>
 				</Tooltip>
-				{/*)}*/}
+				)}
 			</Flex>
 		),
 
@@ -292,7 +292,7 @@ const Section = (props: any) => {
 							<IconRefresh />
 						</ActionIcon>
 					</Tooltip>
-					{/*{cenadis.includes("create-cenadis") && (*/}
+					{authorizations.includes("create-cenadis") && (
 					<Button
 						onClick={() => {
 							table.setCreatingRow(true);
@@ -301,7 +301,7 @@ const Section = (props: any) => {
 					>
 						Nouvelle Institution Cenadi
 					</Button>
-					{/*)}*/}
+					)}
 					<Menu
 						shadow={"md"}
 						// width={130}

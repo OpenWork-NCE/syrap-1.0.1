@@ -145,6 +145,16 @@ export type ClassroomForWithSyllabus = {
 		name: string;
 		slug: string;
 		description: string;
+		author: {
+			user_id: string;
+		};
+		pivot: {
+			salle_id: string;
+			ue_id: string;
+			year: string;
+			nbr_hrs: string;
+			credit: string;
+		};
 	}[];
 };
 

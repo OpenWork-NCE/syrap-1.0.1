@@ -263,20 +263,20 @@ const Section = (props: any) => {
 
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
-				{/*{levels.includes("update-levels") && (*/}
+				{authorizations.includes("update-levels") && (
 				<Tooltip label="Editer">
 					<ActionIcon color={"green"} onClick={() => table.setEditingRow(row)}>
 						<IconEdit />
 					</ActionIcon>
 				</Tooltip>
-				{/*)}*/}
-				{/*{levels.includes("delete-levels") && (*/}
+				)}
+				{authorizations.includes("delete-levels") && (
 				<Tooltip label="Supprimer">
 					<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
 						<IconTrash />
 					</ActionIcon>
 				</Tooltip>
-				{/*)}*/}
+				)}
 			</Flex>
 		),
 
@@ -288,7 +288,7 @@ const Section = (props: any) => {
 							<IconRefresh />
 						</ActionIcon>
 					</Tooltip>
-					{/*{levels.includes("create-levels") && (*/}
+					{authorizations.includes("create-levels") && (
 					<Button
 						onClick={() => {
 							table.setCreatingRow(true);
@@ -297,7 +297,7 @@ const Section = (props: any) => {
 					>
 						Nouveau Niveau
 					</Button>
-					{/*)}*/}
+					)}
 					<Menu
 						shadow={"md"}
 						// width={130}
