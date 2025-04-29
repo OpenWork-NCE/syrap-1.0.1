@@ -302,7 +302,7 @@ const Section = (props: any) => {
 
 	const openDeleteConfirmModal = (row: MRT_Row<University>) =>
 		modals.openConfirmModal({
-			title: "Etes vous sur de vouloir supprimer cet utilisateur ?",
+			title: "Etes vous sur de vouloir supprimer cet Université ?",
 			children: (
 				<Text>
 					Etes vous sure de vouloir supprimer {row.original.name}? Cette action
@@ -321,7 +321,7 @@ const Section = (props: any) => {
 		editDisplayMode: "modal",
 
 		mantineSearchTextInputProps: {
-			placeholder: "Rechercher des Utilisateurs",
+			placeholder: "Rechercher des Universités",
 		},
 		getRowId: (row) => row.id,
 		mantineToolbarAlertBannerProps: isError
@@ -346,7 +346,7 @@ const Section = (props: any) => {
 
 			return (
 				<Stack>
-					<Title order={3}>Nouvel Utilisateur</Title>
+					<Title order={3}>Nouvelle Université</Title>
 					{internalEditComponents}
 					<Flex justify="flex-end" mt="xl">
 						<MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -356,7 +356,7 @@ const Section = (props: any) => {
 		},
 		renderEditRowModalContent: ({ table, row, internalEditComponents }) => (
 			<Stack>
-				<Title order={3}>Editer l'Utilisateur</Title>
+				<Title order={3}>Editer l''Université'</Title>
 				{internalEditComponents}
 				<Flex justify="flex-end" mt="xl">
 					<MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -620,12 +620,12 @@ function useCreateUniversity() {
 			);
 
 			if (!response.ok) {
-				throw new Error("Erreur lors de la création de l'Utilisateur");
+				throw new Error("Erreur lors de la création de l'Université");
 			}
 
 			notifications.show({
 				color: "teal",
-				title: "Utilisateur créé",
+				title: "Université créé",
 				message: "Merci de votre patience",
 				icon: <IconCheck />,
 				loading: false,
@@ -669,12 +669,12 @@ function useUpdateUniversity() {
 			);
 
 			if (!response.ok) {
-				throw new Error("Erreur lors de la mise à jour de l'Utilisateur");
+				throw new Error("Erreur lors de la mise à jour de l'Université");
 			}
 
 			notifications.show({
 				color: "green",
-				title: "Utilisateur mise à jour",
+				title: "Université mise à jour",
 				message: "Merci de votre patience",
 				icon: <IconCheck />,
 				loading: false,
@@ -718,12 +718,12 @@ function useDeleteUniversity() {
 			);
 
 			if (!response.ok) {
-				throw new Error("Erreur lors de la suppression de l'Utilisateur");
+				throw new Error("Erreur lors de la suppression de l'Université");
 			}
 
 			notifications.show({
 				color: "red",
-				title: "Utilisateur supprimé",
+				title: "Université supprimé",
 				message: "Merci de votre patience",
 				icon: <IconCheck />,
 				loading: false,
