@@ -388,6 +388,12 @@ const Section = (props: any) => {
 				minHeight: "auto",
 			},
 		},
+		mantineCreateRowModalProps: {
+			centered: true,
+		},
+		mantineEditRowModalProps: {
+			centered: true,
+		},
 		onCreatingRowCancel: () => setValidationErrors({}),
 		onCreatingRowSave: handleCreateIpes,
 		onEditingRowCancel: () => setValidationErrors({}),
@@ -574,7 +580,7 @@ const Section = (props: any) => {
 										row.original.name,
 										row.original.phone,
 										row.original.email,
-										fetchedUniversities.find((university) => university.id === row.original.university_id,)?.name || "", 
+										fetchedUniversities.find((university) => university.id === row.original.university_id,)?.name || "",
 										fetchedLocalizations.find((localization) => localization.id === row.original.arrondissement_id,)?.name || "",
 									]))
 								}
@@ -597,7 +603,7 @@ const Section = (props: any) => {
 									row.original.name,
 									row.original.phone,
 									row.original.email,
-									fetchedUniversities.find((university) => university.id === row.original.university_id,)?.name || "", 
+									fetchedUniversities.find((university) => university.id === row.original.university_id,)?.name || "",
 									fetchedLocalizations.find((localization) => localization.id === row.original.arrondissement_id,)?.name || "",
 								]))}
 							>
@@ -623,7 +629,7 @@ const Section = (props: any) => {
 										row.original.name,
 										row.original.phone,
 										row.original.email,
-										fetchedUniversities.find((university) => university.id === row.original.university_id,)?.name || "", 
+										fetchedUniversities.find((university) => university.id === row.original.university_id,)?.name || "",
 										fetchedLocalizations.find((localization) => localization.id === row.original.arrondissement_id,)?.name || "",
 									]))
 								}

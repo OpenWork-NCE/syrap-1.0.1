@@ -132,6 +132,7 @@ interface InstitutionState {
 		name: string;
 		slug: string;
 		model: string;
+		code: string;
 	};
 }
 
@@ -147,6 +148,7 @@ const initialState: InstitutionState = {
 		name: "",
 		slug: "",
 		model: "",
+		code: "",
 	},
 };
 

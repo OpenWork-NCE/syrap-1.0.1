@@ -31,6 +31,7 @@ export interface Program {
 	institute: string;
 	instituteId: string;
 	instituteName: string;
+	universityId: string; // Alias pour instituteId - maintient compatibilité avec AddSyllabusModal
 	branchId: string;
 	branchName: string;
 	levelId: string;
@@ -250,6 +251,7 @@ export default function ProgramsPage({
 					programs.push({
 						id: salle.id,
 						instituteId: university.id,
+						universityId: university.id,
 						instituteName: university.name,
 						branchId: salle.branch.id,
 						branchName: salle.branch.name,
@@ -362,6 +364,7 @@ export default function ProgramsPage({
 					programs.push({
 						id: salle.id,
 						instituteId: ipes.id,
+						universityId: ipes.id,
 						instituteName: ipes.name,
 						branchId: salle.branch.id,
 						branchName: salle.branch.name,

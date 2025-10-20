@@ -335,6 +335,12 @@ const Section = (props: any) => {
 				minHeight: "auto",
 			},
 		},
+		mantineCreateRowModalProps: {
+			centered: true,
+		},
+		mantineEditRowModalProps: {
+			centered: true,
+		},
 		onCreatingRowCancel: () => setValidationErrors({}),
 		onCreatingRowSave: handleCreateUniversity,
 		onEditingRowCancel: () => setValidationErrors({}),
@@ -803,7 +809,7 @@ const validateRequired = (value: string) => !!value.length;
 // 			/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
 // 		);
 
-function validateUniversity(university: University) {
+function validateUniversity(university: any) {
 	return {
 		code: !validateRequired(university.code)
 			? "Le sigle de l'Université est requis"
@@ -811,7 +817,7 @@ function validateUniversity(university: University) {
 		name: !validateRequired(university.name)
 			? "L'intitulé de l'Université est requis"
 			: "",
-		arrondissement_id: university.arrondissement?.id == undefined
+		arrondissement_id: !university.arrondissement_id
 			? "La localisation est requise"
 			: "",
 	};

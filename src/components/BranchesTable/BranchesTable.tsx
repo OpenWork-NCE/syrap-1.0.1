@@ -229,12 +229,18 @@ const Section = (props: any) => {
 				minHeight: "auto",
 			},
 		},
+		mantineCreateRowModalProps: {
+			centered: true,
+		},
+		mantineEditRowModalProps: {
+			centered: true,
+		},
 		onCreatingRowCancel: () => setValidationErrors({}),
 		onCreatingRowSave: handleCreateBranch,
 		onEditingRowCancel: () => setValidationErrors({}),
 		onEditingRowSave: handleSaveBranch,
 		renderCreateRowModalContent: ({ table, row, internalEditComponents }) => {
-			if (!authorizations.includes("create-branches")) {
+			if (!authorizations.includes("create-branchs")) {
 				return null;
 			}
 
@@ -291,14 +297,14 @@ const Section = (props: any) => {
 
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
-				{authorizations.includes("update-branches") && (
+				{authorizations.includes("update-branchs") && (
 				<Tooltip label="Editer">
 					<ActionIcon color={"green"} onClick={() => table.setEditingRow(row)}>
 						<IconEdit />
 					</ActionIcon>
 				</Tooltip>
 				)}
-				{authorizations.includes("delete-branches") && (
+				{authorizations.includes("delete-branchs") && (
 				<Tooltip label="Supprimer">
 					<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
 						<IconTrash />
@@ -316,7 +322,7 @@ const Section = (props: any) => {
 							<IconRefresh />
 						</ActionIcon>
 					</Tooltip>
-					{/*{branches.includes("create-branches") && (*/}
+					{authorizations.includes("create-branchs") && (
 					<Button
 						onClick={() => {
 							table.setCreatingRow(true);
@@ -325,7 +331,7 @@ const Section = (props: any) => {
 					>
 						Nouvelle Filière
 					</Button>
-					{/*)}*/}
+					)}
 					<Menu
 						shadow={"md"}
 						// width={130}

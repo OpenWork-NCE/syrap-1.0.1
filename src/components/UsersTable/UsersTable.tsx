@@ -129,13 +129,13 @@ const Section = (props: any) => {
 	const [selectedModel, setSelectedModel] = useState<string>("");
 	const [modelOptions, setModelOptions] = useState<{value: string, label: string}[]>([]);
 	const [isModelSelectInitialized, setIsModelSelectInitialized] = useState(false);
-	
+
 	// States for each type of entity
 	const [cenadis, setCenadis] = useState<Cenadi[]>([]);
 	const [minesups, setMinesups] = useState<Minesup[]>([]);
 	const [universities, setUniversities] = useState<University[]>([]);
 	const [ipess, setIpess] = useState<ShowIpes[]>([]);
-	
+
 	// Fetch model options based on selected model type
 	const fetchModelOptions = async (modelType: string) => {
 		try {
@@ -359,7 +359,7 @@ const Section = (props: any) => {
 			setValidationErrors(newValidationErrors);
 			return;
 		}
-		
+
 		// For users with create-users-anywhere permission, validate model fields
 		if (authorizations.includes("create-users-anywhere")) {
 			// Validate model selection
@@ -370,7 +370,7 @@ const Section = (props: any) => {
 				});
 				return;
 			}
-			
+
 			// Validate model_id selection
 			if (!values.model_id) {
 				setValidationErrors({
@@ -379,7 +379,7 @@ const Section = (props: any) => {
 				});
 				return;
 			}
-			
+
 			console.log("Voici les valeurs : ", values);
 			setValidationErrors({});
 			await createUser({
@@ -393,13 +393,13 @@ const Section = (props: any) => {
 			setValidationErrors({});
 			await createUser({
 				...values,
-				model: getInstitutionName(institution?.slug) !== "Ipes" 
+				model: getInstitutionName(institution?.slug) !== "Ipes"
 					? getInstitutionName(institution?.slug)
 					: "institute",
 				model_id: String(institution?.id),
 			});
 		}
-		
+
 		setSelectedModel('');
 		setModelOptions([]);
 		exitCreatingMode();
@@ -411,7 +411,7 @@ const Section = (props: any) => {
 		setSelectedModel('');
 		setModelOptions([]);
 	};
-	
+
 	const handleSaveUser: MRT_TableOptions<User>["onEditingRowSave"] = async ({
 		values,
 		table,
@@ -477,6 +477,12 @@ const Section = (props: any) => {
 			style: {
 				minHeight: "auto",
 			},
+		},
+		mantineCreateRowModalProps: {
+			centered: true,
+		},
+		mantineEditRowModalProps: {
+			centered: true,
 		},
 		onCreatingRowCancel: handleCreatingRowCancel,
 		onCreatingRowSave: handleCreateUser,
@@ -728,7 +734,7 @@ function useCreateUser() {
 				...user,
 				model_id: String(user.model_id)
 			};
-			
+
 			const response = await fetch(innerUrl("/api/users/create"), {
 				method: "POST",
 				headers: {
@@ -778,7 +784,7 @@ function useUpdateUser() {
 				...user,
 				model_id: String(user.model_id)
 			};
-			
+
 			const response = await fetch(
 				innerUrl(`/api/users/${user.id}/update`),
 				{
@@ -912,7 +918,7 @@ function validateUser(user: User, auths: string[] = []) {
 			? 'Le mot de passe doit contenir entre 3 et 100 caractères'
 			: undefined,
 	};
-	
+
 	// Additional validation for users with create-users-anywhere permission
 	if (auths.includes("create-users-anywhere")) {
 		return {
@@ -920,7 +926,7 @@ function validateUser(user: User, auths: string[] = []) {
 			// Additional model validations would be handled in the form submission
 		};
 	}
-	
+
 	return baseValidation;
 }
 

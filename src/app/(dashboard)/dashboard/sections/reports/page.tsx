@@ -43,7 +43,7 @@ function Page() {
 	// Determine the model type based on institution slug
 	const getModelType = () => {
 		if (!institution) return null;
-		
+
 		if (institution.slug.includes('cenadi')) {
 			return 'cenadi';
 		} else if (institution.slug.includes('minsup')) {
@@ -59,19 +59,19 @@ function Page() {
 		try {
 			// Simplified API call without query parameters
 			const response = await fetch('/api/files');
-			
+
 			if (!response.ok) {
 				throw new Error('Failed to fetch files');
 			}
-			
+
 			const data = await response.json();
-			
+
 			// Map the API response to FileDocument format
 			const formattedFiles = data.data.map((item: any) => {
 				// The backend might return a single file object or a files array
 				// Handle both cases to ensure backward compatibility
 				const fileData = item.file || (item.files && item.files.length > 0 ? item.files[0] : null);
-				
+
 				return {
 					id: item.id.toString(),
 					title: item.title,
@@ -84,10 +84,10 @@ function Page() {
 					url: fileData?.download_url || '',
 				};
 			});
-			
+
 			// Store all files
 			setAllFiles(formattedFiles);
-			
+
 			// Initial filtering will happen in applyFilters
 		} catch (error) {
 			console.error("Error fetching files:", error);
@@ -104,43 +104,44 @@ function Page() {
 	// Apply filters to the fetched data
 	const applyFilters = useCallback(() => {
 		if (allFiles.length === 0) return;
-		
+
 		// Start with all files
 		let result = [...allFiles];
 
 		// Filter files by visibility
-		result = result.filter(file => file.visibility.some(v => String(institution.model).toLowerCase().includes(v.toLowerCase())))
-		
+		// result = result.filter(file => file.visibility.some(v => String(institution.model).toLowerCase().includes(v.toLowerCase())))
+		result = result.filter(file => file.visibility.some(v => String(institution.name).toLowerCase().includes(v.toLowerCase())))
+
 		// Apply search filter
 		if (search) {
 			const searchLower = search.toLowerCase();
-			result = result.filter(file => 
+			result = result.filter(file =>
 				file.title.toLowerCase().includes(searchLower) ||
 				file.description.toLowerCase().includes(searchLower) ||
 				file.author.toLowerCase().includes(searchLower)
 			);
 		}
-		
+
 		// Apply file type filter
 		if (fileType !== 'all') {
 			result = result.filter(file => file.type === fileType);
 		}
-		
+
 		// Sort files by date
 		result.sort((a, b) => {
 			const dateA = new Date(a.uploadDate).getTime();
 			const dateB = new Date(b.uploadDate).getTime();
 			return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
 		});
-		
+
 		// Set total before pagination
 		setTotal(result.length);
-		
+
 		// Apply pagination
 		const itemsPerPage = 10;
 		const startIndex = (page - 1) * itemsPerPage;
 		const paginatedResult = result.slice(startIndex, startIndex + itemsPerPage);
-		
+
 		// Update filtered files
 		setFilteredFiles(paginatedResult);
 	}, [allFiles, search, fileType, sortOrder, page]);
@@ -148,14 +149,14 @@ function Page() {
 	// Helper function to determine file type from mime type
 	const determineFileType = (mimeType: string, fileName: string): FileType => {
 		if (!mimeType) return 'other';
-		
+
 		if (mimeType.includes('pdf')) return 'pdf';
 		if (mimeType.includes('word') || mimeType.includes('docx') || mimeType.includes('doc')) return 'word';
 		if (mimeType.includes('excel') || mimeType.includes('xlsx') || mimeType.includes('xls')) return 'excel';
 		if (mimeType.includes('text') || mimeType.includes('txt')) return 'text';
 		if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('compress')) return 'zip';
 		if (mimeType.includes('image')) return 'image';
-		
+
 		// Fallback to extension check
 		if (fileName) {
 			const ext = fileName.split('.').pop()?.toLowerCase();
@@ -166,18 +167,18 @@ function Page() {
 			if (ext === 'zip' || ext === 'rar') return 'zip';
 			if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext as string)) return 'image';
 		}
-		
+
 		return 'other';
 	};
 
 	// Helper function to determine visibility from model type
 	const determineVisibility = (modelType: string): ("CENADI" | "MINESUP" | "IPES")[] => {
 		if (!modelType) return ['CENADI', 'MINESUP', 'IPES'];
-		
+
 		if (modelType.includes('Cenadi')) return ['CENADI'];
 		if (modelType.includes('Minesup')) return ['MINESUP'];
 		if (modelType.includes('Ipes')) return ['IPES'];
-		
+
 		return ['CENADI', 'MINESUP', 'IPES'];
 	};
 
@@ -211,44 +212,44 @@ function Page() {
 	const handleUpload = async (values: FileFormData) => {
 		try {
 			setIsLoading(true);
-			
+
 			// Determine model type and id
 			const model = getModelType();
 			const model_id = institution?.id;
-			
+
 			if (!model || !model_id) {
 				throw new Error('Institution information is missing');
 			}
-			
+
 			// Create FormData
 			const formData = new FormData();
 			formData.append('title', values.title);
 			formData.append('description', values.description);
 			formData.append('model', model);
 			formData.append('model_id', model_id.toString());
-			
+
 			if (values.file) {
 				formData.append('file', values.file);
 			}
-			
+
 			// Send the request
 			const response = await fetch('/api/files/create', {
 				method: 'POST',
 				body: formData,
 			});
-			
+
 			if (!response.ok) {
 				const errorData = await response.json();
 				throw new Error(errorData.error || 'Failed to upload file');
 			}
-			
+
 			close();
 			notifications.show({
 				title: "Success",
 				message: "File uploaded successfully",
 				color: "green",
 			});
-			
+
 			// Refresh the file list
 			fetchFiles();
 		} catch (error) {
@@ -266,7 +267,7 @@ function Page() {
 	const handleEdit = async (id: string, data: Partial<FileDocument>) => {
 		try {
 			setIsLoading(true);
-			
+
 			const response = await fetch(`/api/files/${id}`, {
 				method: 'PUT',
 				headers: {
@@ -277,18 +278,18 @@ function Page() {
 					description: data.description,
 				}),
 			});
-			
+
 			if (!response.ok) {
 				const errorData = await response.json();
 				throw new Error(errorData.error || 'Failed to update file');
 			}
-			
+
 			notifications.show({
 				title: "Success",
 				message: "File updated successfully",
 				color: "green",
 			});
-			
+
 			fetchFiles();
 		} catch (error) {
 			console.error("Edit error:", error);
@@ -305,22 +306,22 @@ function Page() {
 	const handleDelete = async (id: string) => {
 		try {
 			setIsLoading(true);
-			
+
 			const response = await fetch(`/api/files/${id}`, {
 				method: 'DELETE',
 			});
-			
+
 			if (!response.ok) {
 				const errorData = await response.json();
 				throw new Error(errorData.error || 'Failed to delete file');
 			}
-			
+
 			notifications.show({
 				title: "Success",
 				message: "File deleted successfully",
 				color: "green",
 			});
-			
+
 			fetchFiles();
 		} catch (error) {
 			console.error("Delete error:", error);
@@ -368,9 +369,9 @@ function Page() {
 						size="lg"
 						centered
 					>
-						<FileForm 
-							onSubmit={handleUpload} 
-							onCancel={close} 
+						<FileForm
+							onSubmit={handleUpload}
+							onCancel={close}
 							institution={institution}
 						/>
 					</Modal>

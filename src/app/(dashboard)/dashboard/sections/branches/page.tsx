@@ -26,7 +26,7 @@ function Page() {
 					<PageHeader title="Niveaux" breadcrumbItems={items} />
 					<BranchesTable
 						authorizations={authorizations.filter((authorization) =>
-							authorization.includes("branches"),
+							authorization.includes("branchs"),
 						)}
 					/>
 				</Stack>

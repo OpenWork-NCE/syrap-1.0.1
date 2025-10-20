@@ -138,6 +138,8 @@ export function EditCourseModal({
 			// Notify parent component
 			onSubmit(formData);
 
+			// NOTE: Rechargement de page après mise à jour de l'UE
+			// TODO: Optimisation - Utiliser un rafraîchissement via API au lieu de reload
 			// Close modal and reload page after a delay
 			setTimeout(() => {
 				onClose();

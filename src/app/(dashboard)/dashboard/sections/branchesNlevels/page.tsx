@@ -31,7 +31,7 @@ function Page() {
 							<PageHeader title="Filières" />
 							<BranchesTable
 								authorizations={authorizations.filter((authorization) =>
-									authorization.includes("branches"),
+									authorization.includes("branchs"),
 								)}
 							/>
 						</Grid.Col>

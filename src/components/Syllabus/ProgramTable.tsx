@@ -164,7 +164,8 @@ export function ProgramTable({
 									c.year !== row.original.year,
 							);
 							onUpdate({ ...program, courses: updatedCourses });
-							// Reload page after deletion
+							// NOTE: Rechargement de page après suppression
+							// TODO: Optimisation - Utiliser un rafraîchissement via API au lieu de reload
 							setTimeout(() => {
 								window.location.reload();
 							}, 1000);
@@ -383,7 +384,8 @@ export function ProgramTable({
 			onDelete(programToDelete);
 			closeDeleteConfirm();
 			setProgramToDelete(null);
-			// Reload page after program deletion
+			// NOTE: Rechargement de page après suppression du programme
+			// TODO: Optimisation - Utiliser un rafraîchissement via API au lieu de reload
 			setTimeout(() => {
 				window.location.reload();
 			}, 1000);

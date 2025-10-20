@@ -74,6 +74,7 @@ export function AddSyllabusModal({
 	instituteType = "University", // Default to University for backward compatibility
 }: AddProgramModalProps) {
 	// Determine initial universityId based on institution type
+	// NOTE: universityId est utilisé comme alias pour instituteId dans ce composant
 	const initialUniversityId = !isCentralInstitution 
 		? (universities).find(u => u.institute == currentInstitute)?.id || null
 		: null;
@@ -534,15 +535,18 @@ export function AddSyllabusModal({
 			}
 
 			// Notify parent component
+			const selectedInstitution = (universities).find((u) => u.id == formData.universityId);
 			onSubmitted({
-				universityId: formData.universityId,
+				id: classroomId,
+				instituteId: formData.universityId,
+				universityId: formData.universityId, // Maintient compatibilité - alias pour instituteId
+				instituteName: selectedInstitution?.name || "",
 				branchId: formData.branchId,
 				levelId: formData.levelId,
 				branchName: classroom.branch.name,
 				levelName: classroom.level.name,
 				classroomId: classroom.id,
-				institute: (universities).find((u) => u.id == formData.universityId)
-					?.institute,
+				institute: selectedInstitution?.institute || "",
 				courses: programCourses,
 				guardianUniversity: guardianUniversity, // Add university of guardianship for IPES
 			});

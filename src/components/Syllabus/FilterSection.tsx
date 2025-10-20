@@ -192,7 +192,7 @@ export function FilterSection({
 								onChange={(value) =>
 									onFilter({
 										...filters,
-										universityId: value ? String(value) : null,
+										instituteId: value ? String(value) : null,
 										branchId: null,
 										levelId: null,
 									})
@@ -218,7 +218,7 @@ export function FilterSection({
 								if(isCentralInstitution == false){
 									onFilter({
 										...filters,
-										universityId: String(universities.find(
+										instituteId: String(universities.find(
 											(university: any) =>
 												university.institute == currentInstitute,
 										)?.id) || null,
@@ -332,7 +332,7 @@ export function FilterSection({
 								variant="light"
 								onClick={() =>
 									onFilter({
-										universityId: isCentralInstitution ? null : currentInstitute,
+										instituteId: isCentralInstitution ? null : currentInstitute,
 										branchId: null,
 										levelId: null,
 										year: null,

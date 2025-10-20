@@ -36,7 +36,8 @@ function Page() {
 						instituteId={institution.id}
 						instituteName={institution.name}
 						instituteType={"IPES"}
-						userType={(institution.model).includes("cenadi") ? "Cenadi" : (institution.model).includes("minsup") ? "Minesup" : (institution.model).includes("University") ? "University" : "IPES"}
+						// userType={(institution.model).includes("cenadi") ? "Cenadi" : (institution.model).includes("minsup") ? "Minesup" : (institution.model).includes("University") ? "University" : "IPES"}
+						userType={(institution.name).includes("cenadi") ? "Cenadi" : (institution.name).includes("minsup") ? "Minesup" : (institution.name).includes("University") ? "University" : "IPES"}
 					/>
 					{/* <Syllabus
 						instituteId={"16"}

@@ -106,6 +106,7 @@ export async function POST(request: Request) {
 				expires: moment().add(2, "days").toDate(),
 			},
 		);
+		console.log("Voici les authorizations : ", rights);
 		console.log("Voici la reponse du login : ", response.token);
 
 		return new Response(

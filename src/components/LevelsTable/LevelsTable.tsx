@@ -207,6 +207,12 @@ const Section = (props: any) => {
 				minHeight: "auto",
 			},
 		},
+		mantineCreateRowModalProps: {
+			centered: true,
+		},
+		mantineEditRowModalProps: {
+			centered: true,
+		},
 		onCreatingRowCancel: () => setValidationErrors({}),
 		onCreatingRowSave: handleCreateBranch,
 		onEditingRowCancel: () => setValidationErrors({}),
