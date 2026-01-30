@@ -10,26 +10,30 @@ import accessTokenMiddleware from '@/app/lib/middleware/accessTokenMiddleware';
 
 export const dynamic = 'force-dynamic';
 
-const createSchema = z.object({
+const updateSchema = z.object({
   name: z
-    .string({ required_error: 'Le nom de la filiere est requis.' })
+    .string({ required_error: "Le nom de l'université est requis." })
     .min(3, 'Plus de trois caractères')
     .max(100, 'Moins de 100 caractères.'),
   code: z
     .string()
-    .min(1, 'Plus de trois caractères')
-    .max(20, 'Moins de 100 caractères.')
+    .min(1, 'Plus de un caractère')
+    .max(20, 'Moins de 20 caractères.')
+    .optional(),
+  description: z
+    .string()
+    .max(500, 'Moins de 500 caractères.')
     .optional(),
   phone: z
     .string()
-    .min(3, 'Plus de trois caractères')
-    .max(20, 'Moins de 100 caractères.')
-    .optional(),
+    .max(20, 'Moins de 20 caractères.')
+    .optional()
+    .nullable(),
   email: z
     .string()
     .refine(
       (val) => {
-        // Custom regex for email validation
+        if (!val || val === '') return true;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(val);
       },
@@ -37,22 +41,12 @@ const createSchema = z.object({
         message: "Format d'email invalide",
       },
     )
+    .optional()
+    .nullable(),
+  arrondissement_id: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === 'string' ? parseInt(val, 10) : val))
     .optional(),
-  // arrondissement_id: z
-  //   .number()
-  //   .int()
-  //   .positive("l'Identifiant doit être une valeur positive")
-  //   .optional(),
-  // user_id: z
-  //   .number()
-  //   .int()
-  //   .positive("l'Identifiant doit être une valeur positive")
-  //   .optional(),
-  // cenadi_id: z
-  //   .number()
-  //   .int()
-  //   .positive("l'Identifiant doit être une valeur positive")
-  //   .optional(),
 });
 
 export async function PUT(
@@ -61,7 +55,7 @@ export async function PUT(
 ) {
   return accessTokenMiddleware(async ({ authHeaders }) => {
     try {
-      const bodyPayload = createSchema.parse(await requestJsonBody(request));
+      const bodyPayload = updateSchema.parse(await requestJsonBody(request));
       const branch = await fetchJson<any>(
         backendUrl(`/api/acteurs/universities/${id}`),
         {

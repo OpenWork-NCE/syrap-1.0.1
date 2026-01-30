@@ -50,9 +50,10 @@ export default function ComparePage() {
 			setIsDataLoading(true);
 			setError(null);
 			try {
+				// Utiliser les endpoints "light" pour réduire la taille des données (~250KB -> ~10KB)
 				const [universitiesResponse, ipesesResponse] = await Promise.all([
-					fetch(innerUrl("/api/universities")),
-					fetch(innerUrl("/api/ipes")),
+					fetch(innerUrl("/api/universities/light")),
+					fetch(innerUrl("/api/ipes/light")),
 				]);
 
 				if (!universitiesResponse.ok || !ipesesResponse.ok) {

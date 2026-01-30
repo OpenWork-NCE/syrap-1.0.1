@@ -248,7 +248,7 @@ const Section = (props: any) => {
 			];
 
 			// These columns are only shown if user has create-users-anywhere permission
-			const modelColumns = authorizations.includes("create-users-anywhere") ? [
+			const modelColumns = authorizations?.includes("create-users-anywhere") ? [
 				{
 					accessorKey: "model",
 					header: "Entité",
@@ -361,7 +361,7 @@ const Section = (props: any) => {
 		}
 
 		// For users with create-users-anywhere permission, validate model fields
-		if (authorizations.includes("create-users-anywhere")) {
+		if (authorizations?.includes("create-users-anywhere")) {
 			// Validate model selection
 			if (!values.model) {
 				setValidationErrors({
@@ -489,7 +489,7 @@ const Section = (props: any) => {
 		onEditingRowCancel: handleEditingRowCancel,
 		onEditingRowSave: handleSaveUser,
 		renderCreateRowModalContent: ({ table, row, internalEditComponents }) => {
-			if (!authorizations.includes("create-users")) {
+			if (!authorizations?.includes("create-users")) {
 				return null;
 			}
 
@@ -553,14 +553,14 @@ const Section = (props: any) => {
 
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
-				{authorizations.includes("update-users") && (
+				{authorizations?.includes("update-users") && (
 				<Tooltip label="Mettre à jour">
 				<ActionIcon color={"green"} onClick={() => table.setEditingRow(row)}>
 						<IconEdit />
 				</ActionIcon>
 				</Tooltip>
 				)}
-				{authorizations.includes("delete-users") && (
+				{authorizations?.includes("delete-users") && (
 				<Tooltip label="Supprimer">
 					<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
 						<IconTrash />
@@ -578,7 +578,7 @@ const Section = (props: any) => {
 							<IconRefresh />
 						</ActionIcon>
 					</Tooltip>
-					{authorizations.includes("create-users") && (
+					{authorizations?.includes("create-users") && (
 						<Button
 							onClick={() => {
 								handleRowActionClick('create');

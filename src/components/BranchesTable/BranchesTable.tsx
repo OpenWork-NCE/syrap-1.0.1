@@ -82,9 +82,10 @@ interface Params {
 const useGetBranches = () => {
 	return useQuery<BranchApiResponse>({
 		queryKey: ["branches"],
-		queryFn: () => fetch(innerUrl("/api/branchs")).then((res) => res.json()),
+		// Charger toutes les filières (données de référence, généralement < 50)
+		queryFn: () => fetch(innerUrl("/api/branchs?limit=500")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
-		staleTime: 30_000,
+		staleTime: 30_000, // Cache 30 secondes
 	});
 };
 
@@ -156,7 +157,6 @@ const Section = (props: any) => {
 	const { data, isError, isFetching, isLoading, refetch } = useGetBranches();
 
 	const fetchedBranches = data?.data ?? [];
-	console.log("Voici les branches : ", fetchedBranches);
 
 	const { mutateAsync: createBranch, isPending: isCreatingBranch } =
 		useCreateBranch();
@@ -172,7 +172,6 @@ const Section = (props: any) => {
 				setValidationErrors(newValidationErrors);
 				return;
 			}
-			console.log("Voici les valeurs : ", values);
 			setValidationErrors(values);
 			await createBranch(values);
 			exitCreatingMode();
@@ -186,7 +185,6 @@ const Section = (props: any) => {
 				return;
 			}
 			setValidationErrors(values);
-			console.log("Voici les valeurs de l'update : ", values);
 			await updateBranch({
 				...values,
 				id: row.original.id,
@@ -213,9 +211,11 @@ const Section = (props: any) => {
 		data: fetchedBranches,
 		createDisplayMode: "row",
 		editDisplayMode: "row",
-
+		enableRowNumbers: false,
+		manualFiltering: false, // Filtrage client-side pour recherche instantanée
+		onGlobalFilterChange: setGlobalFilter,
 		mantineSearchTextInputProps: {
-			placeholder: "Rechercher des Filière",
+			placeholder: "Rechercher des Filières",
 		},
 		getRowId: (row) => row.id,
 		mantineToolbarAlertBannerProps: isError

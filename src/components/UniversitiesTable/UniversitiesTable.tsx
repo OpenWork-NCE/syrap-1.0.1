@@ -261,7 +261,6 @@ const Section = (props: any) => {
 	});
 
 	const fetchedUniversities = data?.data ?? [];
-	console.log("Voici les universities : ", fetchedUniversities);
 
 	const { mutateAsync: createUniversity, isPending: isCreatingUniversity } =
 		useCreateUniversity();
@@ -278,7 +277,6 @@ const Section = (props: any) => {
 				return;
 			}
 			setValidationErrors(values);
-			console.log("Voici les valeurs en question : ", values);
 			await createUniversity({
 				...values,
 				cenadi_id: String(institution.id),
@@ -323,7 +321,9 @@ const Section = (props: any) => {
 		data: fetchedUniversities,
 		createDisplayMode: "modal",
 		editDisplayMode: "modal",
-
+		enableRowNumbers: false,
+		manualFiltering: false, // Filtrage client-side pour recherche instantanée
+		onGlobalFilterChange: setGlobalFilter,
 		mantineSearchTextInputProps: {
 			placeholder: "Rechercher des Universités",
 		},
@@ -437,17 +437,16 @@ const Section = (props: any) => {
 
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
-				{authorizations?.includes("update-universities") &&
-					institution?.slug?.includes("cenadi") && (
-						<Tooltip label="Editer">
-							<ActionIcon
-								color={"green"}
-								onClick={() => table.setEditingRow(row)}
-							>
-								<IconEdit />
-							</ActionIcon>
-						</Tooltip>
-					)}
+				{authorizations?.includes("update-universities") && (
+					<Tooltip label="Editer">
+						<ActionIcon
+							color={"green"}
+							onClick={() => table.setEditingRow(row)}
+						>
+							<IconEdit />
+						</ActionIcon>
+					</Tooltip>
+				)}
 				{authorizations?.includes("delete-universities") && (
 					<Tooltip label="Supprimer">
 						<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
@@ -466,17 +465,16 @@ const Section = (props: any) => {
 							<IconRefresh />
 						</ActionIcon>
 					</Tooltip>
-					{authorizations?.includes("create-universities") &&
-						institution?.slug?.includes("cenadi") && (
-							<Button
-								onClick={() => {
-									table.setCreatingRow(true);
-								}}
-								leftSection={<IconPlus />}
-							>
-								Nouvelle Université
-							</Button>
-						)}
+					{authorizations?.includes("create-universities") && (
+					<Button
+						onClick={() => {
+							table.setCreatingRow(true);
+						}}
+						leftSection={<IconPlus />}
+					>
+						Nouvelle Université
+					</Button>
+				)}
 					<Menu
 						shadow={"md"}
 						// width={130}
@@ -715,7 +713,6 @@ function useDeleteUniversity() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (universityId: string) => {
-			console.log("Here id of university to delete", universityId);
 			const response = await fetch(
 				innerUrl(`/api/universities/${universityId}/delete`),
 				{

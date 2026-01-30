@@ -24,9 +24,9 @@ function Page() {
 				<Stack gap="lg">
 					<PageHeader title="Rôles" breadcrumbItems={items} />
 					<ProfilesTable
-						authorizations={authorizations.filter((authorization) =>
+						authorizations={authorizations?.filter((authorization) =>
 							authorization.includes("role"),
-						)}
+						) ?? []}
 					/>
 				</Stack>
 			</Container>

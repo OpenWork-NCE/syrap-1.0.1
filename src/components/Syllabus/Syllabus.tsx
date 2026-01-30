@@ -119,18 +119,23 @@ export default function ProgramsPage({
 	
 	// Determine if this is a central institution based on the new conditions
 	const determineIsCentralInstitution = (): boolean => {
-		// Base condition: CENADI or MINESUP are always central institutions
-		const isCenadiOrMinesup = instituteName.toLowerCase().includes('cenadi') || 
-								 instituteName.toLowerCase().includes('minesup');
-		
-		if (isCenadiOrMinesup) return true;
-		
+		// Base condition: CENADI, MINESUP or Administration centrale are always central institutions
+		const nameLower = instituteName.toLowerCase();
+		const isCentralAdmin = nameLower.includes('cenadi') ||
+							   nameLower.includes('minesup') ||
+							   nameLower.includes('administration');
+
+		if (isCentralAdmin) return true;
+
+		// userType Cenadi ou Minesup = vue centrale
+		if (userType === "Cenadi" || userType === "Minesup") return true;
+
 		// New conditions based on userType and instituteType
 		if (userType === "IPES" && instituteType === "University") return true;
 		if (userType === "IPES" && instituteType === "IPES") return false;
 		if (userType === "University" && instituteType === "IPES") return true;
 		if (userType === "University" && instituteType === "University") return false;
-		
+
 		// Default to false for any other cases
 		return false;
 	};

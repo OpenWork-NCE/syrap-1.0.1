@@ -76,9 +76,10 @@ interface Params {
 const useGetLevels = () => {
 	return useQuery<BranchApiResponse>({
 		queryKey: ["levels"],
-		queryFn: () => fetch(innerUrl("/api/levels")).then((res) => res.json()),
+		// Charger tous les niveaux (données de référence, généralement < 20)
+		queryFn: () => fetch(innerUrl("/api/levels?limit=500")).then((res) => res.json()),
 		placeholderData: keepPreviousData,
-		staleTime: 30_000,
+		staleTime: 30_000, // Cache 30 secondes
 	});
 };
 
@@ -134,7 +135,6 @@ const Section = (props: any) => {
 	const { data, isError, isFetching, isLoading, refetch } = useGetLevels();
 
 	const fetchedLevels = data?.data ?? [];
-	console.log("Voici les levels : ", fetchedLevels);
 
 	const { mutateAsync: createBranch, isPending: isCreatingBranch } =
 		useCreateBranch();
@@ -150,7 +150,6 @@ const Section = (props: any) => {
 				setValidationErrors(newValidationErrors);
 				return;
 			}
-			console.log("Voici les valeurs : ", values);
 			setValidationErrors(values);
 			await createBranch(values);
 			exitCreatingMode();
@@ -164,7 +163,6 @@ const Section = (props: any) => {
 				return;
 			}
 			setValidationErrors(values);
-			console.log("Voici les valeurs de l'update : ", values);
 			await updateBranch({
 				...values,
 				id: row.original.id,
@@ -191,7 +189,9 @@ const Section = (props: any) => {
 		data: fetchedLevels,
 		createDisplayMode: "row",
 		editDisplayMode: "row",
-
+		enableRowNumbers: false,
+		manualFiltering: false, // Filtrage client-side pour recherche instantanée
+		onGlobalFilterChange: setGlobalFilter,
 		mantineSearchTextInputProps: {
 			placeholder: "Rechercher des Niveaux",
 		},

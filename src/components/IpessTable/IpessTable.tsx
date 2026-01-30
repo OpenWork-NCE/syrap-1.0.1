@@ -399,7 +399,7 @@ const Section = (props: any) => {
 		onEditingRowCancel: () => setValidationErrors({}),
 		onEditingRowSave: handleSaveIpes,
 		renderCreateRowModalContent: ({ table, row, internalEditComponents }) => {
-			if (!authorizations.includes("create-ipes")) {
+			if (!authorizations?.includes("create-ipes")) {
 				return null;
 			}
 
@@ -504,18 +504,17 @@ const Section = (props: any) => {
 
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
-				{authorizations.includes("update-ipes") &&
-					institution.slug.includes("cenadi") && (
-						<Tooltip label="Editer">
-							<ActionIcon
-								color={"green"}
-								onClick={() => table.setEditingRow(row)}
-							>
-								<IconEdit />
-							</ActionIcon>
-						</Tooltip>
-					)}
-				{authorizations.includes("delete-ipes") && (
+				{authorizations?.includes("update-ipes") && (
+					<Tooltip label="Editer">
+						<ActionIcon
+							color={"green"}
+							onClick={() => table.setEditingRow(row)}
+						>
+							<IconEdit />
+						</ActionIcon>
+					</Tooltip>
+				)}
+				{authorizations?.includes("delete-ipes") && (
 					<Tooltip label="Supprimer">
 						<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
 							<IconTrash />
@@ -533,17 +532,16 @@ const Section = (props: any) => {
 							<IconRefresh />
 						</ActionIcon>
 					</Tooltip>
-					{authorizations.includes("create-ipes") &&
-						institution?.slug.includes("cenadi") && (
-							<Button
-								onClick={() => {
-									table.setCreatingRow(true);
-								}}
-								leftSection={<IconPlus />}
-							>
-								Nouvel Ipes
-							</Button>
-						)}
+					{authorizations?.includes("create-ipes") && (
+						<Button
+							onClick={() => {
+								table.setCreatingRow(true);
+							}}
+							leftSection={<IconPlus />}
+						>
+							Nouvel Ipes
+						</Button>
+					)}
 					<Menu
 						shadow={"md"}
 						// width={130}

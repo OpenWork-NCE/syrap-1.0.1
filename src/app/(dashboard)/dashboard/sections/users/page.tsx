@@ -105,9 +105,9 @@ function Page() {
 					</SimpleGrid> */}
 					
 						<UsersTable
-							authorizations={authorizations.filter((authorization) =>
+							authorizations={authorizations?.filter((authorization) =>
 								authorization.includes("user")
-							)}
+							) ?? []}
 							institution={institution}
 						/>
 				</Stack>
