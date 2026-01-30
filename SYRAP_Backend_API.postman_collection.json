@@ -1,0 +1,174 @@
+{
+  "info": {
+    "name": "SYRAP Backend API",
+    "description": "Collection complète des routes backend SYRAP - Base URL: https://syrap.lekwatt.com/public/index.php",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{"key": "token", "value": "{{access_token}}"}]
+  },
+  "variable": [
+    {"key": "base_url", "value": "https://syrap.lekwatt.com/public/index.php"},
+    {"key": "access_token", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "01 - Authentication",
+      "item": [
+        {"name": "Login", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"}, "url": "{{base_url}}/api/auth/login"}},
+        {"name": "Logout", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"accessToken\": \"{{access_token}}\"\n}"}, "url": "{{base_url}}/api/auth/logout"}},
+        {"name": "Forgot Password", "request": {"auth": {"type": "noauth"}, "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"email\": \"user@example.com\"\n}"}, "url": "{{base_url}}/api/auth/forgot-password"}},
+        {"name": "Reset Password", "request": {"auth": {"type": "noauth"}, "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"token\": \"reset-token\",\n  \"password\": \"NewPass123!\"\n}"}, "url": "{{base_url}}/api/auth/reset-password"}},
+        {"name": "Verify Reset Token", "request": {"auth": {"type": "noauth"}, "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"token\": \"reset-token\"\n}"}, "url": "{{base_url}}/api/auth/verify-reset-token"}}
+      ]
+    },
+    {
+      "name": "02 - Dashboard",
+      "item": [
+        {"name": "Get Dashboard Data", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/dashboard"}}
+      ]
+    },
+    {
+      "name": "03 - Permissions",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/authorisations/permissions?page=1&limit=10"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"view_dashboard\"\n}"}, "url": "{{base_url}}/api/authorisations/permissions"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"view_dashboard_updated\"\n}"}, "url": "{{base_url}}/api/authorisations/permissions/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/authorisations/permissions/1"}}
+      ]
+    },
+    {
+      "name": "04 - Roles (Profiles)",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/authorisations/roles?page=1&limit=10"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Admin\",\n  \"permissions\": [\"1\", \"2\", \"3\"]\n}"}, "url": "{{base_url}}/api/authorisations/roles"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Super Admin\",\n  \"permissions\": [\"1\", \"2\", \"3\", \"4\"]\n}"}, "url": "{{base_url}}/api/authorisations/roles/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/authorisations/roles/1"}}
+      ]
+    },
+    {
+      "name": "05 - Users",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/users?page=1&limit=10"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"SecPass123!\",\n  \"roles\": [\"1\", \"2\"],\n  \"model_id\": \"1\",\n  \"model\": \"institute\"\n}"}, "url": "{{base_url}}/api/users"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"John Updated\",\n  \"email\": \"john.updated@example.com\",\n  \"roles\": [\"1\"],\n  \"model_id\": \"1\",\n  \"model\": \"institute\"\n}"}, "url": "{{base_url}}/api/users/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/users/1"}}
+      ]
+    },
+    {
+      "name": "06 - Branches (Filières)",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/institutes/branchs?page=1&limit=10"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Informatique\",\n  \"description\": \"Filière IT\"\n}"}, "url": "{{base_url}}/api/institutes/branchs"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Informatique Avancée\",\n  \"description\": \"Updated\"\n}"}, "url": "{{base_url}}/api/institutes/branchs/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/institutes/branchs/1"}}
+      ]
+    },
+    {
+      "name": "07 - Levels (Niveaux)",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/institutes/levels?page=1&limit=10"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Licence 1\",\n  \"description\": \"L1\"\n}"}, "url": "{{base_url}}/api/institutes/levels"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Licence 1 (L1)\",\n  \"description\": \"Updated\"\n}"}, "url": "{{base_url}}/api/institutes/levels/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/institutes/levels/1"}}
+      ]
+    },
+    {
+      "name": "08 - Classrooms (Salles)",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/institutes/salles?page=1&limit=10"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"designation\": \"Salle A101\",\n  \"branchId\": \"1\",\n  \"levelId\": \"1\",\n  \"institute_id\": \"1\"\n}"}, "url": "{{base_url}}/api/institutes/salles"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"designation\": \"Salle A102\",\n  \"branchId\": \"1\",\n  \"levelId\": \"1\",\n  \"institute_id\": \"1\"\n}"}, "url": "{{base_url}}/api/institutes/salles/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/institutes/salles/1"}},
+        {"name": "GET - By University", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/institutes/salles/1/university"}}
+      ]
+    },
+    {
+      "name": "09 - Localizations (Arrondissements)",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/address/arrondissements?page=1&limit=10"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Douala 1er\"\n}"}, "url": "{{base_url}}/api/address/arrondissements"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Douala 1er (Akwa)\"\n}"}, "url": "{{base_url}}/api/address/arrondissements/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/address/arrondissements/1"}}
+      ]
+    },
+    {
+      "name": "10 - CENADI",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/cenadi?page=1&limit=10"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"CENADI Douala\",\n  \"code\": \"CND-DLA\",\n  \"phone\": \"+237123456789\",\n  \"email\": \"cenadi@example.com\",\n  \"arrondissement_id\": \"1\",\n  \"user_id\": \"1\"\n}"}, "url": "{{base_url}}/api/acteurs/cenadi"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"CENADI Updated\",\n  \"code\": \"CND-01\"\n}"}, "url": "{{base_url}}/api/acteurs/cenadi/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/cenadi/1"}}
+      ]
+    },
+    {
+      "name": "11 - MINESUP",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/minsup?page=1&limit=10"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"MINESUP Central\",\n  \"code\": \"MINSUP-01\"\n}"}, "url": "{{base_url}}/api/acteurs/minsup"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"MINESUP Updated\"\n}"}, "url": "{{base_url}}/api/acteurs/minsup/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/minsup/1"}}
+      ]
+    },
+    {
+      "name": "12 - Universities",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/universities?page=1&limit=10"}},
+        {"name": "GET - By ID", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/universities/1"}},
+        {"name": "GET - Classrooms", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/universities/1/classrooms"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Université de Douala\",\n  \"code\": \"UD\",\n  \"phone\": \"+237123456789\",\n  \"email\": \"contact@ud.cm\",\n  \"description\": \"Université publique\",\n  \"arrondissement_id\": \"1\",\n  \"user_id\": \"1\",\n  \"cenadi_id\": \"1\"\n}"}, "url": "{{base_url}}/api/acteurs/universities"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Université de Douala (Updated)\",\n  \"code\": \"UD-2024\"\n}"}, "url": "{{base_url}}/api/acteurs/universities/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/universities/1"}}
+      ]
+    },
+    {
+      "name": "13 - IPES",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/ipes?page=1&limit=10"}},
+        {"name": "GET - By ID", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/ipes/1"}},
+        {"name": "GET - Classrooms", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/ipes/1/classrooms"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"IPES Douala\",\n  \"code\": \"IPES-DLA\",\n  \"phone\": \"+237123456789\",\n  \"email\": \"ipes@example.com\",\n  \"arrondissement_id\": \"1\",\n  \"user_id\": \"1\",\n  \"cenadi_id\": \"1\",\n  \"university_id\": \"1\"\n}"}, "url": "{{base_url}}/api/acteurs/ipes"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"IPES Douala Updated\",\n  \"code\": \"IPES-DLA-01\"\n}"}, "url": "{{base_url}}/api/acteurs/ipes/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/acteurs/ipes/1"}}
+      ]
+    },
+    {
+      "name": "14 - UEs (Unités d'Enseignement)",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/programmes/ues?page=1&limit=10"}},
+        {"name": "POST - Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Programmation Web\",\n  \"code\": \"UE-PW\"\n}"}, "url": "{{base_url}}/api/programmes/ues"}},
+        {"name": "PUT - Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Programmation Web Avancée\"\n}"}, "url": "{{base_url}}/api/programmes/ues/1"}},
+        {"name": "DELETE - Remove", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/programmes/ues/1"}}
+      ]
+    },
+    {
+      "name": "15 - Syllabus (Programmes)",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/programmes?page=1&limit=10"}},
+        {"name": "GET - By Classroom ID", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/programmes/salle/1"}},
+        {"name": "POST - Add UE to Classroom", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"ue\": \"1\",\n  \"year\": \"2024\",\n  \"credit\": \"5\",\n  \"nbr_hrs\": \"60\"\n}"}, "url": "{{base_url}}/api/programmes/salles/1"}},
+        {"name": "PUT - Update UE", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"credit\": \"6\",\n  \"nbr_hrs\": \"65\"\n}"}, "url": "{{base_url}}/api/programmes/salles/1/ue/1"}},
+        {"name": "DELETE - Remove UE", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/programmes/salles/1/ue/1"}},
+        {"name": "POST - Compare Programs", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"classroom_id_1\": \"1\",\n  \"classroom_id_2\": \"2\"\n}"}, "url": "{{base_url}}/api/programmes/1/compare"}}
+      ]
+    },
+    {
+      "name": "16 - Documents (Files)",
+      "item": [
+        {"name": "GET - List All", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/documents?page=1&limit=10"}},
+        {"name": "GET - By ID", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/documents/1"}},
+        {"name": "GET - Download File", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/documents/1/files/1/download"}},
+        {"name": "POST - Upload File", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "formdata", "formdata": [{"key": "file", "type": "file", "src": ""}, {"key": "title", "value": "Document Title", "type": "text"}, {"key": "description", "value": "Document Description", "type": "text"}, {"key": "model", "value": "institute", "type": "text"}, {"key": "model_id", "value": "1", "type": "text"}]}, "url": "{{base_url}}/api/documents"}},
+        {"name": "PUT - Update Document", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{access_token}}"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Updated Document\",\n  \"description\": \"Updated description\"\n}"}, "url": "{{base_url}}/api/documents/1"}},
+        {"name": "DELETE - Remove Document", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/documents/1"}}
+      ]
+    },
+    {
+      "name": "17 - Logs",
+      "item": [
+        {"name": "GET - List All Logs", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}], "url": "{{base_url}}/api/logs?page=1&limit=10"}}
+      ]
+    }
+  ]
+}

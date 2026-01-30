@@ -1,0 +1,6 @@
+{
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "notebook.defaultFormatter": "esbenp.prettier-vscode",
+    "prettier.configPath": "C:\\Users\\chris\\AppData\\Roaming\\npm\\node_modules\\prettier",
+    "prettier.prettierPath": "./node_modules/prettier"
+}

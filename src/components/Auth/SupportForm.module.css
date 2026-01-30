@@ -1,0 +1,47 @@
+.card {
+	max-width: 550px;
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	position: relative;
+	overflow: hidden;
+	transition: var(--transition-default);
+	border: 1px solid light-dark(var(--border-light), var(--border-dark));
+	backdrop-filter: blur(10px);
+	background-color: light-dark(var(--bg-light), var(--bg-dark));
+}
+
+.card::before {
+	content: "";
+	position: absolute;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+	background: conic-gradient(
+		transparent,
+		transparent,
+		transparent,
+		var(--primary-4)
+	);
+	/* animation: rotate 4s linear infinite; */
+	z-index: -1;
+}
+
+.card::after {
+	content: "";
+	position: absolute;
+	inset: 3px;
+	background: light-dark(var(--bg-light), var(--bg-dark));
+	border-radius: var(--radius-md);
+	z-index: -1;
+}
+
+@keyframes rotate {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}

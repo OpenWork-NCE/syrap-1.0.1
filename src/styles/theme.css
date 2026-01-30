@@ -1,0 +1,491 @@
+/*
+ * Theme CSS Variables
+ * These variables will be dynamically set by the ThemeProvider component
+ * This file serves as a reference for the available variables
+ */
+
+:root {
+	/* Primary colors - will be set dynamically based on the selected theme */
+	--primary-0: var(--mantine-color-primary-0);
+	--primary-1: var(--mantine-color-primary-1);
+	--primary-2: var(--mantine-color-primary-2);
+	--primary-3: var(--mantine-color-primary-3);
+	--primary-4: var(--mantine-color-primary-4);
+	--primary-5: var(--mantine-color-primary-5);
+	--primary-6: var(--mantine-color-primary-6);
+	--primary-7: var(--mantine-color-primary-7);
+	--primary-8: var(--mantine-color-primary-8);
+	--primary-9: var(--mantine-color-primary-9);
+
+	/* RGB values for rgba() functions - these will be populated by the ThemeProvider */
+	--primary-0-rgb: 0, 0, 0;
+	--primary-1-rgb: 0, 0, 0;
+	--primary-2-rgb: 0, 0, 0;
+	--primary-3-rgb: 0, 0, 0;
+	--primary-4-rgb: 0, 0, 0;
+	--primary-5-rgb: 0, 0, 0;
+	--primary-6-rgb: 0, 0, 0;
+	--primary-7-rgb: 0, 0, 0;
+	--primary-8-rgb: 0, 0, 0;
+	--primary-9-rgb: 0, 0, 0;
+
+	/* Gray colors */
+	--gray-0: var(--mantine-color-gray-0);
+	--gray-1: var(--mantine-color-gray-1);
+	--gray-2: var(--mantine-color-gray-2);
+	--gray-3: var(--mantine-color-gray-3);
+	--gray-4: var(--mantine-color-gray-4);
+	--gray-5: var(--mantine-color-gray-5);
+	--gray-6: var(--mantine-color-gray-6);
+	--gray-7: var(--mantine-color-gray-7);
+	--gray-8: var(--mantine-color-gray-8);
+	--gray-9: var(--mantine-color-gray-9);
+
+	/* Gray colors as RGB values */
+	--gray-0-rgb: 248, 249, 250;
+	--gray-1-rgb: 241, 243, 245;
+	--gray-2-rgb: 233, 236, 239;
+	--gray-3-rgb: 222, 226, 230;
+	--gray-4-rgb: 206, 212, 218;
+	--gray-5-rgb: 173, 181, 189;
+	--gray-6-rgb: 134, 142, 150;
+	--gray-7-rgb: 73, 80, 87;
+	--gray-8-rgb: 52, 58, 64;
+	--gray-9-rgb: 33, 37, 41;
+
+	/* Light/Dark mode variables */
+	--bg-light: rgba(255, 255, 255, 0.9);
+	--bg-dark: rgba(26, 27, 30, 0.8);
+	--border-light: rgba(0, 0, 0, 0.1);
+	--border-dark: rgba(255, 255, 255, 0.1);
+	--text-light: var(--gray-9);
+	--text-dark: var(--gray-0);
+	--text-dimmed-light: var(--gray-6);
+	--text-dimmed-dark: var(--gray-5);
+
+	/* Shadows for light/dark mode */
+	--shadow-light-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+	--shadow-light-md: 0 8px 15px rgba(0, 0, 0, 0.08);
+	--shadow-light-lg: 0 12px 20px rgba(0, 0, 0, 0.1);
+	--shadow-dark-sm: 0 4px 6px rgba(0, 0, 0, 0.2);
+	--shadow-dark-md: 0 8px 15px rgba(0, 0, 0, 0.25);
+	--shadow-dark-lg: 0 12px 20px rgba(0, 0, 0, 0.3);
+
+	/* Font family */
+	--font-inter: "Inter", sans-serif;
+	--font-family: var(--mantine-font-family);
+
+	/* Border radius */
+	--radius-sm: var(--mantine-radius-sm);
+	--radius-md: var(--mantine-radius-md);
+	--radius-lg: var(--mantine-radius-lg);
+	--radius-xl: var(--mantine-radius-xl);
+
+	/* Spacing */
+	--spacing-xs: var(--mantine-spacing-xs);
+	--spacing-sm: var(--mantine-spacing-sm);
+	--spacing-md: var(--mantine-spacing-md);
+	--spacing-lg: var(--mantine-spacing-lg);
+	--spacing-xl: var(--mantine-spacing-xl);
+
+	/* Transitions */
+	--transition-default: 0.3s ease;
+	--transition-fast: 0.15s ease;
+	--transition-slow: 0.5s ease;
+
+	/* Shadows */
+	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+	--shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+	--shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+	--shadow-hover: 0 15px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Light/Dark mode helper classes */
+.light-dark-bg {
+	background-color: light-dark(var(--bg-light), var(--bg-dark));
+}
+
+.light-dark-border {
+	border: 1px solid light-dark(var(--border-light), var(--border-dark));
+}
+
+.light-dark-text {
+	color: light-dark(var(--text-light), var(--text-dark));
+}
+
+.light-dark-text-dimmed {
+	color: light-dark(var(--text-dimmed-light), var(--text-dimmed-dark));
+}
+
+.light-dark-shadow-sm {
+	box-shadow: light-dark(var(--shadow-light-sm), var(--shadow-dark-sm));
+}
+
+.light-dark-shadow-md {
+	box-shadow: light-dark(var(--shadow-light-md), var(--shadow-dark-md));
+}
+
+.light-dark-shadow-lg {
+	box-shadow: light-dark(var(--shadow-light-lg), var(--shadow-dark-lg));
+}
+
+/* Card styles */
+.theme-card {
+	position: relative;
+	overflow: hidden;
+	transition: var(--transition-default);
+	background-color: light-dark(var(--bg-light), var(--bg-dark));
+	border: 1px solid light-dark(var(--border-light), var(--border-dark));
+	backdrop-filter: blur(10px);
+	border-radius: var(--radius-md);
+	box-shadow: light-dark(var(--shadow-light-sm), var(--shadow-dark-sm));
+}
+
+.theme-card-hover:hover {
+	transform: translateY(-4px);
+	box-shadow: light-dark(var(--shadow-light-lg), var(--shadow-dark-lg));
+	border-color: var(--primary-3);
+}
+
+.theme-card-gradient::before {
+	content: "";
+	position: absolute;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+	background: linear-gradient(
+		135deg,
+		rgba(var(--primary-6-rgb), 0.1),
+		rgba(var(--primary-4-rgb), 0.1)
+	);
+	animation: rotate 4s linear infinite;
+	z-index: -1;
+	border: 1px solid rgba(var(--primary-5-rgb), 0.2);
+}
+
+.theme-card-gradient::after {
+	content: "";
+	position: absolute;
+	inset: 3px;
+	background: light-dark(var(--bg-light), var(--bg-dark));
+	border-radius: var(--radius-md);
+	z-index: -1;
+}
+
+/* Text styles */
+.theme-title {
+	font-family: var(--font-inter), var(--font-family);
+	font-weight: 700;
+	line-height: 1.2;
+	color: light-dark(var(--text-light), var(--text-dark));
+	margin-bottom: var(--spacing-md);
+}
+
+.theme-title-gradient {
+	background: linear-gradient(45deg, var(--primary-6), var(--primary-4));
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+	position: relative;
+}
+
+.theme-text {
+	color: light-dark(var(--text-light), var(--text-dark));
+	line-height: 1.6;
+}
+
+.theme-text-dimmed {
+	color: light-dark(var(--text-dimmed-light), var(--text-dimmed-dark));
+}
+
+.theme-text-gradient {
+	background: linear-gradient(135deg, var(--primary-6), var(--primary-8));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	text-fill-color: transparent;
+}
+
+/* Button styles */
+.theme-button {
+	transition: var(--transition-default);
+	position: relative;
+	overflow: hidden;
+	border-radius: var(--radius-md);
+	font-weight: 500;
+}
+
+.theme-button:hover {
+	transform: translateY(-2px);
+	box-shadow: light-dark(var(--shadow-light-md), var(--shadow-dark-md));
+}
+
+.theme-button-primary {
+	background-color: var(--primary-6);
+	color: white;
+}
+
+.theme-button-primary:hover {
+	background-color: var(--primary-7);
+}
+
+.theme-button-outline {
+	background-color: transparent;
+	border: 1px solid var(--primary-6);
+	color: var(--primary-6);
+}
+
+.theme-button-outline:hover {
+	background-color: light-dark(var(--primary-0), var(--primary-9));
+	border-color: light-dark(var(--primary-5), var(--primary-4));
+	transform: translateY(-2px);
+}
+
+.theme-action-icon {
+	transition: var(--transition-default);
+	border-radius: var(--radius-sm);
+	color: light-dark(var(--text-light), var(--text-dark));
+}
+
+.theme-action-icon:hover {
+	background-color: light-dark(var(--gray-1), var(--gray-8));
+	transform: translateY(-2px);
+	box-shadow: light-dark(var(--shadow-light-sm), var(--shadow-dark-sm));
+}
+
+/* Form styles */
+.theme-form-container {
+	padding: var(--spacing-lg);
+	border-radius: var(--radius-md);
+	background-color: light-dark(var(--bg-light), var(--bg-dark));
+	border: 1px solid light-dark(var(--border-light), var(--border-dark));
+	box-shadow: light-dark(var(--shadow-light-md), var(--shadow-dark-md));
+}
+
+.theme-input {
+	border-radius: var(--radius-md);
+	border: 1px solid light-dark(var(--gray-3), var(--gray-7));
+	transition: var(--transition-default);
+	background-color: light-dark(var(--gray-0), var(--gray-9));
+	color: light-dark(var(--text-light), var(--text-dark));
+}
+
+.theme-input:focus {
+	border-color: var(--primary-5);
+	box-shadow: 0 0 0 2px rgba(var(--primary-5-rgb), 0.2);
+}
+
+/* Layout styles */
+.theme-container {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 0 var(--spacing-md);
+}
+
+.theme-section {
+	margin: var(--spacing-xl) 0;
+}
+
+.theme-page-bg {
+	background-color: light-dark(var(--gray-0), var(--gray-9));
+	min-height: 100vh;
+}
+
+.theme-auth-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	padding: var(--spacing-xl) var(--spacing-md);
+	background-color: light-dark(var(--gray-0), var(--gray-9));
+	background-image: linear-gradient(
+		135deg,
+		rgba(var(--primary-6-rgb), 0.05),
+		rgba(var(--primary-4-rgb), 0.05)
+	);
+}
+
+.theme-auth-card {
+	width: 100%;
+	max-width: 450px;
+	padding: var(--spacing-xl);
+	background-color: light-dark(var(--bg-light), var(--bg-dark));
+	border: 1px solid light-dark(var(--border-light), var(--border-dark));
+	border-radius: var(--radius-md);
+	box-shadow: light-dark(var(--shadow-light-lg), var(--shadow-dark-lg));
+	backdrop-filter: blur(10px);
+}
+
+/* Navbar styles */
+.theme-navbar {
+	background-color: light-dark(var(--bg-light), var(--bg-dark));
+	border-bottom: 1px solid light-dark(var(--border-light), var(--border-dark));
+	backdrop-filter: blur(10px);
+	box-shadow: light-dark(var(--shadow-light-sm), var(--shadow-dark-sm));
+}
+
+.theme-navbar-link {
+	color: light-dark(var(--text-light), var(--text-dark));
+	transition: var(--transition-fast);
+	border-radius: var(--radius-sm);
+	padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.theme-navbar-link:hover {
+	background-color: light-dark(
+		rgba(var(--gray-2-rgb), 0.5),
+		rgba(var(--gray-8-rgb), 0.5)
+	);
+	color: var(--primary-6);
+}
+
+.theme-navbar-link-active {
+	background-color: light-dark(
+		rgba(var(--primary-6-rgb), 0.1),
+		rgba(var(--primary-6-rgb), 0.2)
+	);
+	color: var(--primary-6);
+	font-weight: 500;
+}
+
+/* Header styles */
+.theme-header {
+	background-color: light-dark(var(--bg-light), var(--bg-dark));
+	border-bottom: 1px solid light-dark(var(--border-light), var(--border-dark));
+	backdrop-filter: blur(10px);
+	box-shadow: light-dark(var(--shadow-light-sm), var(--shadow-dark-sm));
+}
+
+/* Animations */
+@keyframes rotate {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes slideIn {
+	from {
+		transform: translateY(20px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+.theme-animate-fade {
+	animation: fadeIn var(--transition-default) forwards;
+}
+
+.theme-animate-slide {
+	animation: slideIn var(--transition-default) forwards;
+}
+
+/* Table styles */
+.theme-table-container {
+	border-radius: var(--radius-md);
+	border: 1px solid light-dark(var(--border-light), var(--border-dark));
+	overflow: hidden;
+	background-color: light-dark(var(--bg-light), var(--bg-dark));
+}
+
+.theme-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.theme-table th {
+	background-color: light-dark(var(--gray-1), var(--gray-8));
+	padding: var(--spacing-md);
+	text-align: left;
+	font-weight: 600;
+	color: light-dark(var(--gray-8), var(--gray-1));
+	border-bottom: 1px solid light-dark(var(--gray-3), var(--gray-7));
+}
+
+.theme-table td {
+	padding: var(--spacing-md);
+	border-bottom: 1px solid light-dark(var(--gray-2), var(--gray-8));
+	color: light-dark(var(--text-light), var(--text-dark));
+}
+
+.theme-table tr:last-child td {
+	border-bottom: none;
+}
+
+.theme-table tr:hover {
+	background-color: light-dark(
+		rgba(var(--primary-1-rgb), 0.5),
+		rgba(var(--primary-9-rgb), 0.2)
+	);
+}
+
+/* Badge styles */
+.theme-badge {
+	border-radius: var(--radius-sm);
+	padding: 2px 8px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.theme-badge-primary {
+	background-color: rgba(var(--primary-6-rgb), 0.15);
+	color: light-dark(var(--primary-7), var(--primary-4));
+}
+
+.theme-badge-success {
+	background-color: rgba(51, 204, 149, 0.15);
+	color: light-dark(rgb(41, 163, 119), rgb(102, 255, 194));
+}
+
+.theme-badge-warning {
+	background-color: rgba(255, 184, 0, 0.15);
+	color: light-dark(rgb(204, 147, 0), rgb(255, 204, 102));
+}
+
+.theme-badge-error {
+	background-color: rgba(255, 76, 81, 0.15);
+	color: light-dark(rgb(204, 61, 65), rgb(255, 122, 127));
+}
+
+/* Scrollbar styles */
+.theme-scrollbar {
+	scrollbar-width: thin;
+	scrollbar-color: var(--gray-4) transparent;
+}
+
+.theme-scrollbar::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+.theme-scrollbar::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.theme-scrollbar::-webkit-scrollbar-thumb {
+	background-color: var(--gray-4);
+	border-radius: 4px;
+}
+
+.theme-scrollbar::-webkit-scrollbar-thumb:hover {
+	background-color: var(--gray-5);
+}

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500">
+  <style>
+    .text { font-family: Arial, sans-serif; font-size: 120px; fill: #1a1b1e; }
+    .subtext { font-family: Arial, sans-serif; font-size: 24px; fill: #868e96; }
+    @media (prefers-color-scheme: dark) {
+      .text { fill: #C1C2C5; }
+      .subtext { fill: #909296; }
+    }
+  </style>
+  <rect width="100%" height="100%" fill="none"/>
+  <text x="50%" y="45%" text-anchor="middle" class="text">404</text>
+  <text x="50%" y="60%" text-anchor="middle" class="subtext">Page non trouvée</text>
+</svg> 

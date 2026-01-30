@@ -1,0 +1,348 @@
+.container {
+	padding: 0;
+	min-height: 100%;
+}
+
+/* Header Section */
+.header {
+	background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+	border-radius: 16px;
+	padding: 24px 28px;
+	margin-bottom: 24px;
+	position: relative;
+	overflow: hidden;
+}
+
+.header::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 300px;
+	height: 100%;
+	background: radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+	pointer-events: none;
+}
+
+.header::after {
+	content: "";
+	position: absolute;
+	bottom: -50%;
+	left: -10%;
+	width: 200px;
+	height: 200px;
+	background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+	pointer-events: none;
+}
+
+.headerContent {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: relative;
+	z-index: 1;
+}
+
+.greeting {
+	color: white;
+}
+
+.greetingText {
+	font-size: 1.5rem;
+	font-weight: 600;
+	color: white;
+	margin-bottom: 4px;
+}
+
+.userName {
+	font-weight: 700;
+}
+
+.greetingSubtext {
+	font-size: 0.9rem;
+	color: rgba(255, 255, 255, 0.85);
+}
+
+.headerAction {
+	background: rgba(255, 255, 255, 0.2);
+	color: white;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	backdrop-filter: blur(10px);
+	transition: background-color 0.1s ease-out, transform 0.1s ease-out;
+	will-change: transform;
+}
+
+.headerAction:hover {
+	background: rgba(255, 255, 255, 0.3);
+	transform: translate3d(0, -2px, 0);
+}
+
+/* Stats Grid */
+.statsGrid {
+	margin-bottom: 24px;
+}
+
+.statCard {
+	background: light-dark(#ffffff, #1e293b);
+	border: 1px solid light-dark(#e2e8f0, #334155);
+	transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+	position: relative;
+	overflow: hidden;
+	will-change: transform;
+}
+
+.statCard::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: linear-gradient(90deg, var(--mantine-color-blue-5), var(--mantine-color-teal-5));
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.statCard:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.statCard:hover::before {
+	opacity: 1;
+}
+
+.statLabel {
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: light-dark(#64748b, #94a3b8);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.statValue {
+	font-size: 2rem;
+	font-weight: 700;
+	color: light-dark(#1e293b, #f1f5f9);
+	line-height: 1.2;
+	margin-top: 4px;
+}
+
+.statIcon {
+	transition: transform 0.15s ease-out;
+}
+
+.statCard:hover .statIcon {
+	transform: scale(1.1);
+}
+
+/* Main Grid */
+.mainGrid {
+	margin-top: 0;
+}
+
+/* Card Base Styles */
+.card {
+	background: light-dark(#ffffff, #1e293b);
+	border: 1px solid light-dark(#e2e8f0, #334155);
+	transition: box-shadow 0.15s ease-out;
+}
+
+.card:hover {
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Task Cards */
+.taskCard {
+	background: light-dark(#f8fafc, #0f172a);
+	border: 1px solid light-dark(#e2e8f0, #334155);
+	transition: background-color 0.1s ease-out, transform 0.1s ease-out;
+	cursor: pointer;
+	will-change: transform;
+}
+
+.taskCard:hover {
+	background: light-dark(#f1f5f9, #1e293b);
+	transform: translate3d(4px, 0, 0);
+}
+
+/* Document Cards */
+.documentCard {
+	background: light-dark(#f8fafc, #0f172a);
+	border: 1px solid light-dark(#e2e8f0, #334155);
+	transition: background-color 0.1s ease-out, border-color 0.1s ease-out;
+	cursor: pointer;
+}
+
+.documentCard:hover {
+	background: light-dark(#f1f5f9, #1e293b);
+	border-color: light-dark(#10b981, #34d399);
+}
+
+/* Visibility Tabs */
+.visibilityTabs [data-active] {
+	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+	color: white;
+}
+
+/* Calendar Cards */
+.calendarCard {
+	background: light-dark(#f8fafc, #0f172a);
+	border: 1px solid light-dark(#e2e8f0, #334155);
+	transition: background-color 0.1s ease-out, transform 0.1s ease-out;
+	cursor: pointer;
+	will-change: transform;
+}
+
+.calendarCard:hover {
+	background: light-dark(#f1f5f9, #1e293b);
+	transform: translate3d(4px, 0, 0);
+}
+
+.calendarDateBox {
+	min-width: 44px;
+	height: 44px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	background: light-dark(#ffffff, #1e293b);
+	border: 2px solid;
+}
+
+/* Quick Action Cards */
+.quickActionCard {
+	background: light-dark(#ffffff, #1e293b);
+	border: 1px solid light-dark(#e2e8f0, #334155);
+	transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, border-color 0.15s ease-out;
+	cursor: pointer;
+	text-decoration: none;
+	display: block;
+	text-align: center;
+	will-change: transform;
+}
+
+.quickActionCard:hover {
+	transform: translate3d(0, -6px, 0);
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+	border-color: light-dark(#10b981, #34d399);
+}
+
+.quickActionCard:hover > div:first-child {
+	transform: scale(1.15);
+}
+
+/* Timeline */
+.timeline {
+	padding-left: 8px;
+}
+
+
+/* Animations - Optimisées pour éviter le tremblement de texte sur Chrome */
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translate3d(0, 20px, 0);
+	}
+	to {
+		opacity: 1;
+		transform: translate3d(0, 0, 0);
+	}
+}
+
+.statsGrid > div {
+	animation: fadeInUp 0.5s ease forwards;
+	will-change: transform, opacity;
+	backface-visibility: hidden;
+	-webkit-font-smoothing: antialiased;
+}
+
+.statsGrid > div:nth-child(1) {
+	animation-delay: 0.1s;
+}
+
+.statsGrid > div:nth-child(2) {
+	animation-delay: 0.2s;
+}
+
+.statsGrid > div:nth-child(3) {
+	animation-delay: 0.3s;
+}
+
+.statsGrid > div:nth-child(4) {
+	animation-delay: 0.4s;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.header {
+		padding: 20px;
+	}
+
+	.greetingText {
+		font-size: 1.25rem;
+	}
+
+	.statValue {
+		font-size: 1.5rem;
+	}
+
+	.headerContent {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 16px;
+	}
+}
+
+/* Dark mode adjustments */
+:global(.dark) .header {
+	background: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%);
+}
+
+:global(.dark) .statCard,
+:global(.dark) .card,
+:global(.dark) .taskCard,
+:global(.dark) .quickActionCard,
+:global(.dark) .documentCard,
+:global(.dark) .calendarCard {
+	border-color: #334155;
+}
+
+:global(.dark) .calendarDateBox {
+	background: #0f172a;
+}
+
+/* Notification Drawer */
+.notificationDrawer {
+	z-index: 1000;
+}
+
+.notificationItem {
+	background: light-dark(#f8fafc, #0f172a);
+	border: 1px solid light-dark(#e2e8f0, #334155);
+	transition: background-color 0.1s ease-out;
+	cursor: pointer;
+}
+
+.notificationItem:hover {
+	background: light-dark(#f1f5f9, #1e293b);
+}
+
+.unreadNotification {
+	background: light-dark(#f0fdf4, rgba(16, 185, 129, 0.1));
+	border-left: 3px solid var(--mantine-color-green-5);
+}
+
+.unreadNotification:hover {
+	background: light-dark(#dcfce7, rgba(16, 185, 129, 0.15));
+}
+
+:global(.dark) .notificationItem {
+	border-color: #334155;
+}
+
+:global(.dark) .unreadNotification {
+	background: rgba(16, 185, 129, 0.1);
+	border-left-color: var(--mantine-color-green-6);
+}
