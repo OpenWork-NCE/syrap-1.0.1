@@ -29,6 +29,7 @@ import {
 	rem,
 } from "@mantine/core";
 import {
+	IconCalendar,
 	IconCheck,
 	IconChecks,
 	IconClock,
@@ -37,8 +38,10 @@ import {
 	IconEye,
 	IconFileTypeCsv,
 	IconFileTypePdf,
+	IconMoodEmpty,
 	IconPlus,
 	IconRefresh,
+	IconSearch,
 	IconTableExport,
 	IconTrash,
 	IconTrashX,
@@ -63,11 +66,13 @@ import { handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/ut
 type Ue = {
 	id: string;
 	name: string;
+	slug: string;
 	description: string;
-	validate?: string;
+	validate?: any;
 	author?: {
 		user_id: string;
 	};
+	created?: string;
 };
 
 type UeApiResponse = {
@@ -120,51 +125,84 @@ const Section = (props: any) => {
 		() => [
 			{
 				accessorKey: "id",
-				header: "Identifiant",
+				header: "ID",
 				enableEditing: false,
+				size: 50,
 			},
 			{
 				accessorKey: "name",
-				header: "Nom",
+				header: "Intitulé",
 				enableEditing: (row: MRT_Row<any>) => row.original.validate !== null,
+				size: 150,
+				minSize: 120,
+				Cell: ({ row }) => (
+					<Text fw={500} size="sm">
+						{row.original.name}
+					</Text>
+				),
 				mantineEditTextInputProps: {
 					type: "text",
 					required: true,
 					error: validationErrors?.name,
-					//remove any previous validation errors when user focuses on the input
 					onFocus: () =>
 						setValidationErrors({
 							...validationErrors,
 							name: undefined,
 						}),
-					//optionally add validation checking for onBlur or onChange
 				},
 			},
 			{
 				accessorKey: "description",
 				header: "Description",
+				size: 300,
+				minSize: 200,
+				Cell: ({ row }) => (
+					<Text size="sm" c="dimmed" lineClamp={2}>
+						{row.original.description || "—"}
+					</Text>
+				),
 				mantineEditTextInputProps: {
 					type: "text",
 					required: true,
 					error: validationErrors?.description,
-					//remove any previous validation errors when user focuses on the input
 					onFocus: () =>
 						setValidationErrors({
 							...validationErrors,
 							description: undefined,
 						}),
-					//optionally add validation checking for onBlur or onChange
+				},
+			},
+			{
+				accessorKey: "created",
+				header: "Créée le",
+				enableEditing: false,
+				size: 110,
+				Cell: ({ row }) => {
+					const date = row.original.created;
+					if (!date) return <Text size="sm" c="dimmed">—</Text>;
+					const formatted = new Date(date).toLocaleDateString("fr-FR", {
+						day: "2-digit",
+						month: "short",
+						year: "numeric",
+					});
+					return (
+						<Group gap={4}>
+							<IconCalendar size={14} color="gray" />
+							<Text size="sm" c="dimmed">{formatted}</Text>
+						</Group>
+					);
 				},
 			},
 			{
 				accessorKey: "validate",
-				header: "Status de Validation",
+				header: "Statut",
 				enableEditing: false,
+				size: 100,
 				Cell: ({ row }) => (
 					<Badge
 						variant="light"
 						color={row.original.validate === null ? "orange" : "green"}
-						size="md"
+						size="sm"
 						radius="sm"
 						leftSection={
 							row.original.validate === null ? (
@@ -289,8 +327,24 @@ const Section = (props: any) => {
 	const table = useCustomTable({
 		columns,
 		data: fetchedUes,
-		createDisplayMode: "row", //default ('row', and 'custom' are also available)
-		editDisplayMode: "row", //default ('row', 'cell', 'table', and 'custom' are also available)
+		createDisplayMode: "row",
+		editDisplayMode: "row",
+		enableRowSelection: true,
+		enableColumnOrdering: true,
+		enableGlobalFilter: true,
+		enableDensityToggle: false,
+		enableRowNumbers: false, // Désactive la colonne #
+		manualFiltering: false, // Active le filtrage client-side pour la recherche
+		onGlobalFilterChange: setGlobalFilter, // Permet à la recherche de fonctionner
+		displayColumnDefOptions: {
+			"mrt-row-actions": {
+				size: 200, // Plus de place pour les boutons explicites
+			},
+		},
+		initialState: {
+			columnVisibility: { id: false },
+			density: "xs",
+		},
 		mantineTableBodyRowProps: ({ row }) => ({
 			style: {
 				backgroundColor: row.original.validate === null
@@ -301,13 +355,25 @@ const Section = (props: any) => {
 					: "3px solid transparent",
 			},
 		}),
-
 		mantineSearchTextInputProps: {
-			placeholder: "Rechercher des UEs",
+			placeholder: "Rechercher par nom ou description...",
+			leftSection: <IconSearch size={16} />,
 		},
-		// renderTopToolbarCustomActions: ({ table }) => (
-		//
-		// ),
+		renderEmptyRowsFallback: () => (
+			<Stack align="center" justify="center" py={40} gap="md">
+				<IconMoodEmpty size={48} color="gray" stroke={1.5} />
+				<Text size="lg" fw={500} c="dimmed">
+					Aucune UE trouvée
+				</Text>
+				<Text size="sm" c="dimmed" ta="center" maw={300}>
+					{filterStatus === "validated"
+						? "Aucune UE validée pour le moment"
+						: filterStatus === "pending"
+						? "Aucune UE en attente de validation"
+						: "Commencez par créer une nouvelle unité d'enseignement"}
+				</Text>
+			</Stack>
+		),
 		getRowId: (row) => row.id,
 		mantineToolbarAlertBannerProps: isError
 			? {
@@ -355,81 +421,37 @@ const Section = (props: any) => {
 			</Stack>
 		),
 
-		renderDetailPanel: ({ row }) => (
-			<Box
-				style={{
-					display: "flex",
-					justifyContent: "flex-start",
-					alignItems: "center",
-					gap: "16px",
-					padding: "16px",
-					width: "100%",
-				}}
-			>
-				<Box style={{ width: "100%" }}>
-					<Title order={5}>{row.original.name}</Title>
-					<Divider pb={1} mb={10} />
-					<Box style={{ fontSize: "16px" }}>
-						<Text size={"sm"}>
-							Intitulé de l'UE :{" "}
-							<span style={{ fontWeight: "bolder" }}>{row.original.name}</span>
-						</Text>
-						<Text size={"sm"}>
-							Description :{" "}
-							<span style={{ fontWeight: "bolder" }}>
-								{row.original.description}
-							</span>
-						</Text>
-						<Text size={"sm"}>
-							Validé ? :{" "}
-							<span style={{ fontWeight: "bolder" }}>
-								{row.original.validate == null ? "Non" : "Oui"}
-							</span>
-						</Text>
-						{/*<Divider my={10} />*/}
-						{/*{row.original.validate == null && (*/}
-						{/*	<Button*/}
-						{/*		variant={"outline"}*/}
-						{/*		leftSection={<IconCheck />}*/}
-						{/*		onClick={() => {}}*/}
-						{/*	>*/}
-						{/*		Valider*/}
-						{/*	</Button>*/}
-						{/*)}*/}
-					</Box>
-				</Box>
-			</Box>
-		),
-
 		renderRowActions: ({ row, table }) => (
-			<Flex gap="md">
+			<Flex gap="xs">
 				{/* Bouton Valider - visible uniquement si l'UE n'est pas validée */}
 				{authorizations.includes("validate-ues") && row.original.validate == null && (
-					<Tooltip label="Valider">
-						<ActionIcon
-							color="green"
-							loading={isValidatingUe}
-							onClick={() => validateUeAction(row.original.id)}
-						>
-							<IconCheck />
-						</ActionIcon>
-					</Tooltip>
+					<Button
+						size="compact-xs"
+						color="green"
+						variant="light"
+						leftSection={<IconCheck size={14} />}
+						loading={isValidatingUe}
+						onClick={() => validateUeAction(row.original.id)}
+					>
+						Valider
+					</Button>
 				)}
 				{/* Bouton Editer - visible uniquement si l'UE est validée */}
 				{authorizations.includes("update-ues") && row.original.validate != null && (
-					<Tooltip label="Editer">
-						<ActionIcon
-							color="blue"
-							onClick={() => table.setEditingRow(row)}
-						>
-							<IconEdit />
-						</ActionIcon>
-					</Tooltip>
+					<Button
+						size="compact-xs"
+						color="blue"
+						variant="light"
+						leftSection={<IconEdit size={14} />}
+						onClick={() => table.setEditingRow(row)}
+					>
+						Éditer
+					</Button>
 				)}
 				{authorizations.includes("delete-ues") && (
 					<Tooltip label="Supprimer">
-						<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
-							<IconTrash />
+						<ActionIcon color="red" variant="light" onClick={() => openDeleteConfirmModal(row)}>
+							<IconTrash size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}
