@@ -24,12 +24,12 @@
 	background: linear-gradient(
 		90deg,
 		transparent,
-		#228be6,
-		#40c057,
+		var(--mantine-color-primary-4),
+		var(--mantine-color-primary-6),
 		transparent
 	);
 	transform: scaleX(0.8);
-	opacity: 0.5;
+	opacity: 0.6;
 }
 
 .rightSection {

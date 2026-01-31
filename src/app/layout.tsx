@@ -5,6 +5,7 @@ import "@/styles/global.css";
 import "@/styles/theme.css";
 
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { ColorSchemeScript } from "@mantine/core";
 import { interFont } from "@/styles/fonts";
 import { ClientProviders } from "./client-providers";
@@ -32,12 +33,32 @@ export const viewport: Viewport = {
 };
 
 /**
+ * Récupère le type d'organisation depuis les cookies (Server Side)
+ * Permet d'appliquer le thème immédiatement sans attendre le chargement client
+ */
+function getOrganisationTypeFromCookies(): string {
+	try {
+		const cookieStore = cookies();
+		const orgCookie = cookieStore.get(process.env.USER_SESSION_INSTITUTE_KEY || "");
+
+		if (orgCookie?.value) {
+			const org = JSON.parse(orgCookie.value);
+			return org?.type || "";
+		}
+	} catch {
+		// Erreur de parsing ou cookie absent
+	}
+	return "";
+}
+
+/**
  * Root Layout - Server Component
  *
  * Ce layout est un Server Component pour permettre:
  * - Le SSR des pages enfants
  * - L'optimisation des métadonnées côté serveur
  * - La génération statique où possible
+ * - La lecture des cookies pour le thème initial
  *
  * Les providers clients sont encapsulés dans ClientProviders
  */
@@ -46,6 +67,9 @@ export default function RootLayout({
 }: {
 	children: React.ReactNode;
 }) {
+	// Lire le type d'organisation depuis les cookies côté serveur
+	const initialOrgType = getOrganisationTypeFromCookies();
+
 	return (
 		<html lang="fr" className={interFont.variable} suppressHydrationWarning>
 			<head>
@@ -54,7 +78,7 @@ export default function RootLayout({
 				<link rel="apple-touch-icon" href="/favicon.jpeg" />
 			</head>
 			<body className={interFont.className}>
-				<ClientProviders>
+				<ClientProviders initialOrgType={initialOrgType}>
 					{children}
 				</ClientProviders>
 			</body>

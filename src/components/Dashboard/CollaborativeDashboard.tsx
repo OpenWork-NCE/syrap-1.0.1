@@ -22,6 +22,7 @@ import {
 	Divider,
 	Menu,
 	UnstyledButton,
+	useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -265,6 +266,7 @@ const initialNotifications: Notification[] = [
 
 export function CollaborativeDashboard() {
 	const { institution } = useInstitution();
+	const theme = useMantineTheme();
 	const [stats, setStats] = useState<DashboardStats>({
 		universities_count: 0,
 		ipes_count: 0,
@@ -283,6 +285,12 @@ export function CollaborativeDashboard() {
 
 	// Computed values for notifications
 	const unreadCount = notifications.filter((n) => !n.read).length;
+
+	// Style dynamique pour le header basé sur le thème de l'organisation
+	const primaryColor = theme.primaryColor;
+	const headerGradientStyle = {
+		background: `linear-gradient(135deg, ${theme.colors[primaryColor][5]} 0%, ${theme.colors[primaryColor][6]} 50%, ${theme.colors[primaryColor][7]} 100%)`,
+	};
 
 	// Fetch documents
 	const fetchDocuments = useCallback(async () => {
@@ -536,7 +544,7 @@ export function CollaborativeDashboard() {
 	return (
 		<div className={classes.container}>
 			{/* Header Section */}
-			<div className={classes.header}>
+			<div className={classes.header} style={headerGradientStyle}>
 				<div className={classes.headerContent}>
 					<div className={classes.greeting}>
 						<Text className={classes.greetingText}>
@@ -669,7 +677,14 @@ export function CollaborativeDashboard() {
 								onChange={(value) => setActiveVisibility(value || "all")}
 								variant="pills"
 								radius="xl"
-								className={classes.visibilityTabs}
+								styles={{
+									tab: {
+										'&[data-active]': {
+											background: `linear-gradient(135deg, ${theme.colors[primaryColor][5]} 0%, ${theme.colors[primaryColor][6]} 100%)`,
+											color: 'white',
+										},
+									},
+								}}
 							>
 								<Tabs.List mb="md">
 									<Tabs.Tab value="all" leftSection={<IconFile size={14} />}>

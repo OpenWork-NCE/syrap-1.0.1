@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@ta
 import { themeCenadi, themeIpes, themeMinesup, themeUniversity } from "@/styles/theme";
 import { ThemeProvider } from "@/components/ui/ThemeComponents";
 import { SessionProvider, useOrganisation } from "@/app/context/SessionContext";
+import { createContext, useContext } from "react";
 
 /**
  * Mapping des types d'organisation vers les thèmes Mantine
@@ -18,6 +19,12 @@ const ORGANISATION_THEMES = {
 	IPES: themeIpes,
 	CENADI: themeCenadi,
 } as const;
+
+/**
+ * Context pour le type d'organisation initial (SSR)
+ * Permet d'éviter le flash de thème au chargement
+ */
+const InitialOrgTypeContext = createContext<string>("");
 
 /**
  * Gestionnaire d'erreurs global pour React Query
@@ -98,14 +105,23 @@ const queryClient = new QueryClient({
 /**
  * Provider interne pour le thème dynamique
  * Doit être enfant de SessionProvider pour accéder à useOrganisation
+ *
+ * Stratégie de chargement du thème (sans flash):
+ * 1. Au premier rendu SSR, utilise initialOrgType lu des cookies côté serveur
+ * 2. Après hydratation, utilise le type de la session React
+ * 3. Priorité: session > initial (cookies) > défaut (CENADI)
  */
 function ThemeWrapper({ children }: { children: React.ReactNode }) {
 	const { organisation } = useOrganisation();
+	const initialOrgType = useContext(InitialOrgTypeContext);
+
+	// Priorité: type de session (après chargement) > type initial (SSR/cookies)
+	const orgType = organisation?.type || initialOrgType;
 
 	const theme = useMemo(() => {
-		const type = organisation?.type as keyof typeof ORGANISATION_THEMES;
+		const type = orgType as keyof typeof ORGANISATION_THEMES;
 		return ORGANISATION_THEMES[type] || themeCenadi;
-	}, [organisation?.type]);
+	}, [orgType]);
 
 	return (
 		<MantineProvider theme={theme}>
@@ -121,28 +137,38 @@ function ThemeWrapper({ children }: { children: React.ReactNode }) {
 	);
 }
 
+interface ClientProvidersProps {
+	children: React.ReactNode;
+	/** Type d'organisation lu depuis les cookies côté serveur */
+	initialOrgType?: string;
+}
+
 /**
  * ClientProviders - Wrapper unique pour tous les providers clients
  *
  * Hiérarchie optimisée (de extérieur vers intérieur):
- * 1. SessionProvider - État de session (user, organisation, authorizations)
- * 2. MantineProvider - Thème UI basé sur l'organisation
- * 3. ThemeProvider - Variables CSS personnalisées
- * 4. ModalsProvider - Gestion des modales Mantine
- * 5. QueryClientProvider - Cache et état serveur React Query
+ * 1. InitialOrgTypeContext - Type initial pour éviter le flash de thème
+ * 2. SessionProvider - État de session (user, organisation, authorizations)
+ * 3. MantineProvider - Thème UI basé sur l'organisation
+ * 4. ThemeProvider - Variables CSS personnalisées
+ * 5. ModalsProvider - Gestion des modales Mantine
+ * 6. QueryClientProvider - Cache et état serveur React Query
  *
  * Avantages de cette architecture:
+ * - Thème appliqué instantanément grâce à la lecture SSR des cookies
  * - Un seul QueryClient partagé dans toute l'app
  * - Cache préservé entre les navigations
  * - Réduction des re-renders inutiles
  * - Meilleure performance de navigation
  */
-export function ClientProviders({ children }: { children: React.ReactNode }) {
+export function ClientProviders({ children, initialOrgType = "" }: ClientProvidersProps) {
 	return (
-		<SessionProvider>
-			<ThemeWrapper>
-				{children}
-			</ThemeWrapper>
-		</SessionProvider>
+		<InitialOrgTypeContext.Provider value={initialOrgType}>
+			<SessionProvider>
+				<ThemeWrapper>
+					{children}
+				</ThemeWrapper>
+			</SessionProvider>
+		</InitialOrgTypeContext.Provider>
 	);
 }

@@ -59,7 +59,7 @@ export function LoginForm() {
 
 			// Effectuer le login
 			const response = await fetchJson<{
-				institution: { id: string; name: string; slug: string; model: string };
+				organisation: { id: number | null; name: string | null; slug: string | null; type: string | null };
 				authorizations: string[];
 			}>(internalApiUrl(`/api/auth/login`), {
 				method: "POST",
@@ -75,8 +75,8 @@ export function LoginForm() {
 				message: "Vous allez être redirigé vers votre tableau de bord",
 			});
 
-			// Gérer les valeurs null de l'organisation et convertir en string pour SessionContext
-			const org = response.institution as { id?: string | number; name?: string; slug?: string; type?: string } | null;
+			// Convertir l'organisation en format attendu par SessionContext
+			const org = response.organisation;
 			const organisation = {
 				id: String(org?.id ?? ""),
 				name: org?.name ?? "",

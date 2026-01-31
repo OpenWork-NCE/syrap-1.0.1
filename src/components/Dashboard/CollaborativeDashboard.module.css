@@ -3,9 +3,8 @@
 	min-height: 100%;
 }
 
-/* Header Section */
+/* Header Section - Le gradient est appliqué via React (useMantineTheme) */
 .header {
-	background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
 	border-radius: 16px;
 	padding: 24px 28px;
 	margin-bottom: 24px;
@@ -153,11 +152,7 @@
 	border-color: light-dark(#10b981, #34d399);
 }
 
-/* Visibility Tabs */
-.visibilityTabs [data-active] {
-	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-	color: white;
-}
+/* Visibility Tabs - Le style actif est géré via React (useMantineTheme) */
 
 /* Calendar Cards */
 .calendarCard {
@@ -242,9 +237,7 @@
 }
 
 /* Dark mode adjustments */
-:global(.dark) .header {
-	background: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%);
-}
+/* Le gradient du header est géré par React (useMantineTheme) */
 
 :global(.dark) .statCard,
 :global(.dark) .card,
