@@ -877,6 +877,8 @@ function useValidateUe() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (ueId: string) => {
+			console.log(`[UE Validate] Début validation UE ${ueId}`);
+
 			const response = await fetch(
 				innerUrl(`/api/ues/${ueId}/validate`),
 				{
@@ -887,10 +889,50 @@ function useValidateUe() {
 				},
 			);
 
-			if (!response.ok) {
-				throw new Error("Erreur lors de la validation de l'UE");
+			console.log(`[UE Validate] Réponse status: ${response.status}`);
+
+			// Succès sans contenu (204)
+			if (response.status === 204) {
+				notifications.show({
+					color: "green",
+					title: "Unité d'enseignement validée",
+					message: "L'UE a été validée avec succès",
+					icon: <IconCheck />,
+					loading: false,
+					autoClose: 2000,
+				});
+				return { success: true };
 			}
 
+			// Gestion des erreurs avec message détaillé
+			if (!response.ok) {
+				let errorMessage = `Erreur ${response.status}`;
+				let errorDetails = null;
+
+				try {
+					errorDetails = await response.json();
+					errorMessage = errorDetails.message || errorDetails.error || errorDetails.details || errorMessage;
+				} catch {
+					// Pas de JSON dans la réponse
+				}
+
+				console.error("[UE Validate] Erreur complète:", {
+					status: response.status,
+					statusText: response.statusText,
+					details: errorDetails,
+				});
+
+				notifications.show({
+					color: "red",
+					title: "Erreur de validation",
+					message: errorMessage,
+					autoClose: 5000,
+				});
+
+				throw new Error(errorMessage);
+			}
+
+			// Succès avec contenu
 			notifications.show({
 				color: "green",
 				title: "Unité d'enseignement validée",
@@ -900,9 +942,11 @@ function useValidateUe() {
 				autoClose: 2000,
 			});
 
-			return response;
+			return response.json().catch(() => ({ success: true }));
 		},
-		// Rafraîchir les données après la validation
+		onError: (error) => {
+			console.error("[UE Validate] Mutation error:", error);
+		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: ["ues"] });
 		},

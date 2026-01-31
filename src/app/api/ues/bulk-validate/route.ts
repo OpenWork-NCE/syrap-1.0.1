@@ -1,7 +1,6 @@
 import { serializeError } from "serialize-error";
 import {
 	backendUrl,
-	fetchJson,
 	getClientIp,
 } from "@/app/lib/utils";
 import accessTokenMiddleware from "@/app/lib/middleware/accessTokenMiddleware";
@@ -13,7 +12,7 @@ export async function POST(request: Request) {
 		try {
 			const body = await request.json();
 
-			const response = await fetchJson<any>(
+			const response = await fetch(
 				backendUrl("/api/programmes/ues/bulk-validate"),
 				{
 					method: "POST",
@@ -26,7 +25,17 @@ export async function POST(request: Request) {
 					body: JSON.stringify(body),
 				},
 			);
-			return new Response(JSON.stringify(response), { status: 200 });
+
+			// Propager le statut du backend directement
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({}));
+				return new Response(JSON.stringify(errorData), {
+					status: response.status,
+				});
+			}
+
+			const data = await response.json().catch(() => null);
+			return new Response(JSON.stringify(data), { status: 200 });
 		} catch (error) {
 			return new Response(JSON.stringify(serializeError(error)), {
 				status: 500,

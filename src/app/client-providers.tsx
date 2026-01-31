@@ -58,12 +58,22 @@ function handleQueryError(error: Error) {
 		return;
 	}
 
-	// Erreurs de validation (422)
-	if (message.includes("422") || message.includes("validation")) {
+	// Erreurs de validation (422 uniquement - pas le mot "validation" qui peut apparaître dans d'autres contextes)
+	if (message.includes("422") || message.includes("validation error") || message.includes("unprocessable")) {
 		notifications.show({
 			color: "yellow",
 			title: "Données invalides",
 			message: "Veuillez vérifier les informations saisies",
+		});
+		return;
+	}
+
+	// Erreurs 404 (ressource non trouvée)
+	if (message.includes("404") || message.includes("not found")) {
+		notifications.show({
+			color: "orange",
+			title: "Ressource introuvable",
+			message: "L'élément demandé n'existe pas ou a été supprimé",
 		});
 		return;
 	}
