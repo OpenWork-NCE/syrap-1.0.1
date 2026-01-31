@@ -53,13 +53,6 @@ export function FilterSection({
 	instituteType = "University",  // Default to University for backward compatibility
 }: FilterSectionProps) {
 	const [isLoading, setIsLoading] = useState(false);
-	//log all the parameters
-	console.log("filters", filters);
-	console.log("universities", universities);
-	console.log("availableBranches", availableBranches);
-	console.log("availableLevels", availableLevels);
-	console.log("availableYears", availableYears);
-	console.log("isCentralInstitution", isCentralInstitution);	
 
 	// Get the appropriate institution label based on type
 	const getInstitutionLabel = () => {
@@ -123,7 +116,6 @@ export function FilterSection({
 							university.id == filters.instituteId,
 					);
 					
-					console.log("Voici la university dans laquelle on va extraire les niveaux : ", university)
 					university?.salles.forEach((salle) => {
 						const filiere = salle.branch;
 						const niveau = salle.level;
@@ -137,7 +129,6 @@ export function FilterSection({
 							}
 						}
 					});
-					console.log("Voici les niveaux que j'ai récupéré : ", levels)
 
 					setAvailableLevels(levels);
 				}

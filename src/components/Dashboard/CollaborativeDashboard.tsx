@@ -63,7 +63,7 @@ import {
 } from "@tabler/icons-react";
 import { useEffect, useState, useCallback } from "react";
 import { innerUrl } from "@/app/lib/utils";
-import { useInstitution } from "@/app/context/InstitutionContext";
+import { useInstitution } from "@/app/context/SessionContext";
 import { FileDocument, FileType } from "@/types";
 import classes from "./CollaborativeDashboard.module.css";
 

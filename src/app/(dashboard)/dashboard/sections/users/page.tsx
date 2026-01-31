@@ -1,16 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { 
-	Anchor, 
-	Container, 
-	Grid, 
-	Paper, 
-	Stack, 
-	Title, 
-	Text, 
-	Group, 
-	Card, 
+import {
+	Container,
+	Grid,
+	Paper,
+	Stack,
+	Title,
+	Text,
+	Group,
+	Card,
 	RingProgress,
 	SimpleGrid,
 	ThemeIcon,
@@ -19,16 +18,12 @@ import {
 import { IconUsers, IconUserPlus, IconUserCheck, IconUserX } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import UsersTable from "@/components/UsersTable/UsersTable";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
-import { useInstitution } from "@/app/context/InstitutionContext";
+import { useAuthorizations, useInstitution } from "@/app/context/SessionContext";
 
 const breadcrumbItems = [
-	{ title: "Utilisateurs", href: "#" }
-].map((item, index) => (
-	<Anchor href={item.href} key={index}>
-		{item.title}
-	</Anchor>
-));
+	{ title: "Administration", href: "/dashboard" },
+	{ title: "Utilisateurs", href: "#" },
+];
 
 // function StatCard({ title, value, description, icon, color }: { title: string; value: string; description: string; icon: React.ReactNode; color: string }) {
 // 	return (
@@ -71,7 +66,12 @@ function Page() {
 			
 			<Container fluid>
 				<Stack gap="lg">
-					<PageHeader title="Gestion des Utilisateurs" breadcrumbItems={breadcrumbItems} />
+					<PageHeader
+						title="Gestion des Utilisateurs"
+						description="Administrez les comptes utilisateurs, rôles et permissions."
+						icon={<IconUsers size={24} />}
+						breadcrumbItems={breadcrumbItems}
+					/>
 					
 					{/* <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
 						<StatCard 

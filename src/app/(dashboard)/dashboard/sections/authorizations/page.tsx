@@ -1,16 +1,15 @@
 "use client";
 
-import { Anchor, Container, Stack } from "@mantine/core";
-import { PATH_BOARD } from "@/routes";
+import { Container, Stack } from "@mantine/core";
+import { IconShieldLock } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
+import { useAuthorizations } from "@/app/context/SessionContext";
 import AuthorizationsTable from "@/components/AuthorizationsTable/AuthorizationsTable";
 
-const items = [{ title: "Permissions", href: "#" }].map((item, index) => (
-	<Anchor href={item.href} key={index}>
-		{item.title}
-	</Anchor>
-));
+const breadcrumbItems = [
+	{ title: "Administration", href: "/dashboard" },
+	{ title: "Permissions", href: "#" },
+];
 
 function Page() {
 	const { authorizations } = useAuthorizations();
@@ -19,11 +18,16 @@ function Page() {
 		<>
 			<>
 				<title>Permissions | IPES-SCpro</title>
-				<meta name="description" content="" />
+				<meta name="description" content="Gestion des permissions" />
 			</>
 			<Container fluid>
 				<Stack gap="lg">
-					<PageHeader title="Permissions" breadcrumbItems={items} />
+					<PageHeader
+						title="Gestion des Permissions"
+						description="Configurez les permissions d'accès aux fonctionnalités de l'application."
+						icon={<IconShieldLock size={24} />}
+						breadcrumbItems={breadcrumbItems}
+					/>
 					<AuthorizationsTable
 						authorizations={authorizations?.filter((authorization) =>
 							authorization.includes("permissions"),

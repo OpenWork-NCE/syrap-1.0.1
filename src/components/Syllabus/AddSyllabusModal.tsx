@@ -78,7 +78,6 @@ export function AddSyllabusModal({
 	const initialUniversityId = !isCentralInstitution 
 		? (universities).find(u => u.institute == currentInstitute)?.id || null
 		: null;
-	console.log("Initial university ID:", initialUniversityId, "Current institute:", currentInstitute);
 
 	// Get the appropriate institution label based on type
 	const getInstitutionLabel = () => {
@@ -129,7 +128,6 @@ export function AddSyllabusModal({
 			const matchingUniversity = (universities).find(u => u.institute == currentInstitute);
 			if (matchingUniversity) {
 				const universityId = matchingUniversity.id;
-				console.log("Non-central institution: Setting initial university ID:", universityId);
 				
 				setFormData(prev => ({
 					...prev,
@@ -155,7 +153,6 @@ export function AddSyllabusModal({
 				const fetchedUes: Ue[] = u.data;
 				setUes(fetchedUes);
 			} catch (e) {
-				console.log("Error to get Ues", e);
 				setStatusMessage({
 					type: "error",
 					message: "Erreur lors de la récupération des UEs",
@@ -177,12 +174,10 @@ export function AddSyllabusModal({
 				
 				// For non-central institutions, use the currentInstitute regardless of filters.universityId
 				if (!isCentralInstitution && currentInstitute) {
-					console.log("Modal - Non-central: Loading branches for institution with ID:", currentInstitute);
 					
 					const branches: Branch[] = [];
 					const matchingUniversities = (universities).filter(u => u.institute == currentInstitute);
 					
-					console.log("Modal - Non-central: Found matching universities:", matchingUniversities.length);
 					
 					matchingUniversities.forEach(university => {
 						university.salles.forEach((salle) => {
@@ -197,12 +192,10 @@ export function AddSyllabusModal({
 						});
 					});
 					
-					console.log("Modal - Non-central: Found branches:", branches);
 					setAvailableBranches(branches);
 				}
 				// For central institutions, use the selected university
 				else if (isCentralInstitution && filters.universityId) {
-					console.log("Modal - Central: Loading branches for university with ID:", filters.universityId);
 					
 					const branches: Branch[] = [];
 					const university = (universities).find(
@@ -221,7 +214,6 @@ export function AddSyllabusModal({
 						}
 					});
 					
-					console.log("Modal - Central: Found branches:", branches);
 					setAvailableBranches(branches);
 				}
 			} catch (error) {
@@ -247,7 +239,6 @@ export function AddSyllabusModal({
 					
 					// For non-central institutions
 					if (!isCentralInstitution && currentInstitute) {
-						console.log("Modal - Non-central: Loading levels for branch with ID:", filters.branchId);
 						
 						const levels: Level[] = [];
 						const matchingUniversities = (universities).filter(u => u.institute == currentInstitute);
@@ -269,12 +260,10 @@ export function AddSyllabusModal({
 							});
 						});
 						
-						console.log("Modal - Non-central: Found levels:", levels);
 						setAvailableLevels(levels);
 					}
 					// For central institutions
 					else if (isCentralInstitution && filters.universityId) {
-						console.log("Modal - Central: Loading levels for university with ID:", filters.universityId, "and branch with ID:", filters.branchId);
 						
 						const levels: Level[] = [];
 						const university = (universities).find(
@@ -297,7 +286,6 @@ export function AddSyllabusModal({
 							}
 						});
 						
-						console.log("Modal - Central: Found levels:", levels);
 						setAvailableLevels(levels);
 					}
 				}
@@ -510,7 +498,6 @@ export function AddSyllabusModal({
 				year: programCourse.year, // Ensure year is explicitly set
 			}));
 
-			console.log("Sending data to API:", datas); // Debug log
 
 			// Make API requests
 			const requests = datas.map((data) =>

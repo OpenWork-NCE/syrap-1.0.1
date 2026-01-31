@@ -1,12 +1,7 @@
 "use client";
 
-import {
-	IconCategory,
-	IconSchool,
-	IconStack3,
-	TablerIconsProps,
-} from "@tabler/icons-react";
-import { Box, Paper, SimpleGrid, Title } from "@mantine/core";
+import { IconCategory, IconStack3 } from "@tabler/icons-react";
+import { SimpleGrid } from "@mantine/core";
 import { StatsCard } from "@/components/StatsCard/StasCard";
 import { CardGradient } from "@/components/CardGradientUniversity/CardGradient";
 import { ShowUniversity } from "@/types";
@@ -14,7 +9,6 @@ import { useEffect, useState } from "react";
 import { internalApiUrl } from "@/app/lib/utils";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import ClassroomsTable from "@/components/ClassroomsTable/ClassroomsTable";
-import { useInstitution } from "@/app/context/InstitutionContext";
 
 interface CardDataProps {
 	icon: React.FC<any>;
@@ -46,7 +40,6 @@ const UniversityPage = ({ id }: UniversityPageProps) => {
 		branches_count: "",
 		levels_count: "",
 	});
-	console.log("Voici l'université ", university);
 
 	const [cardDatas, setCardDatas] = useState<CardDataProps[]>([]);
 
@@ -70,9 +63,6 @@ const UniversityPage = ({ id }: UniversityPageProps) => {
 		}
 		fetchUniversity();
 	}, []);
-
-	console.log("Voici l'Id en question ", id);
-	console.log("Et voici l'université ", university);
 
 	return (
 		<>

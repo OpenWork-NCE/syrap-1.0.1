@@ -3,10 +3,8 @@
 import { Anchor, Container, Stack } from "@mantine/core";
 import { PATH_BOARD } from "@/routes";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
+import { useAuthorizations, useInstitution, useUser } from "@/app/context/SessionContext";
 import UniversitiesTable from "@/components/UniversitiesTable/UniversitiesTable";
-import { useInstitution } from "@/app/context/InstitutionContext";
-import { useUser } from "@/app/context/UserContext";
 import Syllabus from "@/components/Syllabus/Syllabus";
 import ComparePage from "@/components/Compare/ComparePage";
 

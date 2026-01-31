@@ -67,14 +67,11 @@
 	background: rgba(255, 255, 255, 0.2);
 	color: white;
 	border: 1px solid rgba(255, 255, 255, 0.3);
-	backdrop-filter: blur(10px);
-	transition: background-color 0.1s ease-out, transform 0.1s ease-out;
-	will-change: transform;
+	transition: background-color 0.15s ease-out;
 }
 
 .headerAction:hover {
 	background: rgba(255, 255, 255, 0.3);
-	transform: translate3d(0, -2px, 0);
 }
 
 /* Stats Grid */
@@ -88,28 +85,11 @@
 	transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
 	position: relative;
 	overflow: hidden;
-	will-change: transform;
-}
-
-.statCard::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 3px;
-	background: linear-gradient(90deg, var(--mantine-color-blue-5), var(--mantine-color-teal-5));
-	opacity: 0;
-	transition: opacity 0.3s ease;
 }
 
 .statCard:hover {
-	transform: translateY(-4px);
-	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-}
-
-.statCard:hover::before {
-	opacity: 1;
+	transform: translateY(-2px);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
 }
 
 .statLabel {
@@ -129,11 +109,7 @@
 }
 
 .statIcon {
-	transition: transform 0.15s ease-out;
-}
-
-.statCard:hover .statIcon {
-	transform: scale(1.1);
+	/* Pas d'animation pour éviter le tremblement */
 }
 
 /* Main Grid */
@@ -156,14 +132,12 @@
 .taskCard {
 	background: light-dark(#f8fafc, #0f172a);
 	border: 1px solid light-dark(#e2e8f0, #334155);
-	transition: background-color 0.1s ease-out, transform 0.1s ease-out;
+	transition: background-color 0.15s ease-out;
 	cursor: pointer;
-	will-change: transform;
 }
 
 .taskCard:hover {
 	background: light-dark(#f1f5f9, #1e293b);
-	transform: translate3d(4px, 0, 0);
 }
 
 /* Document Cards */
@@ -189,14 +163,12 @@
 .calendarCard {
 	background: light-dark(#f8fafc, #0f172a);
 	border: 1px solid light-dark(#e2e8f0, #334155);
-	transition: background-color 0.1s ease-out, transform 0.1s ease-out;
+	transition: background-color 0.15s ease-out;
 	cursor: pointer;
-	will-change: transform;
 }
 
 .calendarCard:hover {
 	background: light-dark(#f1f5f9, #1e293b);
-	transform: translate3d(4px, 0, 0);
 }
 
 .calendarDateBox {
@@ -220,17 +192,12 @@
 	text-decoration: none;
 	display: block;
 	text-align: center;
-	will-change: transform;
 }
 
 .quickActionCard:hover {
-	transform: translate3d(0, -6px, 0);
-	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+	transform: translateY(-3px);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 	border-color: light-dark(#10b981, #34d399);
-}
-
-.quickActionCard:hover > div:first-child {
-	transform: scale(1.15);
 }
 
 /* Timeline */
@@ -239,39 +206,18 @@
 }
 
 
-/* Animations - Optimisées pour éviter le tremblement de texte sur Chrome */
-@keyframes fadeInUp {
+/* Animations simplifiées pour éviter le tremblement */
+@keyframes fadeIn {
 	from {
 		opacity: 0;
-		transform: translate3d(0, 20px, 0);
 	}
 	to {
 		opacity: 1;
-		transform: translate3d(0, 0, 0);
 	}
 }
 
 .statsGrid > div {
-	animation: fadeInUp 0.5s ease forwards;
-	will-change: transform, opacity;
-	backface-visibility: hidden;
-	-webkit-font-smoothing: antialiased;
-}
-
-.statsGrid > div:nth-child(1) {
-	animation-delay: 0.1s;
-}
-
-.statsGrid > div:nth-child(2) {
-	animation-delay: 0.2s;
-}
-
-.statsGrid > div:nth-child(3) {
-	animation-delay: 0.3s;
-}
-
-.statsGrid > div:nth-child(4) {
-	animation-delay: 0.4s;
+	animation: fadeIn 0.3s ease forwards;
 }
 
 /* Responsive */

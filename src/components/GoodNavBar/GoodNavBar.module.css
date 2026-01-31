@@ -1,70 +1,83 @@
+/* ============================================
+   GoodNavBar - Sidebar Navigation Styles
+   ============================================ */
+
 .navbar {
-	background-color: light-dark(var(--bg-light), var(--bg-dark));
-	height: 90vh;
-	width: rem(300px);
-	padding: var(--spacing-md);
-	padding-bottom: calc(var(--spacing-md)); /* Add space for footer */
-	display: flex;	
+	display: flex;
 	flex-direction: column;
-	justify-content: space-between;
-	border-right: rem(1px) solid
-		light-dark(var(--border-light), var(--border-dark));
+	height: 100%;
+	padding: var(--mantine-spacing-sm);
+	padding-bottom: 0;
 	position: relative;
+	overflow: hidden;
 }
 
+/* Accent bar on the left */
 .navbar::before {
 	content: "";
 	position: absolute;
 	top: 0;
 	left: 0;
-	width: 5px;
+	width: 3px;
 	height: 100%;
-	background: linear-gradient(to bottom, var(--primary-6), var(--primary-4));
-	opacity: 0.7;
+	background: linear-gradient(
+		180deg,
+		var(--mantine-color-blue-5) 0%,
+		var(--mantine-color-teal-5) 100%
+	);
+	opacity: 0.8;
 }
 
-.header {
-	padding: var(--spacing-md);
-	padding-top: 0;
-	margin-left: calc(var(--spacing-md) * -1);
-	margin-right: calc(var(--spacing-md) * -1);
-	color: light-dark(var(--text-light), var(--text-dark));
-	border-bottom: rem(1px) solid
-		light-dark(var(--border-light), var(--border-dark));
-}
-
+/* Main navigation links section */
 .links {
 	flex: 1;
-	transition: var(--transition-default);
-	margin-right: calc(var(--spacing-xs) * -1); /* Compensate for scrollbar */
+	overflow-y: auto;
+	overflow-x: hidden;
+	margin-right: -4px;
+	padding-right: 4px;
 }
 
 .linksInner {
-	padding-top: var(--spacing-md);
-	padding-bottom: var(--spacing-md);
+	padding: var(--mantine-spacing-xs) 0;
 }
 
+/* Admin/Footer section - fixed at bottom */
 .footer {
-	border-top: rem(1px) solid light-dark(var(--border-light), var(--border-dark));
-	background-color: light-dark(var(--bg-light), var(--bg-dark));
-	align-items: center;
-	height: fit-content;
+	flex-shrink: 0;
+	border-top: 1px solid light-dark(
+		var(--mantine-color-gray-2),
+		var(--mantine-color-dark-5)
+	);
+	padding-top: var(--mantine-spacing-xs);
+	margin-top: auto;
+	max-height: 40%;
+	overflow-y: auto;
 }
 
-/* .footer::before {
-	content: "";
-	position: absolute;
-	top: -1px;
-	left: 0;
-	width: 100%;
-	height: 1px;
-	background: linear-gradient(
-		90deg,
-		transparent,
-		var(--primary-6),
-		var(--primary-4),
-		transparent
+/* Scrollbar styling */
+.links::-webkit-scrollbar,
+.footer::-webkit-scrollbar {
+	width: 4px;
+}
+
+.links::-webkit-scrollbar-track,
+.footer::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.links::-webkit-scrollbar-thumb,
+.footer::-webkit-scrollbar-thumb {
+	background-color: light-dark(
+		var(--mantine-color-gray-3),
+		var(--mantine-color-dark-4)
 	);
-	transform: scaleX(0.8);
-	opacity: 0.5;
-} */
+	border-radius: 4px;
+}
+
+.links::-webkit-scrollbar-thumb:hover,
+.footer::-webkit-scrollbar-thumb:hover {
+	background-color: light-dark(
+		var(--mantine-color-gray-4),
+		var(--mantine-color-dark-3)
+	);
+}

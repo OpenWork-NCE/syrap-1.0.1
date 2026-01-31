@@ -3,8 +3,7 @@
 import { Anchor, Container, Stack, Alert } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useInstitution } from "@/app/context/InstitutionContext";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
+import { useInstitution, useAuthorizations } from "@/app/context/SessionContext";
 import Syllabus from "@/components/Syllabus/Syllabus";
 
 const items = [{ title: "Syllabus", href: "#" }].map((item, index) => (

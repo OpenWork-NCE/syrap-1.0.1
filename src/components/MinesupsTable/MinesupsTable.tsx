@@ -3,10 +3,8 @@
 import { useMemo, useState } from "react";
 import {
 	MantineReactTable,
-	useMantineReactTable,
 	type MRT_ColumnDef,
 	type MRT_ColumnFiltersState,
-	type MRT_PaginationState,
 	type MRT_SortingState,
 	type MRT_ColumnFilterFnsState,
 	MRT_EditActionButtons,
@@ -38,27 +36,15 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import {
-	QueryClient,
-	QueryClientProvider,
 	keepPreviousData,
 	useQuery,
 	useQueryClient,
 	useMutation,
 } from "@tanstack/react-query";
 import { modals } from "@mantine/modals";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Minesup } from "@/types";
-import { getInstitutionName, innerUrl } from "@/app/lib/utils";
-import { handleExportAsCSV, handleExportRowsAsPDF } from "@/app/lib/utils";
-
-const csvConfig = mkConfig({
-	fieldSeparator: ",",
-	decimalSeparator: ".",
-	useKeysAsHeaders: true,
-});
+import { handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/utils";
 
 type MinesupApiResponse = {
 	data: Array<Minesup>;
@@ -151,7 +137,6 @@ const Section = (props: any) => {
 	const { data, isError, isFetching, isLoading, refetch } = useGetMinesups();
 
 	const fetchedMinesups = data?.data ?? [];
-	console.log("Voici les minesups : ", fetchedMinesups);
 
 	const { mutateAsync: createMinesup, isPending: isCreatingMinesup } =
 		useCreateMinesup();
@@ -167,7 +152,6 @@ const Section = (props: any) => {
 				setValidationErrors(newValidationErrors);
 				return;
 			}
-			console.log("Voici les valeurs : ", values);
 			setValidationErrors(values);
 			await createMinesup(values);
 			exitCreatingMode();
@@ -181,7 +165,6 @@ const Section = (props: any) => {
 				return;
 			}
 			setValidationErrors(values);
-			console.log("Voici les valeurs de l'update : ", values);
 			await updateMinesup({
 				...values,
 				id: row.original.id,
@@ -599,16 +582,12 @@ function useDeleteMinesup() {
 	});
 }
 
-const queryClient = new QueryClient();
-
 type MinesupProps = {
 	authorizations: String[];
 };
 
 const MinesupTable = ({ authorizations }: MinesupProps) => (
-	<QueryClientProvider client={queryClient}>
-		<Section authorizations={authorizations} />
-	</QueryClientProvider>
+	<Section authorizations={authorizations} />
 );
 
 export default MinesupTable;

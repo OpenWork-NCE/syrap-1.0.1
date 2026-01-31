@@ -1,18 +1,15 @@
 "use client";
 
-import { Anchor, Container, Stack } from "@mantine/core";
-import { PATH_BOARD } from "@/routes";
+import { Container, Stack } from "@mantine/core";
+import { IconBuildingSkyscraper } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
+import { useAuthorizations, useInstitution, useUser } from "@/app/context/SessionContext";
 import IpessTable from "@/components/IpessTable/IpessTable";
-import { useInstitution } from "@/app/context/InstitutionContext";
-import { useUser } from "@/app/context/UserContext";
 
-const items = [{ title: "Ipes", href: "#" }].map((item, index) => (
-	<Anchor href={item.href} key={index}>
-		{item.title}
-	</Anchor>
-));
+const breadcrumbItems = [
+	{ title: "Acteurs", href: "/dashboard" },
+	{ title: "IPES", href: "#" },
+];
 
 function Page() {
 	const { authorizations } = useAuthorizations();
@@ -22,12 +19,17 @@ function Page() {
 	return (
 		<>
 			<>
-				<title>Ipes | IPES-SCpro</title>
-				<meta name="description" content="" />
+				<title>IPES | IPES-SCpro</title>
+				<meta name="description" content="Gestion des IPES" />
 			</>
 			<Container fluid>
 				<Stack gap="lg">
-					<PageHeader title="Ipes" breadcrumbItems={items} />
+					<PageHeader
+						title="Instituts Privés d'Enseignement Supérieur"
+						description="Consultez et gérez les IPES rattachés à votre institution."
+						icon={<IconBuildingSkyscraper size={24} />}
+						breadcrumbItems={breadcrumbItems}
+					/>
 					<IpessTable
 						authorizations={authorizations.filter((authorization) =>
 							authorization.includes("ipes"),

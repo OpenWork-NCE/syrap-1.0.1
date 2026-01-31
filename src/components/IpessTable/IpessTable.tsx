@@ -3,10 +3,8 @@
 import { useMemo, useState } from "react";
 import {
 	MantineReactTable,
-	useMantineReactTable,
 	type MRT_ColumnDef,
 	type MRT_ColumnFiltersState,
-	type MRT_PaginationState,
 	type MRT_SortingState,
 	type MRT_ColumnFilterFnsState,
 	MRT_EditActionButtons,
@@ -39,23 +37,17 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import {
-	QueryClient,
-	QueryClientProvider,
 	keepPreviousData,
 	useQuery,
 	useQueryClient,
 	useMutation,
 } from "@tanstack/react-query";
 import { modals } from "@mantine/modals";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
-import { Institution, Localization, Ipes, User, University } from "@/types";
-import { getInstitutionName, innerUrl } from "@/app/lib/utils";
+import { Localization, Ipes, University } from "@/types";
 import { PATH_SECTIONS } from "@/routes";
 import { useRouter } from "next/navigation";
-import { handleExportAsCSV, handleExportRowsAsPDF } from "@/app/lib/utils";
+import { handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/utils";
 
 type LocalizationApiResponse = {
 	data: Array<Localization>;
@@ -127,7 +119,6 @@ const Section = (props: any) => {
 	} = useGetLocalizations();
 
 	const fetchedLocalizations = lData?.data ?? [];
-	console.log("Intelligence de jeu : ", fetchedLocalizations);
 
 	const {
 		data: uData,
@@ -303,7 +294,6 @@ const Section = (props: any) => {
 	});
 
 	const fetchedIpess = data?.data ?? [];
-	console.log("Voici les ipess : ", fetchedIpess);
 
 	const { mutateAsync: createIpes, isPending: isCreatingIpes } =
 		useCreateIpes();
@@ -322,7 +312,6 @@ const Section = (props: any) => {
 			return;
 		}
 		setValidationErrors(values);
-		console.log("Voici les valeurs en question : ", values);
 		await createIpes({
 			...values,
 			cenadi_id: String(institution.id),
@@ -878,8 +867,6 @@ function useDeleteIpes() {
 	});
 }
 
-const queryClient = new QueryClient();
-
 type IpesProps = {
 	authorizations: String[];
 	institution: {
@@ -896,13 +883,11 @@ type IpesProps = {
 };
 
 const IpesTable = ({ authorizations, institution, user }: IpesProps) => (
-	<QueryClientProvider client={queryClient}>
-		<Section
-			authorizations={authorizations}
-			institution={institution}
-			user={user}
-		/>
-	</QueryClientProvider>
+	<Section
+		authorizations={authorizations}
+		institution={institution}
+		user={user}
+	/>
 );
 
 export default IpesTable;

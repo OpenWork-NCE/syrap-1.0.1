@@ -5,7 +5,7 @@
 	padding: var(--spacing-xs) var(--spacing-md);
 	color: light-dark(var(--text-light), var(--text-dark));
 	font-size: var(--mantine-font-size-sm);
-	transition: var(--transition-fast);
+	transition: background-color 0.15s ease, color 0.15s ease;
 	border-radius: var(--radius-sm);
 	margin-bottom: 2px;
 	position: relative;
@@ -15,7 +15,6 @@
 	@mixin hover {
 		background-color: light-dark(var(--gray-0), var(--gray-8));
 		color: light-dark(var(--text-light), var(--text-dark));
-		transform: translateX(3px);
 	}
 }
 
@@ -47,13 +46,12 @@
 	font-size: var(--mantine-font-size-sm);
 	color: light-dark(var(--gray-7), var(--gray-1));
 	border-left: 1px solid light-dark(var(--border-light), var(--border-dark));
-	transition: var(--transition-fast);
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 	border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 
 	@mixin hover {
 		background-color: light-dark(var(--gray-0), var(--gray-8));
 		color: light-dark(var(--text-light), var(--text-dark));
-		transform: translateX(3px);
 	}
 }
 

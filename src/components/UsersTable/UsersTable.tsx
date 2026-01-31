@@ -3,10 +3,8 @@
 import { useMemo, useState, useEffect } from "react";
 import {
 	MantineReactTable,
-	useMantineReactTable,
 	type MRT_ColumnDef,
 	type MRT_ColumnFiltersState,
-	type MRT_PaginationState,
 	type MRT_SortingState,
 	type MRT_ColumnFilterFnsState,
 	MRT_EditActionButtons,
@@ -20,7 +18,6 @@ import {
 	Button,
 	Divider,
 	Flex,
-	Menu,
 	Stack,
 	Text,
 	Title,
@@ -28,36 +25,21 @@ import {
 } from "@mantine/core";
 import {
 	IconCheck,
-	IconDownload,
 	IconEdit,
-	IconFileTypeCsv,
-	IconFileTypePdf,
 	IconPlus,
 	IconRefresh,
-	IconTableExport,
 	IconTrash,
 } from "@tabler/icons-react";
 import {
-	QueryClient,
-	QueryClientProvider,
 	keepPreviousData,
 	useQuery,
 	useQueryClient,
 	useMutation,
 } from "@tanstack/react-query";
 import { modals } from "@mantine/modals";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Profile, User, Cenadi, Minesup, University, ShowIpes } from "@/types";
 import { getInstitutionName, innerUrl } from "@/app/lib/utils";
-
-const csvConfig = mkConfig({
-	fieldSeparator: ",",
-	decimalSeparator: ".",
-	useKeysAsHeaders: true,
-});
 
 type ProfileApiResponse = {
 	data: Array<Profile>;
@@ -341,7 +323,6 @@ const Section = (props: any) => {
 	});
 
 	const fetchedUsers = data?.data ?? [];
-	console.log("Voici les users : ", fetchedUsers);
 
 	const { mutateAsync: createUser, isPending: isCreatingUser } =
 		useCreateUser();
@@ -380,7 +361,6 @@ const Section = (props: any) => {
 				return;
 			}
 
-			console.log("Voici les valeurs : ", values);
 			setValidationErrors({});
 			await createUser({
 				...values,
@@ -389,7 +369,6 @@ const Section = (props: any) => {
 			});
 		} else {
 			// For regular users, use the institution values
-			console.log("Voici les valeurs (without model): ", values);
 			setValidationErrors({});
 			await createUser({
 				...values,
@@ -876,8 +855,6 @@ function useDeleteUser() {
 	});
 }
 
-const queryClient = new QueryClient();
-
 type UserProps = {
 	authorizations: String[];
 	institution: {
@@ -889,9 +866,7 @@ type UserProps = {
 };
 
 const UserTable = ({ authorizations, institution }: UserProps) => (
-	<QueryClientProvider client={queryClient}>
-		<Section authorizations={authorizations} institution={institution} />
-	</QueryClientProvider>
+	<Section authorizations={authorizations} institution={institution} />
 );
 
 export default UserTable;

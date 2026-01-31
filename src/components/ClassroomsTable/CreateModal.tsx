@@ -48,10 +48,7 @@ const CustomCreateRowModal = ({
 			return;
 		}
 
-		console.log("On a passé la validation");
 		table.setCreatingRow(true);
-
-		console.log("Voici les données : ", table);
 	};
 
 	return (

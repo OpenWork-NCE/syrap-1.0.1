@@ -1,15 +1,15 @@
 "use client";
 
-import { Anchor, Container, Stack } from "@mantine/core";
+import { Container, Stack } from "@mantine/core";
+import { IconUserCog } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
+import { useAuthorizations } from "@/app/context/SessionContext";
 import ProfilesTable from "@/components/ProfilesTable/ProfilesTable";
 
-const items = [{ title: "Rôles", href: "#" }].map((item, index) => (
-	<Anchor href={item.href} key={index}>
-		{item.title}
-	</Anchor>
-));
+const breadcrumbItems = [
+	{ title: "Administration", href: "/dashboard" },
+	{ title: "Rôles", href: "#" },
+];
 
 function Page() {
 	const { authorizations } = useAuthorizations();
@@ -18,11 +18,16 @@ function Page() {
 		<>
 			<>
 				<title>Rôles | IPES-SCpro</title>
-				<meta name="description" content="" />
+				<meta name="description" content="Gestion des rôles" />
 			</>
 			<Container fluid>
 				<Stack gap="lg">
-					<PageHeader title="Rôles" breadcrumbItems={items} />
+					<PageHeader
+						title="Gestion des Rôles"
+						description="Définissez les rôles et leurs niveaux d'accès dans l'application."
+						icon={<IconUserCog size={24} />}
+						breadcrumbItems={breadcrumbItems}
+					/>
 					<ProfilesTable
 						authorizations={authorizations?.filter((authorization) =>
 							authorization.includes("role"),

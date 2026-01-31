@@ -3,10 +3,8 @@
 import { useMemo, useState } from "react";
 import {
 	MantineReactTable,
-	useMantineReactTable,
 	type MRT_ColumnDef,
 	type MRT_ColumnFiltersState,
-	type MRT_PaginationState,
 	type MRT_SortingState,
 	type MRT_ColumnFilterFnsState,
 	MRT_EditActionButtons,
@@ -38,26 +36,15 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import {
-	QueryClient,
-	QueryClientProvider,
 	keepPreviousData,
 	useQuery,
 	useQueryClient,
 	useMutation,
 } from "@tanstack/react-query";
 import { modals } from "@mantine/modals";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Branch } from "@/types";
-import {handleExportAsCSV, handleExportRowsAsPDF, innerUrl} from "@/app/lib/utils";
-
-const csvConfig = mkConfig({
-	fieldSeparator: ",",
-	decimalSeparator: ".",
-	useKeysAsHeaders: true,
-});
+import { handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/utils";
 
 type BranchApiResponse = {
 	data: Array<Branch>;
@@ -604,16 +591,12 @@ function useDeleteBranch() {
 	});
 }
 
-const queryClient = new QueryClient();
-
 type BranchProps = {
 	authorizations: String[];
 };
 
 const BranchTable = ({ authorizations }: BranchProps) => (
-	<QueryClientProvider client={queryClient}>
-		<Section authorizations={authorizations} />
-	</QueryClientProvider>
+	<Section authorizations={authorizations} />
 );
 
 export default BranchTable;

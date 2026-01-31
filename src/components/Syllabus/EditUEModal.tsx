@@ -51,7 +51,6 @@ export function EditCourseModal({
 	// Reset form when modal opens with new course
 	useEffect(() => {
 		if (opened && course) {
-			console.log("Initializing form with course data:", course);
 			setFormData({
 				...course,
 				year: course.year || currentYear.toString(),
@@ -69,11 +68,9 @@ export function EditCourseModal({
 			setIsLoading(true);
 			setStatusMessage(null);
 
-			console.log("Form data before validation:", formData);
 
 			// Validate form data
 			if (!formData.year || !formData.nbr_hrs || !formData.credit) {
-				console.log("Validation failed: Missing required fields");
 				setStatusMessage({
 					type: "error",
 					message: "Veuillez remplir tous les champs obligatoires",
@@ -94,7 +91,6 @@ export function EditCourseModal({
 
 			// Check if the year is in the available years list
 			if (!availableYears.includes(formData.year)) {
-				console.log("Validation failed: Invalid year", formData.year);
 				setStatusMessage({
 					type: "error",
 					message:
@@ -112,7 +108,6 @@ export function EditCourseModal({
 				year: formData.year,
 			};
 
-			console.log("Sending data to API:", apiData);
 
 			// Make API request to update UE
 			const response = await fetch(
@@ -127,7 +122,6 @@ export function EditCourseModal({
 			);
 
 			const responseData = await response.json();
-			console.log("API response:", responseData);
 
 			// Show success message
 			setStatusMessage({

@@ -1,18 +1,15 @@
 "use client";
 
-import { Anchor, Container, Stack, Center, Loader } from "@mantine/core";
-import { PATH_BOARD } from "@/routes";
+import { Container, Stack } from "@mantine/core";
+import { IconSchool } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
+import { useAuthorizations, useInstitution, useUser } from "@/app/context/SessionContext";
 import UniversitiesTable from "@/components/UniversitiesTable/UniversitiesTable";
-import { useInstitution } from "@/app/context/InstitutionContext";
-import { useUser } from "@/app/context/UserContext";
 
-const items = [{ title: "Universities", href: "#" }].map((item, index) => (
-	<Anchor href={item.href} key={index}>
-		{item.title}
-	</Anchor>
-));
+const breadcrumbItems = [
+	{ title: "Acteurs", href: "/dashboard" },
+	{ title: "Universités", href: "#" },
+];
 
 function Page() {
 	const { authorizations } = useAuthorizations();
@@ -26,11 +23,16 @@ function Page() {
 		<>
 			<>
 				<title>Universités | IPES-SCpro</title>
-				<meta name="description" content="" />
+				<meta name="description" content="Gestion des universités" />
 			</>
 			<Container fluid>
 				<Stack gap="lg">
-					<PageHeader title="Universités" breadcrumbItems={items} />
+					<PageHeader
+						title="Universités"
+						description="Gérez les universités de tutelle et leurs rattachements."
+						icon={<IconSchool size={24} />}
+						breadcrumbItems={breadcrumbItems}
+					/>
 					<UniversitiesTable
 						authorizations={safeAuthorizations.filter((authorization) =>
 							authorization.includes("universities"),

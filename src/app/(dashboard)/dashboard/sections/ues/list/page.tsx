@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import {
-	Anchor,
 	Container,
 	Stack,
 	Group,
@@ -20,15 +19,14 @@ import {
 } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import UesTable from "@/components/UesTable/UesTable";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
+import { useAuthorizations } from "@/app/context/SessionContext";
 import { useQuery } from "@tanstack/react-query";
 import { innerUrl } from "@/app/lib/utils";
 
-const items = [{ title: "Ues", href: "#" }].map((item, index) => (
-	<Anchor href={item.href} key={index}>
-		{item.title}
-	</Anchor>
-));
+const breadcrumbItems = [
+	{ title: "Programmes", href: "/dashboard" },
+	{ title: "Unités d'Enseignement", href: "#" },
+];
 
 type StatCardProps = {
 	title: string;
@@ -126,7 +124,12 @@ function Page() {
 			</>
 			<Container fluid>
 				<Stack gap="lg">
-					<PageHeader title="Unités d'Enseignement" breadcrumbItems={items} />
+					<PageHeader
+						title="Unités d'Enseignement"
+						description="Gérez les unités d'enseignement de votre établissement. Consultez, créez et validez les UEs."
+						icon={<IconBook2 size={24} />}
+						breadcrumbItems={breadcrumbItems}
+					/>
 
 					{/* Statistics Cards - Clickable Filters */}
 					<SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">

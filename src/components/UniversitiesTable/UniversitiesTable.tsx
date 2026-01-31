@@ -3,10 +3,8 @@
 import { useMemo, useState } from "react";
 import {
 	MantineReactTable,
-	useMantineReactTable,
 	type MRT_ColumnDef,
 	type MRT_ColumnFiltersState,
-	type MRT_PaginationState,
 	type MRT_SortingState,
 	type MRT_ColumnFilterFnsState,
 	MRT_EditActionButtons,
@@ -39,29 +37,17 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import {
-	QueryClient,
-	QueryClientProvider,
 	keepPreviousData,
 	useQuery,
 	useQueryClient,
 	useMutation,
 } from "@tanstack/react-query";
 import { modals } from "@mantine/modals";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
-import { Institution, Localization, University, User } from "@/types";
-import { getInstitutionName, innerUrl } from "@/app/lib/utils";
+import { Localization, University } from "@/types";
 import { PATH_SECTIONS } from "@/routes";
 import { useRouter } from "next/navigation";
-import { handleExportAsCSV, handleExportRowsAsPDF } from "@/app/lib/utils";
-
-const csvConfig = mkConfig({
-	fieldSeparator: ",",
-	decimalSeparator: ".",
-	useKeysAsHeaders: true,
-});
+import { handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/utils";
 
 type LocalizationApiResponse = {
 	data: Array<Localization>;
@@ -768,8 +754,6 @@ function useDeleteUniversity() {
 	});
 }
 
-const queryClient = new QueryClient();
-
 type UniversityProps = {
 	authorizations: String[];
 	institution: {
@@ -790,13 +774,11 @@ const UniversityTable = ({
 	institution,
 	user,
 }: UniversityProps) => (
-	<QueryClientProvider client={queryClient}>
-		<Section
-			authorizations={authorizations}
-			institution={institution}
-			user={user}
-		/>
-	</QueryClientProvider>
+	<Section
+		authorizations={authorizations}
+		institution={institution}
+		user={user}
+	/>
 );
 
 export default UniversityTable;

@@ -2,7 +2,7 @@
 
 import { Anchor, Box, Container, Stack } from "@mantine/core";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
+import { useAuthorizations } from "@/app/context/SessionContext";
 import ProfilesTable from "@/components/ProfilesTable/ProfilesTable";
 import Logs from "@/components/Logs/page";
 

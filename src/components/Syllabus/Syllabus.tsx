@@ -170,9 +170,7 @@ export default function ProgramsPage({
 				const u = await fetch(innerUrl("/api/universities")).then(
 					(res) => res.json(),
 				);
-				console.log("Voici les universités : ", u.data);
 
-				console.log("Fetched universities data:", u.data);
 
 				if (!u.data) {
 					throw new Error("Failed to fetch universities data");
@@ -187,7 +185,6 @@ export default function ProgramsPage({
 					(res) => res.json(),
 				);
 
-				console.log("Fetched IPES data:", ipesResponse.data);
 
 				if (!ipesResponse.data) {
 					throw new Error("Failed to fetch IPES data");
@@ -214,7 +211,6 @@ export default function ProgramsPage({
 		const yearsSet = new Set<string>();
 		const programs: Program[] = [];
 
-		console.log("Processing universities:", universities.length);
 
 		universities.forEach((university) => {
 			// For non-central institutions, only process the current instituteId
@@ -300,12 +296,6 @@ export default function ProgramsPage({
 			return 0;
 		});
 
-		sortedPrograms.forEach(p => {
-			if (typeof p.instituteId !== 'string') {
-				console.warn('Non-string instituteId:', p.instituteId, typeof p.instituteId, p);
-			}
-		});
-
 		setPrograms(sortedPrograms);
 
 		// Apply current filters if they exist
@@ -327,7 +317,6 @@ export default function ProgramsPage({
 		const yearsSet = new Set<string>();
 		const programs: Program[] = [];
 
-		console.log("Processing IPES:", ipesData.length);
 
 		ipesData.forEach((ipes) => {
 			// For non-central institutions, only process the current instituteId
@@ -414,12 +403,6 @@ export default function ProgramsPage({
 			return 0;
 		});
 
-		sortedPrograms.forEach(p => {
-			if (typeof p.instituteId !== 'string') {
-				console.warn('Non-string instituteId:', p.instituteId, typeof p.instituteId, p);
-			}
-		});
-
 		setPrograms(sortedPrograms);
 
 		// Apply current filters if they exist
@@ -459,7 +442,6 @@ export default function ProgramsPage({
 	}, [programs, isCentralInstitution, instituteId]);
 
 	const handleFilter = (newFilters: typeof filters) => {
-		console.log("Applying filters:", newFilters);
 		setFilters(newFilters);
 		let filtered = [...programs];
 
@@ -499,15 +481,6 @@ export default function ProgramsPage({
 
 				return programCopy;
 			});
-		}
-
-		console.log(
-			`Filtered programs: ${filtered.length} programs match the criteria`,
-		);
-		if (newFilters.year) {
-			console.log(
-				`Year filter: ${newFilters.year}, Programs with this year: ${filtered.length}`,
-			);
 		}
 
 		setFilteredPrograms(filtered);

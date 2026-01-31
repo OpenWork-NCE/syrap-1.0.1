@@ -3,7 +3,7 @@
 import { Anchor, Container, Stack } from "@mantine/core";
 import { PATH_BOARD } from "@/routes";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
+import { useAuthorizations } from "@/app/context/SessionContext";
 import IpessPage from "@/components/IpesPage/IpesPage";
 
 const items = [{ title: "Ipes", href: "#" }].map((item, index) => (

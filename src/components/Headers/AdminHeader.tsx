@@ -10,9 +10,7 @@ import { useRouter } from "next/navigation";
 import { PATH_AUTHENTICATIONS, PATH_BOARD } from "@/routes";
 import { fetchJson, internalApiUrl } from "@/app/lib/utils";
 import { notifications } from "@mantine/notifications";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
-import { useInstitution } from "@/app/context/InstitutionContext";
-import { useUser } from "@/app/context/UserContext";
+import { useAuthorizations, useInstitution, useUser } from "@/app/context/SessionContext";
 import { ProfileMenu } from "../ProfileMenu/ProfileMenu";
 
 interface Props {

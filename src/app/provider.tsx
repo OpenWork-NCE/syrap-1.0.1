@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { MantineProvider } from "@mantine/core";
 import { themeCenadi, themeIpes, themeMinesup } from "@/styles/theme";
 import { ThemeProvider } from "@/components/ui/ThemeComponents";
-import { useInstitution } from "@/app/context/InstitutionContext";
+import { useInstitution } from "@/app/context/SessionContext";
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
 	const { institution } = useInstitution();

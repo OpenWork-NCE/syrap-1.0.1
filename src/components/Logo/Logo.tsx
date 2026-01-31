@@ -1,7 +1,7 @@
 import { Flex, Text } from "@mantine/core";
 import Link from "next/link";
 import classes from "./Logo.module.css";
-import { useInstitution } from "@/app/context/InstitutionContext";
+import { useInstitution } from "@/app/context/SessionContext";
 import { ThemedText } from "../ui/ThemeComponents";
 
 interface Props {

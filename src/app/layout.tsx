@@ -9,9 +9,7 @@ import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 import { interFont } from "@/styles/fonts";
 import { themeCenadi } from "@/styles/theme";
 import { AppProvider } from "./provider";
-import { InstitutionProvider } from "@/app/context/InstitutionContext";
-import { AuthorizationsProvider } from "@/app/context/AuthorizationsContext";
-import { UserProvider } from "@/app/context/UserContext";
+import { SessionProvider } from "@/app/context/SessionContext";
 
 export default function RootLayout({
 	children,
@@ -32,17 +30,13 @@ export default function RootLayout({
 			<body className={interFont.className}>
 				{/* MantineProvider de base pour le chargement initial */}
 				<MantineProvider theme={themeCenadi}>
-					{/* InstitutionProvider doit être AVANT AppProvider pour que AppProvider puisse utiliser useInstitution */}
-					<InstitutionProvider>
-						<AuthorizationsProvider>
-							<UserProvider>
-								{/* AppProvider applique le thème dynamique basé sur l'institution */}
-								<AppProvider>
-									{children}
-								</AppProvider>
-							</UserProvider>
-						</AuthorizationsProvider>
-					</InstitutionProvider>
+					{/* SessionProvider unique: charge user, institution et authorizations en un seul appel */}
+					<SessionProvider>
+						{/* AppProvider applique le thème dynamique basé sur l'institution */}
+						<AppProvider>
+							{children}
+						</AppProvider>
+					</SessionProvider>
 				</MantineProvider>
 			</body>
 		</html>

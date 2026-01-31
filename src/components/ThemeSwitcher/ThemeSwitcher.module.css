@@ -1,7 +1,7 @@
 .icon {
 	width: rem(20px);
 	height: rem(20px);
-	transition: var(--transition-default);
+	transition: color 0.15s ease;
 }
 
 .dark {

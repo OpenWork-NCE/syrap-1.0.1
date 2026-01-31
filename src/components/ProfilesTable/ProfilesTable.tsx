@@ -3,10 +3,8 @@
 import { useMemo, useState } from "react";
 import {
 	MantineReactTable,
-	useMantineReactTable,
 	type MRT_ColumnDef,
 	type MRT_ColumnFiltersState,
-	type MRT_PaginationState,
 	type MRT_SortingState,
 	type MRT_ColumnFilterFnsState,
 	MRT_EditActionButtons,
@@ -20,7 +18,6 @@ import {
 	Button,
 	Divider,
 	Flex,
-	Menu,
 	Stack,
 	Text,
 	Title,
@@ -28,36 +25,21 @@ import {
 } from "@mantine/core";
 import {
 	IconCheck,
-	IconDownload,
 	IconEdit,
-	IconFileTypeCsv,
-	IconFileTypePdf,
 	IconPlus,
 	IconRefresh,
-	IconTableExport,
 	IconTrash,
 } from "@tabler/icons-react";
 import {
-	QueryClient,
-	QueryClientProvider,
 	keepPreviousData,
 	useQuery,
 	useQueryClient,
 	useMutation,
 } from "@tanstack/react-query";
 import { modals } from "@mantine/modals";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Authorization, Profile } from "@/types";
-import { getInstitutionName, innerUrl } from "@/app/lib/utils";
-
-const csvConfig = mkConfig({
-	fieldSeparator: ",",
-	decimalSeparator: ".",
-	useKeysAsHeaders: true,
-});
+import { innerUrl } from "@/app/lib/utils";
 
 type AuthorizationApiResponse = {
 	data: Array<Authorization>;
@@ -187,7 +169,6 @@ const Section = (props: any) => {
 	});
 
 	const fetchedProfiles = data?.data ?? [];
-	console.log("Voici les profiles : ", fetchedProfiles);
 
 	const { mutateAsync: createProfile, isPending: isCreatingProfile } =
 		useCreateProfile();
@@ -203,7 +184,6 @@ const Section = (props: any) => {
 				setValidationErrors(newValidationErrors);
 				return;
 			}
-			console.log("Voici les valeurs : ", values);
 			setValidationErrors(values);
 			await createProfile(values);
 			exitCreatingMode();
@@ -217,7 +197,6 @@ const Section = (props: any) => {
 				return;
 			}
 			setValidationErrors(values);
-			console.log("Voici les valeurs de l'update : ", values);
 			await updateProfile({
 				...values,
 				id: row.original.id,
@@ -628,16 +607,12 @@ function useDeleteProfile() {
 	});
 }
 
-const queryClient = new QueryClient();
-
 type ProfileProps = {
 	authorizations: String[];
 };
 
 const ProfileTable = ({ authorizations }: ProfileProps) => (
-	<QueryClientProvider client={queryClient}>
-		<Section authorizations={authorizations} />
-	</QueryClientProvider>
+	<Section authorizations={authorizations} />
 );
 
 export default ProfileTable;

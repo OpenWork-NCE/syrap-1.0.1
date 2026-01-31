@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { PATH_AUTHENTICATIONS } from "@/routes";
 import { fetchJson, internalApiUrl } from "@/app/lib/utils";
 import { notifications } from "@mantine/notifications";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
-import { useInstitution } from "@/app/context/InstitutionContext";
+import { useAuthorizations, useInstitution } from "@/app/context/SessionContext";
 
 export default function NotFound() {
   const [timeLeft, setTimeLeft] = useState(5);

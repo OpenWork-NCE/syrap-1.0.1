@@ -1,4 +1,3 @@
-import { Institution } from "@/types";
 import { FileType } from "@/types";
 import {
 	IconFileTypePdf,
@@ -8,9 +7,7 @@ import {
 	IconFileZip,
 	IconFileTypeJpg,
 	IconFile,
-	IconCheck,
 } from "@tabler/icons-react";
-import { MRT_Column, MRT_Row } from "mantine-react-table";
 import { jsPDF } from "jspdf";
 import autoTable, { RowInput } from "jspdf-autotable";
 import { download, generateCsv } from "export-to-csv";

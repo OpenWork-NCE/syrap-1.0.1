@@ -18,8 +18,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { fetchJson, internalApiUrl } from "@/app/lib/utils";
 import { notifications } from "@mantine/notifications";
 import { PATH_BOARD } from "@/routes";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
-import { useInstitution } from "@/app/context/InstitutionContext";
+import { useAuthorizations, useInstitution } from "@/app/context/SessionContext";
 import { IconAt, IconLock, IconArrowRight } from "@tabler/icons-react";
 import {
 	ThemedAuthCard,
@@ -76,12 +75,14 @@ export function LoginForm() {
 				message: "Vous allez être redirigé vers votre tableau de bord",
 			});
 
-			// Gérer les valeurs null de l'institution
-			const institution = response.institution ?? {
-				id: "",
-				name: "",
-				slug: "",
-				model: "",
+			// Gérer les valeurs null de l'institution et s'assurer que code est présent
+			const inst = response.institution as { id?: string; name?: string; slug?: string; model?: string; code?: string } | null;
+			const institution = {
+				id: inst?.id ?? "",
+				name: inst?.name ?? "",
+				slug: inst?.slug ?? "",
+				model: inst?.model ?? "",
+				code: inst?.code ?? "",
 			};
 
 			setInstitution(institution);

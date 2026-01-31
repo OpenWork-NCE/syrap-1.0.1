@@ -2,7 +2,7 @@
 
 import { Anchor, Container, Grid, Stack } from "@mantine/core";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
+import { useAuthorizations } from "@/app/context/SessionContext";
 import BranchesTable from "@/components/BranchesTable/BranchesTable";
 import LevelsTable from "@/components/LevelsTable/LevelsTable";
 

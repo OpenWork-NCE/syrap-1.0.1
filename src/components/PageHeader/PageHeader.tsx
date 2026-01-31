@@ -1,91 +1,106 @@
 "use client";
 
 import {
-	ActionIcon,
+	Anchor,
 	Box,
 	Breadcrumbs,
-	BreadcrumbsProps,
-	Button,
-	Flex,
 	Group,
 	Paper,
 	PaperProps,
-	rem,
 	Stack,
 	Text,
-	useMantineTheme,
+	ThemeIcon,
 } from "@mantine/core";
-import { IconPlus, IconRefresh } from "@tabler/icons-react";
-import Surface from "@/components/Surface";
-import { useColorScheme } from "@mantine/hooks";
-import { ThemedTitle } from "@/components/ui/ThemeComponents";
+import { IconChevronRight, IconHome } from "@tabler/icons-react";
 import classes from "./PageHeader.module.css";
+
+type BreadcrumbItem = {
+	title: string;
+	href: string;
+};
 
 type PageHeaderProps = {
 	title: string;
-	institution?: string;
-	withActions?: boolean;
-	breadcrumbItems?: any;
-	invoiceAction?: boolean;
-	uesAction?: boolean;
-} & PaperProps;
+	description?: string;
+	icon?: React.ReactNode;
+	breadcrumbItems?: BreadcrumbItem[];
+	rightSection?: React.ReactNode;
+} & Omit<PaperProps, "children">;
 
 const PageHeader = (props: PageHeaderProps) => {
 	const {
-		withActions,
-		breadcrumbItems,
 		title,
-		institution,
-		invoiceAction,
-		uesAction,
+		description,
+		icon,
+		breadcrumbItems,
+		rightSection,
 		...others
 	} = props;
-	
+
+	const breadcrumbs = breadcrumbItems?.map((item, index) => (
+		<Anchor
+			href={item.href}
+			key={index}
+			className={classes.breadcrumbLink}
+			underline="never"
+		>
+			{item.title}
+		</Anchor>
+	));
+
 	return (
-		<>
-			<Surface
-				component={Paper}
-				style={{ backgroundColor: "transparent" }}
-				{...others}
-			>
-				{withActions ? (
-					<Flex
-						justify="space-between"
-						direction={{ base: "column", sm: "row" }}
-						gap={{ base: "sm", sm: 4 }}
-					>
-						<Stack gap={4}>
-							<ThemedTitle
-								order={2}
-								className={`${classes.title} theme-text-gradient`}
-							>
-								{title}
-							</ThemedTitle>
-							<Text>Heureux de vous revoir, {title}!</Text>
-						</Stack>
-						<Flex align="center" gap="sm">
-							<ActionIcon variant="subtle">
-								<IconRefresh size={16} />
-							</ActionIcon>
-						</Flex>
-					</Flex>
-				) : (
-					<Stack gap="sm">
-						<ThemedTitle
-							order={2}
-							className={`${classes.title} theme-text-gradient`}
+		<Stack gap="sm">
+			{/* Breadcrumb bar */}
+			{breadcrumbItems && breadcrumbItems.length > 0 && (
+				<Box className={classes.breadcrumbBar}>
+					<Group gap={6} className={classes.breadcrumbGroup}>
+						<Anchor href="/dashboard" className={classes.breadcrumbHome}>
+							<IconHome size={14} stroke={1.5} />
+						</Anchor>
+						<IconChevronRight size={12} className={classes.breadcrumbSeparator} />
+						<Breadcrumbs
+							separator={<IconChevronRight size={12} className={classes.breadcrumbSeparator} />}
+							className={classes.breadcrumbs}
 						>
-							{title}
-						</ThemedTitle>
-						{/* {breadcrumbItems && (
-							<Breadcrumbs {...BREADCRUMBS_PROPS}>
-								{breadcrumbItems}
-							</Breadcrumbs>
-						)} */}
-					</Stack>
-				)}
-			</Surface>
-		</>
+							{breadcrumbs}
+						</Breadcrumbs>
+					</Group>
+				</Box>
+			)}
+
+			{/* Main Header - compact */}
+			<Paper className={classes.header} {...others}>
+				<Group justify="space-between" align="center" wrap="nowrap">
+					<Group gap="sm" align="center" wrap="nowrap">
+						{icon && (
+							<ThemeIcon
+								size={40}
+								radius="md"
+								variant="light"
+								className={classes.iconWrapper}
+							>
+								{icon}
+							</ThemeIcon>
+						)}
+						<div>
+							<Text component="h1" className={classes.title}>
+								{title}
+							</Text>
+							{description && (
+								<Text className={classes.description}>
+									{description}
+								</Text>
+							)}
+						</div>
+					</Group>
+					{rightSection && (
+						<Box className={classes.rightSection}>
+							{rightSection}
+						</Box>
+					)}
+				</Group>
+			</Paper>
+		</Stack>
 	);
 };
 

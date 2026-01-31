@@ -73,7 +73,6 @@ export function ProgramTable({
 
 	// Group courses by year
 	const coursesByYear = useMemo(() => {
-		console.log("Grouping courses by year for program:", program.id);
 		const grouped: Record<string, Course[]> = {};
 
 		// First, group courses by year
@@ -84,7 +83,6 @@ export function ProgramTable({
 			grouped[course.year].push(course);
 		});
 
-		console.log("Grouped courses:", grouped);
 
 		// Sort years in descending order
 		return Object.entries(grouped)
@@ -182,7 +180,6 @@ export function ProgramTable({
 	];
 
 	const handleExportData = () => {
-		console.log("Exporting data for active tab:", activeTab);
 		// Prepare data for export
 		const exportData = activeCourses.map((course: Course) => ({
 			Nom: course.name,
@@ -192,7 +189,6 @@ export function ProgramTable({
 			Annee: course.year,
 		}));
 
-		console.log("Prepared export data:", exportData);
 
 		// Export as CSV with year in filename if filtering by year
 		const filename =
@@ -204,7 +200,6 @@ export function ProgramTable({
 	};
 
 	const handleExportPDF = () => {
-		console.log("Exporting PDF for active tab:", activeTab);
 		// Prepare headers and data for PDF export
 		const headers = ["Nom", "Description", "Heures", "Crédits", "Année"];
 		const data = activeCourses.map((course: Course) => [
@@ -215,7 +210,6 @@ export function ProgramTable({
 			course.year,
 		]);
 
-		console.log("Prepared PDF data:", { headers, data });
 
 		// Export as PDF with program details and year in filename if filtering by year
 		const title =

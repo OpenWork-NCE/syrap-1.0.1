@@ -7,9 +7,7 @@ import { CardGradient } from "@/components/CardGradientIpes/CardGradient";
 import { ShowIpes } from "@/types";
 import { useEffect, useState } from "react";
 import { internalApiUrl } from "@/app/lib/utils";
-import { undefined } from "zod";
 import ClassroomsTable from "@/components/ClassroomsTable/ClassroomsTable";
-import { useInstitution } from "@/app/context/InstitutionContext";
 
 const mockStats = [
 	{
@@ -82,9 +80,6 @@ const IpesPage = ({ id }: IpesPageProps) => {
 		}
 		fetchIpes();
 	}, []);
-
-	console.log("Voici l'Id en question ", id);
-	console.log("Et voici l'université ", ipes);
 
 	return (
 		<>

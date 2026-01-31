@@ -3,10 +3,8 @@
 import { useMemo, useState } from "react";
 import {
 	MantineReactTable,
-	useMantineReactTable,
 	type MRT_ColumnDef,
 	type MRT_ColumnFiltersState,
-	type MRT_PaginationState,
 	type MRT_SortingState,
 	type MRT_ColumnFilterFnsState,
 	MRT_EditActionButtons,
@@ -38,20 +36,13 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import {
-	QueryClient,
-	QueryClientProvider,
 	keepPreviousData,
 	useQuery,
-	useQueryClient,
-	useMutation,
 } from "@tanstack/react-query";
 import { modals } from "@mantine/modals";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { Cenadi } from "@/types";
-import { getInstitutionName, handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/utils";
+import { handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/utils";
 import { useCreateCenadi, useUpdateCenadi, useDeleteCenadi } from "@/app/lib/actionHooks";
 
 type CenadiApiResponse = {
@@ -137,7 +128,6 @@ const Section = (props: any) => {
 	const { data, isError, isFetching, isLoading, refetch } = useGetCenadis();
 
 	const fetchedCenadis = data?.data ?? [];
-	console.log("Voici les cenadis : ", fetchedCenadis);
 
 	const { mutateAsync: createCenadi, isPending: isCreatingCenadi } = useCreateCenadi<Cenadi>();
 	const { mutateAsync: updateCenadi, isPending: isUpdatingCenadi } = useUpdateCenadi<Cenadi>();
@@ -150,7 +140,6 @@ const Section = (props: any) => {
 				setValidationErrors(newValidationErrors);
 				return;
 			}
-			console.log("Voici les valeurs : ", values);
 			setValidationErrors(values);
 			await createCenadi(values);
 			exitCreatingMode();
@@ -164,7 +153,6 @@ const Section = (props: any) => {
 				return;
 			}
 			setValidationErrors(values);
-			console.log("Voici les valeurs de l'update : ", values);
 			await updateCenadi({
 				...values,
 				id: row.original.id,
@@ -431,16 +419,12 @@ const Section = (props: any) => {
 	return <MantineReactTable table={table} />;
 };
 
-const queryClient = new QueryClient();
-
 type CenadiProps = {
 	authorizations: String[];
 };
 
 const CenadiTable = ({ authorizations }: CenadiProps) => (
-	<QueryClientProvider client={queryClient}>
-		<Section authorizations={authorizations} />
-	</QueryClientProvider>
+	<Section authorizations={authorizations} />
 );
 
 export default CenadiTable;

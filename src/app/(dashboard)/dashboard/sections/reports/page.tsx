@@ -1,8 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations } from "@/app/context/AuthorizationsContext";
-import { useInstitution } from "@/app/context/InstitutionContext";
+import { useAuthorizations, useInstitution } from "@/app/context/SessionContext";
 import { useState, useEffect, useCallback } from "react";
 import {
 	Container,

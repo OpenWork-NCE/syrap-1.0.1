@@ -3,10 +3,8 @@
 import { useMemo, useState } from "react";
 import {
 	MantineReactTable,
-	useMantineReactTable,
 	type MRT_ColumnDef,
 	type MRT_ColumnFiltersState,
-	type MRT_PaginationState,
 	type MRT_SortingState,
 	type MRT_ColumnFilterFnsState,
 	MRT_EditActionButtons,
@@ -16,7 +14,6 @@ import {
 import { useCustomTable } from "@/hooks/use-custom-table";
 import {
 	ActionIcon,
-	Alert,
 	Box,
 	Button,
 	Divider,
@@ -24,7 +21,6 @@ import {
 	Menu,
 	Stack,
 	Text,
-	TextInput,
 	Title,
 	Tooltip,
 } from "@mantine/core";
@@ -42,29 +38,17 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import {
-	QueryClient,
-	QueryClientProvider,
 	keepPreviousData,
 	useQuery,
 	useQueryClient,
 	useMutation,
 } from "@tanstack/react-query";
 import { modals } from "@mantine/modals";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { FormattedClassroom, Classroom, Branch, Level } from "@/types";
 import { useRouter } from "next/navigation";
-import CustomCreateRowModal from "@/components/ClassroomsTable/CreateModal";
 import { PATH_SECTIONS } from "@/routes";
 import { handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/utils";
-
-const csvConfig = mkConfig({
-	fieldSeparator: ",",
-	decimalSeparator: ".",
-	useKeysAsHeaders: true,
-});
 
 type ClassroomApiResponse = {
 	data: Array<Classroom>;
@@ -158,7 +142,6 @@ const Section = (props: SectionProps) => {
 	} = useGetLevels();
 
 	const fetchedLevels = lData?.data ?? [];
-	console.log("Fetched levels: ", fetchedLevels);
 
 	const {
 		data: bData,
@@ -169,7 +152,6 @@ const Section = (props: SectionProps) => {
 	} = useGetBranches();
 
 	const fetchedBranches = bData?.data ?? [];
-	console.log("Fetched branches: ", fetchedBranches);
 
 	const columns = useMemo<MRT_ColumnDef<FormattedClassroom>[]>(
 		() => [
@@ -259,8 +241,6 @@ const Section = (props: SectionProps) => {
 		}
 		return data.map(formatClassroom);
 	}, [data]);
-	console.log("Fetched classrooms: ", data);
-	console.log("Formatted classrooms: ", formattedClassrooms);
 
 	const { mutateAsync: createClassroom, isPending: isCreatingClassroom } =
 		useCreateClassroom();
@@ -833,8 +813,6 @@ function useDeleteClassroom() {
 	});
 }
 
-const queryClient = new QueryClient();
-
 type ClassroomProps = {
 	institute: "Ipes" | "University";
 	instituteId: string;
@@ -846,13 +824,11 @@ const ClassroomTable = ({
 	instituteId,
 	parentInstitute,
 }: ClassroomProps) => (
-	<QueryClientProvider client={queryClient}>
-		<Section
-			institute={institute}
-			instituteId={instituteId}
-			parentInstitute={parentInstitute}
-		/>
-	</QueryClientProvider>
+	<Section
+		institute={institute}
+		instituteId={instituteId}
+		parentInstitute={parentInstitute}
+	/>
 );
 
 export default ClassroomTable;

@@ -3,10 +3,8 @@
 import { useMemo, useState } from "react";
 import {
 	MantineReactTable,
-	useMantineReactTable,
 	type MRT_ColumnDef,
 	type MRT_ColumnFiltersState,
-	// type MRT_PaginationState,
 	type MRT_SortingState,
 	type MRT_ColumnFilterFnsState,
 	MRT_EditActionButtons,
@@ -47,17 +45,12 @@ import {
 	IconTrashX,
 } from "@tabler/icons-react";
 import {
-	QueryClient,
-	QueryClientProvider,
 	keepPreviousData,
 	useQuery,
 	useQueryClient,
 	useMutation,
 } from "@tanstack/react-query";
 import { modals } from "@mantine/modals";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { download, generateCsv, mkConfig } from "export-to-csv";
 import { notifications } from "@mantine/notifications";
 import { useCustomTable } from "@/hooks/use-custom-table";
 import { PATH_SECTIONS } from "@/routes";
@@ -993,18 +986,13 @@ function useBulkDeleteUes() {
 	});
 }
 
-const queryClient = new QueryClient();
-
 type UeProps = {
 	authorizations: String[];
 	filterStatus?: string;
 };
 
 const UeTable = ({ authorizations, filterStatus }: UeProps) => (
-	//Put this with your other react-query providers near root of your app
-	<QueryClientProvider client={queryClient}>
-		<Section authorizations={authorizations} filterStatus={filterStatus} />
-	</QueryClientProvider>
+	<Section authorizations={authorizations} filterStatus={filterStatus} />
 );
 
 export default UeTable;

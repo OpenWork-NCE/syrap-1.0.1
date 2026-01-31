@@ -1,16 +1,16 @@
 .header {
-	padding: var(--mantine-spacing-md) var(--mantine-spacing-lg);
+	height: 100%;
+	padding: 0 var(--mantine-spacing-lg);
 	color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
 	gap: var(--mantine-spacing-md);
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-between;
-	background-color: light-dark(rgba(255, 255, 255, 0.9), rgba(26, 27, 30, 0.8));
+	background-color: light-dark(rgba(255, 255, 255, 0.98), rgba(26, 27, 30, 0.98));
 	border-bottom: 1px solid
 		light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-	backdrop-filter: blur(10px);
-	transition: all 0.3s ease;
+	transition: background-color 0.3s ease;
 	position: relative;
 }
 
@@ -40,12 +40,12 @@
 }
 
 .actionIcon {
-	transition: all 0.2s ease;
+	transition: transform 0.2s ease, background-color 0.2s ease;
 	border-radius: var(--mantine-radius-md);
 }
 
 .actionIcon:hover {
-	transform: translateY(-2px);
+	transform: translateY(-1px);
 	background-color: light-dark(
 		var(--mantine-color-gray-1),
 		var(--mantine-color-dark-5)
