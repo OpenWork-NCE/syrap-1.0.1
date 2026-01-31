@@ -297,6 +297,7 @@ const Section = (props: any) => {
 		await updateUe({
 			id: row.id,
 			name: values.name,
+			slug: row.original.slug,
 			description: values.description,
 		});
 		table.setEditingRow(null); //exit editing mode

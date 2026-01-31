@@ -1,16 +1,12 @@
 "use client";
 
-import { Anchor, Container, Stack, Alert } from "@mantine/core";
+import { Container, Stack, Alert } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import { useInstitution, useAuthorizations } from "@/app/context/SessionContext";
 import Syllabus from "@/components/Syllabus/Syllabus";
 
-const items = [{ title: "Syllabus", href: "#" }].map((item, index) => (
-	<Anchor href={item.href} key={index}>
-		{item.title}
-	</Anchor>
-));
+const items = [{ title: "Syllabus", href: "#" }];
 
 function Page() {
 	const { institution } = useInstitution();

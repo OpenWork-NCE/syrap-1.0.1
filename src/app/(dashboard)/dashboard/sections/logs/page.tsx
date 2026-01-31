@@ -1,20 +1,12 @@
 "use client";
 
-import { Anchor, Box, Container, Stack } from "@mantine/core";
+import { Box, Container } from "@mantine/core";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations } from "@/app/context/SessionContext";
-import ProfilesTable from "@/components/ProfilesTable/ProfilesTable";
 import Logs from "@/components/Logs/page";
 
-const items = [{ title: "Logs", href: "#" }].map((item, index) => (
-	<Anchor href={item.href} key={index}>
-		{item.title}
-	</Anchor>
-));
+const items = [{ title: "Logs", href: "#" }];
 
 function Page() {
-	const { authorizations } = useAuthorizations();
-
 	return (
 		<>
 			<>

@@ -1,4 +1,5 @@
 import type { StoryObj } from '@storybook/react';
+import { IconHome } from '@tabler/icons-react';
 
 import PageHeader from './PageHeader';
 
@@ -21,15 +22,27 @@ type Story = StoryObj<typeof PageHeader>;
 export const Default: Story = {
   args: {
     title: 'Dashboard',
-    withActions: true,
+    description: 'Bienvenue sur votre tableau de bord',
     style: { width: 800 },
   },
 };
 
-export const InvoiceActions: Story = {
+export const WithBreadcrumbs: Story = {
   args: {
-    title: 'Dashboard',
-    invoiceAction: true,
+    title: 'Utilisateurs',
+    description: 'Gérez les utilisateurs du système',
+    breadcrumbItems: [
+      { title: 'Accueil', href: '/dashboard' },
+      { title: 'Utilisateurs', href: '#' },
+    ],
+    style: { width: 800 },
+  },
+};
+
+export const WithIcon: Story = {
+  args: {
+    title: 'Accueil',
+    icon: <IconHome size={24} />,
     style: { width: 800 },
   },
 };

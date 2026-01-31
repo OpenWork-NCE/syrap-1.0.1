@@ -1,33 +1,23 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations, useInstitution } from "@/app/context/SessionContext";
+import { useInstitution } from "@/app/context/SessionContext";
 import { useState, useEffect, useCallback } from "react";
 import {
 	Container,
-	Title,
-	Button,
-	Group,
 	Modal,
-	Anchor,
 	Box,
 	Paper,
 } from "@mantine/core";
-import { IconUpload } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import { FileList } from "@/components/Files/FileList";
 import { FileForm } from "@/components/Files/FileForm";
 import { FileDocument, FileFormData, FileType } from "@/types";
 import { notifications } from "@mantine/notifications";
 
-const items = [{ title: "Rapports", href: "#" }].map((item, index) => (
-	<Anchor href={item.href} key={index}>
-		{item.title}
-	</Anchor>
-));
+const items = [{ title: "Rapports", href: "#" }];
 
 function Page() {
-	const { authorizations } = useAuthorizations();
 	const { institution } = useInstitution();
 	const [allFiles, setAllFiles] = useState<FileDocument[]>([]);
 	const [filteredFiles, setFilteredFiles] = useState<FileDocument[]>([]);

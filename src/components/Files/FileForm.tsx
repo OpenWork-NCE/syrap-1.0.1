@@ -37,7 +37,7 @@ interface FileFormProps {
 	initialData?: FileDocument;
 	onSubmit: (values: FileFormData) => Promise<void>;
 	onCancel: () => void;
-	institution?: { id: string; name: string; slug: string; model: string; };
+	institution?: { id: string | number | null; name: string | null; slug: string | null; type: string | null; } | null;
 }
 
 const FileValueComponent: React.FC<{ value: File | File[] | null }> = ({
@@ -68,8 +68,8 @@ export function FileForm({ initialData, onSubmit, onCancel, institution }: FileF
 	
 	// Determine model type based on institution
 	const getModelInfo = () => {
-		if (!institution) return null;
-		
+		if (!institution?.slug) return null;
+
 		let modelType;
 		if (institution.slug.includes('cenadi')) {
 			modelType = 'CENADI';
@@ -78,10 +78,10 @@ export function FileForm({ initialData, onSubmit, onCancel, institution }: FileF
 		} else {
 			modelType = 'IPES';
 		}
-		
+
 		return {
 			type: modelType,
-			name: institution.name
+			name: institution.name ?? ''
 		};
 	};
 	

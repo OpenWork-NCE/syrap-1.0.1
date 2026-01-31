@@ -1,7 +1,7 @@
 "use client";
 
 import { Container, Stack } from "@mantine/core";
-import { IconLayers } from "@tabler/icons-react";
+import { IconStack2 } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import { useAuthorizations } from "@/app/context/SessionContext";
 import CenadisTable from "@/components/CenadisTable/CenadisTable";
@@ -25,7 +25,7 @@ function Page() {
 					<PageHeader
 						title="Niveaux Académiques"
 						description="Gérez les niveaux d'études (Licence, Master, Doctorat, etc.)."
-						icon={<IconLayers size={24} />}
+						icon={<IconStack2 size={24} />}
 						breadcrumbItems={breadcrumbItems}
 					/>
 					<CenadisTable

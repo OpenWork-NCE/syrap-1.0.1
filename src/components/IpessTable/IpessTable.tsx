@@ -870,16 +870,16 @@ function useDeleteIpes() {
 type IpesProps = {
 	authorizations: String[];
 	institution: {
-		id: string;
-		name: string;
-		slug: string;
-		model: string;
-	};
+		id: string | number | null;
+		name: string | null;
+		slug: string | null;
+		type: string | null;
+	} | null;
 	user: {
 		id: string;
 		name: string;
 		email: string;
-	};
+	} | null;
 };
 
 const IpesTable = ({ authorizations, institution, user }: IpesProps) => (

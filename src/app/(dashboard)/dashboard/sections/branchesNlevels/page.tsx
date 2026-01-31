@@ -1,18 +1,12 @@
 "use client";
 
-import { Anchor, Container, Grid, Stack } from "@mantine/core";
+import { Container, Grid, Stack } from "@mantine/core";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import { useAuthorizations } from "@/app/context/SessionContext";
 import BranchesTable from "@/components/BranchesTable/BranchesTable";
 import LevelsTable from "@/components/LevelsTable/LevelsTable";
 
-const items = [{ title: "Filières et Niveaux", href: "#" }].map(
-	(item, index) => (
-		<Anchor href={item.href} key={index}>
-			{item.title}
-		</Anchor>
-	),
-);
+const items = [{ title: "Filières et Niveaux", href: "#" }];
 
 function Page() {
 	const { authorizations } = useAuthorizations();

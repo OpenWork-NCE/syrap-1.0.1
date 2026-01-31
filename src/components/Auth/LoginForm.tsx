@@ -75,17 +75,16 @@ export function LoginForm() {
 				message: "Vous allez être redirigé vers votre tableau de bord",
 			});
 
-			// Gérer les valeurs null de l'institution et s'assurer que code est présent
-			const inst = response.institution as { id?: string; name?: string; slug?: string; model?: string; code?: string } | null;
-			const institution = {
-				id: inst?.id ?? "",
-				name: inst?.name ?? "",
-				slug: inst?.slug ?? "",
-				model: inst?.model ?? "",
-				code: inst?.code ?? "",
+			// Gérer les valeurs null de l'organisation et convertir en string pour SessionContext
+			const org = response.institution as { id?: string | number; name?: string; slug?: string; type?: string } | null;
+			const organisation = {
+				id: String(org?.id ?? ""),
+				name: org?.name ?? "",
+				slug: org?.slug ?? "",
+				type: org?.type ?? "",
 			};
 
-			setInstitution(institution);
+			setInstitution(organisation);
 			setAuthorizations(response.authorizations ?? []);
 			push(callbackUrlData?.callbackUrl || PATH_BOARD.root);
 		} catch (error) {

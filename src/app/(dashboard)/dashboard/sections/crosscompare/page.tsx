@@ -1,24 +1,12 @@
 "use client";
 
-import { Anchor, Container, Stack } from "@mantine/core";
-import { PATH_BOARD } from "@/routes";
+import { Container, Stack } from "@mantine/core";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { useAuthorizations, useInstitution, useUser } from "@/app/context/SessionContext";
-import UniversitiesTable from "@/components/UniversitiesTable/UniversitiesTable";
-import Syllabus from "@/components/Syllabus/Syllabus";
 import ComparePage from "@/components/Compare/ComparePage";
 
-const items = [{ title: "CrossCompare", href: "#" }].map((item, index) => (
-	<Anchor href={item.href} key={index}>
-		{item.title}
-	</Anchor>
-));
+const items = [{ title: "CrossCompare", href: "#" }];
 
 function Page() {
-	const { authorizations } = useAuthorizations();
-	const { institution } = useInstitution();
-	const { user } = useUser();
-
 	return (
 		<>
 			<>
