@@ -17,47 +17,52 @@ interface User {
 	email: string;
 }
 
-interface Institution {
+interface Organisation {
 	id: string;
 	name: string;
 	slug: string;
-	model: string;
-	code: string;
+	type: string; // CENADI, MINESUP, Université, IPES
 }
 
 interface SessionData {
 	user: User;
-	institution: Institution;
+	organisation: Organisation;
 	authorizations: string[];
 }
 
 interface SessionContextType extends SessionData {
 	isLoading: boolean;
 	setUser: (user: User) => void;
-	setInstitution: (institution: Institution) => void;
+	setOrganisation: (organisation: Organisation) => void;
 	setAuthorizations: (authorizations: string[]) => void;
+	refreshSession: () => Promise<void>;
 	resetSession: () => void;
 }
 
 // Valeurs initiales
 const initialUser: User = { id: "", name: "", email: "" };
-const initialInstitution: Institution = { id: "", name: "", slug: "", model: "", code: "" };
+const initialOrganisation: Organisation = { id: "", name: "", slug: "", type: "" };
 
 const initialSession: SessionData = {
 	user: initialUser,
-	institution: initialInstitution,
+	organisation: initialOrganisation,
 	authorizations: [],
 };
 
 // Context
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
-// Fetch session data en un seul appel
-async function fetchSession(): Promise<SessionData> {
+/**
+ * Fetch session data depuis les cookies
+ * Utilise cache: 'no-store' pour toujours lire les cookies frais
+ */
+async function fetchSessionFromServer(): Promise<SessionData> {
 	try {
-		const response = await fetch("/api/cookies/session");
+		const response = await fetch("/api/cookies/session", {
+			cache: "no-store",
+			credentials: "include",
+		});
 		if (!response.ok) {
-			console.error("Failed to fetch session:", response.status);
 			return initialSession;
 		}
 		return await response.json();
@@ -72,11 +77,19 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
 	const [session, setSession] = useState<SessionData>(initialSession);
 	const [isLoading, setIsLoading] = useState(true);
 
-	// Fetch session une seule fois au chargement
+	// Fonction de rafraîchissement de la session (appelée après login/modification)
+	const refreshSession = useCallback(async () => {
+		setIsLoading(true);
+		const data = await fetchSessionFromServer();
+		setSession(data);
+		setIsLoading(false);
+	}, []);
+
+	// Fetch session au chargement initial
 	useEffect(() => {
 		let mounted = true;
 
-		fetchSession().then((data) => {
+		fetchSessionFromServer().then((data) => {
 			if (mounted) {
 				setSession(data);
 				setIsLoading(false);
@@ -93,8 +106,8 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
 		setSession((prev) => ({ ...prev, user }));
 	}, []);
 
-	const setInstitution = useCallback((institution: Institution) => {
-		setSession((prev) => ({ ...prev, institution }));
+	const setOrganisation = useCallback((organisation: Organisation) => {
+		setSession((prev) => ({ ...prev, organisation }));
 	}, []);
 
 	const setAuthorizations = useCallback((authorizations: string[]) => {
@@ -111,11 +124,12 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
 			...session,
 			isLoading,
 			setUser,
-			setInstitution,
+			setOrganisation,
 			setAuthorizations,
+			refreshSession,
 			resetSession,
 		}),
-		[session, isLoading, setUser, setInstitution, setAuthorizations, resetSession]
+		[session, isLoading, setUser, setOrganisation, setAuthorizations, refreshSession, resetSession]
 	);
 
 	return (
@@ -136,7 +150,7 @@ export const useSession = (): SessionContextType => {
 
 // Hooks de compatibilité avec les anciens contextes
 export const useUser = () => {
-	const { user, setUser, resetSession } = useSession();
+	const { user, setUser } = useSession();
 	return {
 		user,
 		setUser,
@@ -144,12 +158,23 @@ export const useUser = () => {
 	};
 };
 
-export const useInstitution = () => {
-	const { institution, setInstitution } = useSession();
+export const useOrganisation = () => {
+	const { organisation, setOrganisation } = useSession();
 	return {
-		institution,
-		setInstitution,
-		resetInstitution: () => setInstitution(initialInstitution),
+		organisation,
+		setOrganisation,
+		resetOrganisation: () => setOrganisation(initialOrganisation),
+	};
+};
+
+// Alias pour compatibilité (à supprimer plus tard)
+// Retourne organisation sous le nom "institution" pour les anciens composants
+export const useInstitution = () => {
+	const { organisation, setOrganisation } = useSession();
+	return {
+		institution: organisation,
+		setInstitution: setOrganisation,
+		resetInstitution: () => setOrganisation(initialOrganisation),
 	};
 };
 

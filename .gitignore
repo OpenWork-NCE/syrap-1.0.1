@@ -46,3 +46,6 @@ public/sitemap-0.xml
 public/~partytown
 
 .env
+
+# Claude Code
+.claude/

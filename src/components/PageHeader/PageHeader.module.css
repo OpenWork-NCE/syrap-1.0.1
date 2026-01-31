@@ -41,7 +41,7 @@
 }
 
 .breadcrumbHome:hover {
-	color: light-dark(var(--mantine-color-blue-6), var(--mantine-color-blue-4));
+	color: light-dark(var(--primary-6), var(--primary-4));
 }
 
 .breadcrumbLink {
@@ -52,7 +52,7 @@
 }
 
 .breadcrumbLink:hover {
-	color: light-dark(var(--mantine-color-blue-6), var(--mantine-color-blue-4));
+	color: light-dark(var(--primary-6), var(--primary-4));
 }
 
 .breadcrumbLink:last-child {
@@ -86,8 +86,8 @@
 	height: 100%;
 	background: linear-gradient(
 		180deg,
-		var(--mantine-color-blue-5) 0%,
-		var(--mantine-color-blue-6) 100%
+		var(--primary-5) 0%,
+		var(--primary-6) 100%
 	);
 	border-radius: var(--mantine-radius-md) 0 0 var(--mantine-radius-md);
 }
@@ -95,11 +95,11 @@
 /* Icon - smaller */
 .iconWrapper {
 	background: light-dark(
-		var(--mantine-color-blue-0),
-		rgba(34, 139, 230, 0.15)
+		var(--primary-0),
+		rgba(var(--primary-6-rgb), 0.15)
 	);
-	color: var(--mantine-color-blue-6);
-	border: 1px solid light-dark(var(--mantine-color-blue-1), rgba(34, 139, 230, 0.2));
+	color: var(--primary-6);
+	border: 1px solid light-dark(var(--primary-1), rgba(var(--primary-6-rgb), 0.2));
 }
 
 /* Title - smaller */

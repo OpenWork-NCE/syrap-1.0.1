@@ -12,7 +12,7 @@
 	overflow: hidden;
 }
 
-/* Accent bar on the left */
+/* Accent bar on the left - uses theme primary color */
 .navbar::before {
 	content: "";
 	position: absolute;
@@ -22,10 +22,10 @@
 	height: 100%;
 	background: linear-gradient(
 		180deg,
-		var(--mantine-color-blue-5) 0%,
-		var(--mantine-color-teal-5) 100%
+		var(--primary-6) 0%,
+		var(--primary-4) 100%
 	);
-	opacity: 0.8;
+	opacity: 0.9;
 }
 
 /* Main navigation links section */

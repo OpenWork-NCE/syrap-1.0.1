@@ -17,7 +17,6 @@ import { Footer } from "@/components/Footer";
 import { navLinks, adminNavLinks } from "@/config";
 import { useAuthorizations } from "@/app/context/SessionContext";
 import classes from "./layout.module.css";
-import { AppProvider } from "@/app/provider";
 import { ModalsProvider } from "@mantine/modals";
 
 // Loader simple et élégant pour les transitions
@@ -149,12 +148,10 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: Props) {
 	return (
-		<AppProvider>
-			<ModalsProvider>
-				<QueryClientProvider client={queryClient}>
-					<DashboardShell>{children}</DashboardShell>
-				</QueryClientProvider>
-			</ModalsProvider>
-		</AppProvider>
+		<ModalsProvider>
+			<QueryClientProvider client={queryClient}>
+				<DashboardShell>{children}</DashboardShell>
+			</QueryClientProvider>
+		</ModalsProvider>
 	);
 }

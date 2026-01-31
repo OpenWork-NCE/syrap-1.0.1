@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import {
 	MantineReactTable,
 	type MRT_ColumnDef,
@@ -38,8 +38,12 @@ import {
 } from "@tanstack/react-query";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
-import { Profile, User, Cenadi, Minesup, University, ShowIpes } from "@/types";
-import { getInstitutionName, innerUrl } from "@/app/lib/utils";
+import { Profile, User } from "@/types";
+import { innerUrl } from "@/app/lib/utils";
+
+// ============================================================================
+// Types
+// ============================================================================
 
 type ProfileApiResponse = {
 	data: Array<Profile>;
@@ -53,38 +57,31 @@ type UserApiResponse = {
 	success: string;
 };
 
-type CenadiApiResponse = {
-	data: Array<Cenadi>;
-	messages: Array<string>;
-	success: string;
-};
-
-type MinesupApiResponse = {
-	data: Array<Minesup>;
-	messages: Array<string>;
-	success: string;
-};
-
-type UniversityApiResponse = {
-	data: Array<University>;
-	messages: Array<string>;
-	success: string;
-};
-
-type IpesApiResponse = {
-	data: Array<ShowIpes>;
-	messages: Array<string>;
-	success: string;
-};
-
 interface Params {
 	columnFilterFns: MRT_ColumnFilterFnsState;
 	columnFilters: MRT_ColumnFiltersState;
 	globalFilter: string;
 	sorting: MRT_SortingState;
-	// pagination: MRT_PaginationState;
 }
-//custom react-query hook
+
+// Types d'organisation disponibles
+const ORGANISATION_TYPES = [
+	{ value: "CENADI", label: "CENADI", backendModel: "cenadi" },
+	{ value: "MINESUP", label: "MINESUP", backendModel: "minsup" },
+	{ value: "Université", label: "Université", backendModel: "university" },
+	{ value: "IPES", label: "IPES", backendModel: "ipes" },
+] as const;
+
+// Convertir le type d'organisation frontend vers le model backend
+const getBackendModel = (orgType: string): string => {
+	const found = ORGANISATION_TYPES.find((t) => t.value === orgType);
+	return found?.backendModel || "cenadi";
+};
+
+// ============================================================================
+// Hooks de données
+// ============================================================================
+
 const useGetUsers = ({}: Params) => {
 	return useQuery<UserApiResponse>({
 		queryKey: ["users"],
@@ -103,226 +100,183 @@ const useGetProfiles = () => {
 	});
 };
 
-const Section = (props: any) => {
-	const { authorizations, institution } = props;
+// ============================================================================
+// Validation
+// ============================================================================
+
+const validateRequired = (value: string | undefined | null) =>
+	!!value && value.length > 3 && value.length <= 100;
+
+const validateEmail = (email: string | undefined | null) =>
+	!!email && email.length >= 5 && email.includes("@") && email.includes(".");
+
+function validateUser(
+	user: Record<string, any>,
+	isUpdate: boolean = false
+): Record<string, string | undefined> {
+	const errors: Record<string, string | undefined> = {
+		name: !validateRequired(user.name)
+			? "Le nom doit contenir entre 3 et 100 caractères"
+			: undefined,
+		email: !validateEmail(user.email)
+			? "Veuillez entrer un email valide"
+			: undefined,
+	};
+
+	// Password requis seulement pour la création
+	if (!isUpdate) {
+		errors.password = !validateRequired(user.password)
+			? "Le mot de passe doit contenir entre 3 et 100 caractères"
+			: undefined;
+	} else if (user.password && user.password.length > 0) {
+		errors.password = !validateRequired(user.password)
+			? "Le mot de passe doit contenir entre 3 et 100 caractères"
+			: undefined;
+	}
+
+	return errors;
+}
+
+// ============================================================================
+// Composant principal
+// ============================================================================
+
+type UserTableProps = {
+	authorizations: string[];
+	organisation: {
+		id: string;
+		name: string;
+		slug: string;
+		type: string;
+	};
+};
+
+const Section = ({ authorizations, organisation }: UserTableProps) => {
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string | undefined>
 	>({});
-	const [selectedModel, setSelectedModel] = useState<string>("");
-	const [modelOptions, setModelOptions] = useState<{value: string, label: string}[]>([]);
-	const [isModelSelectInitialized, setIsModelSelectInitialized] = useState(false);
 
-	// States for each type of entity
-	const [cenadis, setCenadis] = useState<Cenadi[]>([]);
-	const [minesups, setMinesups] = useState<Minesup[]>([]);
-	const [universities, setUniversities] = useState<University[]>([]);
-	const [ipess, setIpess] = useState<ShowIpes[]>([]);
+	// Permission pour gérer les utilisateurs de toutes les organisations
+	const canManageAllOrgs = authorizations?.includes("create-users-anywhere");
 
-	// Fetch model options based on selected model type
-	const fetchModelOptions = async (modelType: string) => {
-		try {
-			let endpoint = "";
-			switch (modelType) {
-				case "Cenadi":
-					endpoint = innerUrl("/api/cenadi");
-					const cenadiResponse = await fetch(endpoint);
-					const cenadiData: CenadiApiResponse = await cenadiResponse.json();
-					setCenadis(cenadiData.data || []);
-					setModelOptions(cenadiData.data.map(item => ({
-						value: String(item.id),
-						label: item.name
-					})));
-					break;
-				case "Minesup":
-					endpoint = innerUrl("/api/minsup");
-					const minesupResponse = await fetch(endpoint);
-					const minesupData: MinesupApiResponse = await minesupResponse.json();
-					setMinesups(minesupData.data || []);
-					setModelOptions(minesupData.data.map(item => ({
-						value: String(item.id),
-						label: item.name
-					})));
-					break;
-				case "University":
-					endpoint = innerUrl("/api/universities");
-					const universityResponse = await fetch(endpoint);
-					const universityData: UniversityApiResponse = await universityResponse.json();
-					setUniversities(universityData.data || []);
-					setModelOptions(universityData.data.map(item => ({
-						value: String(item.institute),
-						label: item.name
-					})));
-					break;
-				case "Ipes":
-					endpoint = innerUrl("/api/ipes");
-					const ipesResponse = await fetch(endpoint);
-					const ipesData: IpesApiResponse = await ipesResponse.json();
-					setIpess(ipesData.data || []);
-					setModelOptions(ipesData.data.map(item => ({
-						value: String(item.institute),
-						label: item.name
-					})));
-					break;
-				default:
-					setModelOptions([]);
-			}
-		} catch (error) {
-			console.error("Error fetching model options:", error);
-			setModelOptions([]);
-		}
-	};
+	// Charger les profils (rôles)
+	const { data: profilesData } = useGetProfiles();
+	const fetchedProfiles = profilesData?.data ?? [];
 
-	// Handle model selection
-	const handleModelChange = (value: any) => {
-		if (typeof value === 'string' && value) {
-			setSelectedModel(value);
-			fetchModelOptions(value);
-		}
-	};
+	// ============================================================================
+	// Définition des colonnes
+	// ============================================================================
 
-	const {
-		data: lData,
-		isError: lIsError,
-		isFetching: lIsFetching,
-		isLoading: lIsLoading,
-		refetch: lRefresh,
-	} = useGetProfiles();
-
-	const fetchedProfiles = lData?.data ?? [];
-
-	const columns = useMemo<MRT_ColumnDef<User>[]>(
-		() => {
-			// Define base columns that are always shown
-			const baseColumns = [
-				{
-					accessorKey: "id",
-					header: "Identifiant",
-					enableEditing: false,
+	const columns = useMemo<MRT_ColumnDef<User>[]>(() => {
+		const baseColumns: MRT_ColumnDef<User>[] = [
+			{
+				accessorKey: "id",
+				header: "ID",
+				enableEditing: false,
+				size: 80,
+			},
+			{
+				accessorKey: "name",
+				header: "Nom",
+				mantineEditTextInputProps: {
+					required: true,
+					error: validationErrors?.name,
+					onFocus: () =>
+						setValidationErrors((prev) => ({ ...prev, name: undefined })),
 				},
-				{
-					accessorKey: "name",
-					header: "Nom Utilisateur",
-					mantineEditTextInputProps: {
-						type: "text",
-						required: true,
-						error: validationErrors?.name,
-						onFocus: () =>
-							setValidationErrors({
-								...validationErrors,
-								name: undefined,
-							}),
-					},
+			},
+			{
+				accessorKey: "email",
+				header: "Email",
+				mantineEditTextInputProps: {
+					type: "email",
+					required: true,
+					error: validationErrors?.email,
+					onFocus: () =>
+						setValidationErrors((prev) => ({ ...prev, email: undefined })),
 				},
-				{
-					accessorKey: "email",
-					header: "Email",
-					mantineEditTextInputProps: {
-						type: "email",
-						required: true,
-						error: validationErrors?.email,
-						onFocus: () =>
-							setValidationErrors({
-								...validationErrors,
-								email: undefined,
-							}),
-					},
-				},
-			];
+			},
+		];
 
-			// These columns are only shown if user has create-users-anywhere permission
-			const modelColumns = authorizations?.includes("create-users-anywhere") ? [
-				{
-					accessorKey: "model",
-					header: "Entité",
-					editVariant: "select" as const,
-					mantineEditSelectProps: {
-						data: [
-							{ value: "Cenadi", label: "Cenadi" },
-							{ value: "Minesup", label: "Minesup" },
-							{ value: "University", label: "Université" },
-							{ value: "Ipes", label: "IPES" },
-						],
-						onChange: handleModelChange,
-					},
-				},
-				{
-					accessorKey: "model_id",
-					header: "Spécifique",
-					editVariant: "select" as const,
-					mantineEditSelectProps: {
-						data: modelOptions,
-						disabled: !selectedModel,
-						placeholder: selectedModel ? "Sélectionnez une option" : "Choisissez d'abord une entité",
-					},
-				},
-			] : [];
+		// Colonne Organisation - seulement si permission de gérer toutes les orgs
+		const orgColumn: MRT_ColumnDef<User>[] = canManageAllOrgs
+			? [
+					{
+						id: "organisationType",
+						accessorFn: (row: any) => row.organisation?.type || "",
+						header: "Organisation",
+						Cell: ({ row }: any) => row.original.organisation?.type || "-",
+						editVariant: "select",
+						mantineEditSelectProps: {
+							data: ORGANISATION_TYPES.map((t) => ({
+								value: t.value,
+								label: t.label,
+							})),
+							error: validationErrors?.organisationType,
+						},
+					} as MRT_ColumnDef<User>,
+			  ]
+			: [];
 
-			// Remaining columns
-			const remainingColumns = [
-				{
-					accessorKey: "roles",
-					accessorFn: (row: any) => {
-						return [];
-					},
-					Cell: ({ cell }: { cell: any }) => {
-						const roles = cell.row.original.roles.map((role: any) => role.name);
-						return roles.join(", ");
-					},
-					header: "Roles",
-					editVariant: "multi-select" as const,
-					mantineEditSelectProps: {
-						data: fetchedProfiles.map((profile) => ({
-							value: String(profile.id),
-							label: profile.name,
-						})),
-					},
+		const otherColumns: MRT_ColumnDef<User>[] = [
+			{
+				accessorKey: "roles",
+				header: "Rôles",
+				accessorFn: () => [],
+				Cell: ({ row }: any) =>
+					row.original.roles?.map((r: any) => r.name).join(", ") || "-",
+				editVariant: "multi-select",
+				mantineEditSelectProps: {
+					data: fetchedProfiles.map((p) => ({
+						value: String(p.id),
+						label: p.name,
+					})),
 				},
-				{
-					accessorKey: "password",
-					header: "Mot de passe",
-					mantineEditTextInputProps: {
-						type: "password",
-						required: true,
-						error: validationErrors?.password,
-						onFocus: () =>
-							setValidationErrors({
-								...validationErrors,
-								password: undefined,
-							}),
-					},
+			},
+			{
+				accessorKey: "password",
+				header: "Mot de passe",
+				Cell: () => "••••••••",
+				mantineEditTextInputProps: {
+					type: "password",
+					error: validationErrors?.password,
+					onFocus: () =>
+						setValidationErrors((prev) => ({ ...prev, password: undefined })),
 				},
-			];
+			},
+		];
 
-			return [...baseColumns, ...modelColumns, ...remainingColumns];
-		},
-		[validationErrors, modelOptions, selectedModel, fetchedProfiles, handleModelChange, authorizations],
-	);
+		return [...baseColumns, ...orgColumn, ...otherColumns];
+	}, [validationErrors, fetchedProfiles, canManageAllOrgs]);
+
+	// ============================================================================
+	// État de la table
+	// ============================================================================
 
 	const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
-		[],
+		[]
 	);
 	const [columnFilterFns, setColumnFilterFns] =
 		useState<MRT_ColumnFilterFnsState>(
 			Object.fromEntries(
-				columns.map(({ accessorKey }) => [accessorKey, "contains"]),
-			),
+				columns.map(({ accessorKey }) => [accessorKey, "contains"])
+			)
 		);
 	const [globalFilter, setGlobalFilter] = useState("");
 	const [sorting, setSorting] = useState<MRT_SortingState>([]);
-	// const [pagination, setPagination] = useState<MRT_PaginationState>({
-	// 	pageIndex: 0,
-	// 	pageSize: 10,
-	// });
 
 	const { data, isError, isFetching, isLoading, refetch } = useGetUsers({
 		columnFilterFns,
 		columnFilters,
 		globalFilter,
-		// pagination,
 		sorting,
 	});
 
 	const fetchedUsers = data?.data ?? [];
+
+	// ============================================================================
+	// Mutations
+	// ============================================================================
 
 	const { mutateAsync: createUser, isPending: isCreatingUser } =
 		useCreateUser();
@@ -331,64 +285,54 @@ const Section = (props: any) => {
 	const { mutateAsync: deleteUser, isPending: isDeletingUser } =
 		useDeleteUser();
 
+	// ============================================================================
+	// Handlers
+	// ============================================================================
+
 	const handleCreateUser: MRT_TableOptions<User>["onCreatingRowSave"] = async ({
 		values,
 		exitCreatingMode,
 	}) => {
-		const newValidationErrors = validateUser(values, authorizations as string[]);
-		if (Object.values(newValidationErrors).some((error) => error)) {
-			setValidationErrors(newValidationErrors);
+		const errors = validateUser(values, false);
+		if (Object.values(errors).some((e) => e)) {
+			setValidationErrors(errors);
 			return;
 		}
 
-		// For users with create-users-anywhere permission, validate model fields
-		if (authorizations?.includes("create-users-anywhere")) {
-			// Validate model selection
-			if (!values.model) {
-				setValidationErrors({
-					...newValidationErrors,
-					model: "Veuillez sélectionner une entité",
-				});
-				return;
-			}
+		// Récupérer le type d'organisation sélectionné
+		const orgType = values.organisationType;
 
-			// Validate model_id selection
-			if (!values.model_id) {
+		if (canManageAllOrgs) {
+			if (!orgType) {
 				setValidationErrors({
-					...newValidationErrors,
-					model_id: "Veuillez sélectionner une option spécifique",
+					...errors,
+					organisationType: "Veuillez sélectionner une organisation",
 				});
 				return;
 			}
 
 			setValidationErrors({});
 			await createUser({
-				...values,
-				model: values.model === "Cenadi" ? "cenadi" : values.model === "Minesup" ? "minesup" : "institute",
-				model_id: String(values.model_id),
+				name: values.name,
+				email: values.email,
+				password: values.password,
+				roles: values.roles,
+				model: getBackendModel(orgType),
 			});
 		} else {
-			// For regular users, use the institution values
+			// Utilisateur normal: utiliser son organisation actuelle
 			setValidationErrors({});
 			await createUser({
-				...values,
-				model: getInstitutionName(institution?.slug) !== "Ipes"
-					? getInstitutionName(institution?.slug)
-					: "institute",
-				model_id: String(institution?.id),
+				name: values.name,
+				email: values.email,
+				password: values.password,
+				roles: values.roles,
+				model: getBackendModel(organisation?.type || "CENADI"),
+				model_id: organisation?.id,
 			});
 		}
 
-		setSelectedModel('');
-		setModelOptions([]);
 		exitCreatingMode();
-	};
-
-	// Handle row creation start/cancel events
-	const handleCreatingRowCancel = () => {
-		setValidationErrors({});
-		setSelectedModel('');
-		setModelOptions([]);
 	};
 
 	const handleSaveUser: MRT_TableOptions<User>["onEditingRowSave"] = async ({
@@ -396,32 +340,46 @@ const Section = (props: any) => {
 		table,
 		row,
 	}) => {
-		const newValidationErrors = validateUser(values, authorizations as string[]);
-		if (Object.values(newValidationErrors).some((error) => error)) {
-			setValidationErrors(newValidationErrors);
+		const errors = validateUser(values, true);
+		if (Object.values(errors).some((e) => e)) {
+			setValidationErrors(errors);
 			return;
 		}
+
 		setValidationErrors({});
-		await updateUser({
-			...values,
+
+		// Préparer les données
+		const updateData: Record<string, any> = {
 			id: row.original.id,
-			model: values.model === "Cenadi" ? "cenadi" : values.model === "Minesup" ? "minesup" : "institute",
-			model_id: String(institution?.id),
-		});
+			name: values.name,
+			email: values.email,
+			roles: values.roles,
+		};
+
+		// Ajouter le password seulement s'il est fourni
+		if (values.password && values.password.length > 0) {
+			updateData.password = values.password;
+		}
+
+		// Ajouter le model si l'utilisateur peut gérer toutes les orgs
+		if (canManageAllOrgs && values.organisationType) {
+			updateData.model = getBackendModel(values.organisationType);
+		}
+
+		await updateUser(updateData);
 		table.setEditingRow(null);
 	};
 
-	const handleEditingRowCancel = () => {
-		setValidationErrors({});
-	};
+	const handleCreatingRowCancel = () => setValidationErrors({});
+	const handleEditingRowCancel = () => setValidationErrors({});
 
 	const openDeleteConfirmModal = (row: MRT_Row<User>) =>
 		modals.openConfirmModal({
-			title: "Etes vous sur de vouloir supprimer cet utilisateur ?",
+			title: "Confirmer la suppression",
 			children: (
 				<Text>
-					Etes vous sure de vouloir supprimer {row.original.name}? Cette action
-					est irreversible.
+					Êtes-vous sûr de vouloir supprimer {row.original.name} ? Cette action
+					est irréversible.
 				</Text>
 			),
 			labels: { confirm: "Supprimer", cancel: "Annuler" },
@@ -429,62 +387,31 @@ const Section = (props: any) => {
 			onConfirm: () => deleteUser(row.original.id),
 		});
 
-	const handleRowActionClick = (action: 'edit' | 'create', row?: MRT_Row<User>) => {
-		if (action === 'create') {
-			setSelectedModel('');
-			setModelOptions([]);
-		}
-	};
+	// ============================================================================
+	// Configuration de la table
+	// ============================================================================
 
 	const table = useCustomTable({
 		columns,
 		data: fetchedUsers,
 		createDisplayMode: "row",
 		editDisplayMode: "row",
-
 		mantineSearchTextInputProps: {
-			placeholder: "Rechercher des Utilisateurs",
+			placeholder: "Rechercher un utilisateur",
 		},
 		getRowId: (row) => row.id,
 		mantineToolbarAlertBannerProps: isError
-			? {
-					color: "red",
-					children: "Erreur de chargement des données",
-				}
+			? { color: "red", children: "Erreur de chargement des données" }
 			: undefined,
-		mantineTableContainerProps: {
-			style: {
-				minHeight: "auto",
-			},
-		},
-		mantineCreateRowModalProps: {
-			centered: true,
-		},
-		mantineEditRowModalProps: {
-			centered: true,
-		},
+		mantineTableContainerProps: { style: { minHeight: "auto" } },
 		onCreatingRowCancel: handleCreatingRowCancel,
 		onCreatingRowSave: handleCreateUser,
 		onEditingRowCancel: handleEditingRowCancel,
 		onEditingRowSave: handleSaveUser,
-		renderCreateRowModalContent: ({ table, row, internalEditComponents }) => {
-			if (!authorizations?.includes("create-users")) {
-				return null;
-			}
 
-			return (
-				<Stack>
-					<Title order={3}>Nouvel Utilisateur</Title>
-					{internalEditComponents}
-					<Flex justify="flex-end" mt="xl">
-						<MRT_EditActionButtons variant="text" table={table} row={row} />
-					</Flex>
-				</Stack>
-			);
-		},
-		renderEditRowModalContent: ({ table, row, internalEditComponents }) => (
+		renderCreateRowModalContent: ({ table, row, internalEditComponents }) => (
 			<Stack>
-				<Title order={3}>Editer l'Utilisateur</Title>
+				<Title order={3}>Nouvel Utilisateur</Title>
 				{internalEditComponents}
 				<Flex justify="flex-end" mt="xl">
 					<MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -492,184 +419,79 @@ const Section = (props: any) => {
 			</Stack>
 		),
 
-		renderDetailPanel: ({ row } : { row: any}) => (
-			<Box
-				style={{
-					display: "flex",
-					justifyContent: "flex-start",
-					alignItems: "center",
-					gap: "16px",
-					padding: "16px",
-					width: "100%",
-				}}
-			>
-				<Box style={{ width: "100%" }}>
-					<Title order={5}>{row.original.name}</Title>
-					<Divider pb={1} mb={10} />
-					<Box style={{ fontSize: "16px" }}>
-						<Text size={"sm"}>
-							Intitulé de l'Utilisateur :{" "}
-							<span style={{ fontWeight: "bolder" }}>{row.original.name}</span>
-						</Text>
-						<Text size={"sm"}>
-							Email :{" "}
-							<span style={{ fontWeight: "bolder" }}>{row.original.email}</span>
-						</Text>
-						{/*<Text size={"sm"}>*/}
-						{/*	Rôles :{" "}*/}
-						{/*	<span style={{ fontWeight: "bolder" }}>*/}
-						{/*		{(() => {*/}
-						{/*			const profiles = row.original.roles?.map((role) => role.name);*/}
-						{/*			return profiles?.join(", ");*/}
-						{/*		})()}*/}
-						{/*	</span>*/}
-						{/*</Text>*/}
-						<Divider my={10} />
-					</Box>
-				</Box>
+		renderEditRowModalContent: ({ table, row, internalEditComponents }) => (
+			<Stack>
+				<Title order={3}>Modifier l'Utilisateur</Title>
+				{internalEditComponents}
+				<Flex justify="flex-end" mt="xl">
+					<MRT_EditActionButtons variant="text" table={table} row={row} />
+				</Flex>
+			</Stack>
+		),
+
+		renderDetailPanel: ({ row }: any) => (
+			<Box p="md">
+				<Title order={5}>{row.original.name}</Title>
+				<Divider my="sm" />
+				<Text size="sm">
+					<strong>Email:</strong> {row.original.email}
+				</Text>
+				<Text size="sm">
+					<strong>Organisation:</strong>{" "}
+					{row.original.organisation?.name || "-"}
+				</Text>
+				<Text size="sm">
+					<strong>Rôles:</strong>{" "}
+					{row.original.roles?.map((r: any) => r.name).join(", ") || "-"}
+				</Text>
 			</Box>
 		),
 
 		renderRowActions: ({ row, table }) => (
 			<Flex gap="md">
 				{authorizations?.includes("update-users") && (
-				<Tooltip label="Mettre à jour">
-				<ActionIcon color={"green"} onClick={() => table.setEditingRow(row)}>
-						<IconEdit />
-				</ActionIcon>
-				</Tooltip>
+					<Tooltip label="Modifier">
+						<ActionIcon
+							color="green"
+							onClick={() => table.setEditingRow(row)}
+						>
+							<IconEdit />
+						</ActionIcon>
+					</Tooltip>
 				)}
 				{authorizations?.includes("delete-users") && (
-				<Tooltip label="Supprimer">
-					<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
-						<IconTrash />
-					</ActionIcon>
-				</Tooltip>
+					<Tooltip label="Supprimer">
+						<ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
+							<IconTrash />
+						</ActionIcon>
+					</Tooltip>
 				)}
 			</Flex>
 		),
 
 		renderTopToolbarCustomActions: ({ table }) => (
-			<>
-				<Flex gap={4} justify={"flex-end"} align={"center"}>
-					<Tooltip label="Rafraichir des données">
-						<ActionIcon onClick={() => refetch()}>
-							<IconRefresh />
-						</ActionIcon>
-					</Tooltip>
-					{authorizations?.includes("create-users") && (
-						<Button
-							onClick={() => {
-								handleRowActionClick('create');
-								table.setCreatingRow(true);
-							}}
-							leftSection={<IconPlus />}
-						>
-							Nouvelle Utilisateur
-						</Button>
-					)}
-					{/*{authorizations.includes("create-users") && (*/}
-					{/*<Menu*/}
-					{/*	shadow={"md"}*/}
-					{/*	// width={130}*/}
-					{/*	trigger="hover"*/}
-					{/*	openDelay={100}*/}
-					{/*	closeDelay={400}*/}
-					{/*>*/}
-					{/*	<Menu.Target>*/}
-					{/*		<Button*/}
-					{/*			leftSection={<IconTableExport />}*/}
-					{/*			rightSection={<IconDownload size={14} />}*/}
-					{/*			variant={"filled"}*/}
-					{/*		>*/}
-					{/*			Exporter*/}
-					{/*		</Button>*/}
-					{/*	</Menu.Target>*/}
-
-					{/*	<Menu.Dropdown>*/}
-					{/*		<Menu.Label>Format PDF</Menu.Label>*/}
-					{/*		<Menu.Item*/}
-					{/*			//export all rows, including from the next page, (still respects filtering and sorting)*/}
-					{/*			disabled={table.getPrePaginationRowModel().rows.length === 0}*/}
-					{/*			leftSection={<IconFileTypePdf />}*/}
-					{/*			onClick={() =>*/}
-					{/*				handleExportRows(table.getPrePaginationRowModel().rows)*/}
-					{/*			}*/}
-					{/*		>*/}
-					{/*			Exporter tout*/}
-					{/*		</Menu.Item>*/}
-					{/*		<Menu.Item*/}
-					{/*			disabled={table.getRowModel().rows.length === 0}*/}
-					{/*			//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)*/}
-					{/*			leftSection={<IconFileTypePdf />}*/}
-					{/*			onClick={() => handleExportRows(table.getRowModel().rows)}*/}
-					{/*		>*/}
-					{/*			Exporter la page*/}
-					{/*		</Menu.Item>*/}
-					{/*		<Menu.Item*/}
-					{/*			disabled={*/}
-					{/*				!table.getIsSomeRowsSelected() &&*/}
-					{/*				!table.getIsAllRowsSelected()*/}
-					{/*			}*/}
-					{/*			//only export selected rows*/}
-					{/*			leftSection={<IconFileTypePdf />}*/}
-					{/*			onClick={() =>*/}
-					{/*				handleExportRows(table.getSelectedRowModel().rows)*/}
-					{/*			}*/}
-					{/*		>*/}
-					{/*			Exporter la selection*/}
-					{/*		</Menu.Item>*/}
-					{/*		<Menu.Divider />*/}
-					{/*		<Menu.Label>Format Excel</Menu.Label>*/}
-					{/*		<Menu.Item*/}
-					{/*			//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)*/}
-					{/*			onClick={handleExportDataAsCSV}*/}
-					{/*			leftSection={<IconFileTypeCsv />}*/}
-					{/*		>*/}
-					{/*			Exporter tout*/}
-					{/*		</Menu.Item>*/}
-					{/*		<Menu.Item*/}
-					{/*			disabled={table.getPrePaginationRowModel().rows.length === 0}*/}
-					{/*			//export all rows, including from the next page, (still respects filtering and sorting)*/}
-					{/*			onClick={() =>*/}
-					{/*				handleExportRowsAsCSV(table.getPrePaginationRowModel().rows)*/}
-					{/*			}*/}
-					{/*			leftSection={<IconFileTypeCsv />}*/}
-					{/*		>*/}
-					{/*			Exporter toute les lignes*/}
-					{/*		</Menu.Item>*/}
-					{/*		<Menu.Item*/}
-					{/*			disabled={table.getRowModel().rows.length === 0}*/}
-					{/*			//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)*/}
-					{/*			onClick={() => handleExportRowsAsCSV(table.getRowModel().rows)}*/}
-					{/*			leftSection={<IconFileTypeCsv />}*/}
-					{/*		>*/}
-					{/*			Exporter toutes la pages*/}
-					{/*		</Menu.Item>*/}
-					{/*		<Menu.Item*/}
-					{/*			disabled={*/}
-					{/*				!table.getIsSomeRowsSelected() &&*/}
-					{/*				!table.getIsAllRowsSelected()*/}
-					{/*			}*/}
-					{/*			//only export selected rows*/}
-					{/*			onClick={() =>*/}
-					{/*				handleExportRowsAsCSV(table.getSelectedRowModel().rows)*/}
-					{/*			}*/}
-					{/*			leftSection={<IconFileTypeCsv />}*/}
-					{/*		>*/}
-					{/*			Exporter la selection*/}
-					{/*		</Menu.Item>*/}
-					{/*	</Menu.Dropdown>*/}
-					{/*</Menu>*/}
-				</Flex>
-			</>
+			<Flex gap={4} align="center">
+				<Tooltip label="Rafraîchir">
+					<ActionIcon onClick={() => refetch()}>
+						<IconRefresh />
+					</ActionIcon>
+				</Tooltip>
+				{authorizations?.includes("create-users") && (
+					<Button
+						onClick={() => table.setCreatingRow(true)}
+						leftSection={<IconPlus />}
+					>
+						Nouvel Utilisateur
+					</Button>
+				)}
+			</Flex>
 		),
+
 		state: {
 			columnFilterFns,
 			columnFilters,
 			globalFilter,
-			// pagination,
-			isLoading: isLoading,
+			isLoading,
 			isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
 			showAlertBanner: isError,
 			showProgressBars: isFetching,
@@ -677,76 +499,37 @@ const Section = (props: any) => {
 		},
 	});
 
-	// Place the useEffect hooks here, after table is defined
-	// Reset selected model when creating a new user
-	useEffect(() => {
-		// Only run this effect when table is defined
-		if (table) {
-			const creatingRow = table.getState().creatingRow;
-			if (!creatingRow) {
-				setSelectedModel('');
-				setModelOptions([]);
-			}
-		}
-	}, [table?.getState().creatingRow]);
-
-	// Reset selected model when the table state changes
-	useEffect(() => {
-		const creatingRow = table.getState().creatingRow;
-		if (!creatingRow && isModelSelectInitialized) {
-			setSelectedModel('');
-			setModelOptions([]);
-		} else if (creatingRow) {
-			setIsModelSelectInitialized(true);
-		}
-	}, [table.getState().creatingRow, isModelSelectInitialized]);
-
 	return <MantineReactTable table={table} />;
 };
+
+// ============================================================================
+// Mutations hooks
+// ============================================================================
 
 function useCreateUser() {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async (user: User) => {
-			// Ensure model_id is a string
-			const userData = {
-				...user,
-				model_id: String(user.model_id)
-			};
-
+		mutationFn: async (userData: Record<string, any>) => {
 			const response = await fetch(innerUrl("/api/users/create"), {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(userData),
 			});
 
 			if (!response.ok) {
-				throw new Error("Erreur lors de la création de l'Utilisateur");
+				const error = await response.json().catch(() => ({}));
+				throw new Error(error.message || "Erreur lors de la création");
 			}
 
 			notifications.show({
 				color: "teal",
 				title: "Utilisateur créé",
-				message: "Merci de votre patience",
+				message: "L'utilisateur a été créé avec succès",
 				icon: <IconCheck />,
-				loading: false,
 				autoClose: 2000,
 			});
-			return await response.json();
-		},
-		onMutate: (newUserInfo: User) => {
-			queryClient.setQueryData(["users"], (prevUsers: any) => {
-				const userList = Array.isArray(prevUsers) ? prevUsers : [];
-				return [
-					...userList,
-					{
-						...newUserInfo,
-						id: (Math.random() + 1).toString(36).substring(7),
-					},
-				] as User[];
-			});
+
+			return response.json();
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -757,46 +540,30 @@ function useCreateUser() {
 function useUpdateUser() {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async (user: User) => {
-			// Ensure model_id is a string
-			const userData = {
-				...user,
-				model_id: String(user.model_id)
-			};
-
+		mutationFn: async (userData: Record<string, any>) => {
 			const response = await fetch(
-				innerUrl(`/api/users/${user.id}/update`),
+				innerUrl(`/api/users/${userData.id}/update`),
 				{
 					method: "PUT",
-					headers: {
-						"Content-Type": "application/json",
-					},
+					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify(userData),
-				},
+				}
 			);
 
 			if (!response.ok) {
-				throw new Error("Erreur lors de la mise à jour de l'Utilisateur");
+				const error = await response.json().catch(() => ({}));
+				throw new Error(error.message || "Erreur lors de la mise à jour");
 			}
 
 			notifications.show({
 				color: "green",
-				title: "Utilisateur mise à jour",
-				message: "Merci de votre patience",
+				title: "Utilisateur modifié",
+				message: "L'utilisateur a été modifié avec succès",
 				icon: <IconCheck />,
-				loading: false,
 				autoClose: 2000,
 			});
-			return await response.json();
-		},
-		onMutate: (newUserInfo: User) => {
-			queryClient.setQueryData(["users"], (prevUsers: any) => {
-				const userList = Array.isArray(prevUsers) ? prevUsers : [];
 
-				return userList.map((user: User) =>
-					user.id === newUserInfo.id ? { ...user, ...newUserInfo } : user,
-				);
-			});
+			return response.json();
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -808,46 +575,24 @@ function useDeleteUser() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (userId: string) => {
-			const response = await fetch(
-				innerUrl(`/api/users/${userId}/delete`),
-				{
-					method: "DELETE",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({ id: userId }),
-				},
-			);
+			const response = await fetch(innerUrl(`/api/users/${userId}/delete`), {
+				method: "DELETE",
+				headers: { "Content-Type": "application/json" },
+			});
 
 			if (!response.ok) {
-				throw new Error("Erreur lors de la suppression de l'Utilisateur");
+				throw new Error("Erreur lors de la suppression");
 			}
 
 			notifications.show({
 				color: "red",
 				title: "Utilisateur supprimé",
-				message: "Merci de votre patience",
+				message: "L'utilisateur a été supprimé",
 				icon: <IconCheck />,
-				loading: false,
 				autoClose: 2000,
 			});
-			return await response.json();
-		},
-		onMutate: (userId: string) => {
-			queryClient.cancelQueries({ queryKey: ["users"] });
 
-			const previousUseres = queryClient.getQueryData(["users"]);
-
-			queryClient.setQueryData(["users"], (prevUseres: any | undefined) => {
-				return prevUseres?.data?.filter((user: User) => user.id !== userId);
-			});
-
-			return { previousUseres };
-		},
-		onError: (err, userId, context: any) => {
-			if (context?.previousUseres) {
-				queryClient.setQueryData(["users"], context.previousUseres);
-			}
+			return response.json();
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -855,53 +600,31 @@ function useDeleteUser() {
 	});
 }
 
-type UserProps = {
-	authorizations: String[];
+// ============================================================================
+// Export
+// ============================================================================
+
+type ExportedProps = {
+	authorizations: string[];
 	institution: {
 		id: string;
 		name: string;
 		slug: string;
-		model: string;
+		type?: string;
+		model?: string; // Compatibilité avec l'ancien format
 	};
 };
 
-const UserTable = ({ authorizations, institution }: UserProps) => (
-	<Section authorizations={authorizations} institution={institution} />
+const UserTable = ({ authorizations, institution }: ExportedProps) => (
+	<Section
+		authorizations={authorizations}
+		organisation={{
+			id: institution.id,
+			name: institution.name,
+			slug: institution.slug,
+			type: institution.type || institution.model || "",
+		}}
+	/>
 );
 
 export default UserTable;
-
-const validateRequired = (value: string) =>
-	!!value.length && value.length > 3 && value.length <= 100;
-const validateRequiredNumber = (value: number) => !!value;
-const validateEmail = (email: string) =>
-	!!email.length &&
-	email.includes('@') &&
-	email.includes('.') &&
-	email.length >= 5;
-
-function validateUser(user: User, auths: string[] = []) {
-	// Base validation for all users
-	const baseValidation = {
-		name: !validateRequired(user.name)
-			? 'Le nom doit contenir entre 3 et 100 caractères'
-			: undefined,
-		email: !validateEmail(user.email)
-			? 'Veuillez entrer un email valide'
-			: undefined,
-		password: !validateRequired(user.password!)
-			? 'Le mot de passe doit contenir entre 3 et 100 caractères'
-			: undefined,
-	};
-
-	// Additional validation for users with create-users-anywhere permission
-	if (auths.includes("create-users-anywhere")) {
-		return {
-			...baseValidation,
-			// Additional model validations would be handled in the form submission
-		};
-	}
-
-	return baseValidation;
-}
-

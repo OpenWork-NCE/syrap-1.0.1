@@ -22,6 +22,7 @@ const loginSchema = z.object({
 export async function POST(request: Request) {
 	try {
 		const bodyPayload = loginSchema.parse(await requestJsonBody(request));
+
 		const response = await fetchJson<IAccessToken>(
 			backendUrl(`/api/auth/login`),
 			{
@@ -35,27 +36,43 @@ export async function POST(request: Request) {
 			},
 		);
 
-		const profiles: string[] = response.user.roles.map((role) => role.name);
-		let mergedRights: string[] = [];
-		for (const profiles of response.user.roles) {
-			for (const right of profiles.permissions) {
+		// Validation de la réponse
+		if (!response.user || !response.token) {
+			throw new Error("Invalid response from backend: missing user or token");
+		}
+
+		const roles = response.user.roles || [];
+		const profiles: string[] = roles.map((role) => role.name);
+		const mergedRights: string[] = [];
+		for (const role of roles) {
+			for (const right of role.permissions || []) {
 				mergedRights.push(right.name);
 			}
 		}
 		const rights: string[] = Array.from(new Set(mergedRights));
 
+		// Normaliser l'organisation pour s'assurer que 'type' est présent
+		const organisation = response.user.organisation || {
+			type: "",
+			id: "",
+			slug: "",
+			name: "",
+		};
+
+		const cookieOptions = {
+			path: "/",
+			httpOnly: true,
+			sameSite: "strict" as const,
+			expires: dayjs().add(2, "day").toDate(),
+		};
+
 		// delete callback cookie
 		cookies().delete(process.env.USER_AUTH_CALLBACK_URL_COOKIE_KEY!);
 
 		// save the user token in the cookie
-		cookies().set(process.env.USER_SESSION_COOKIE_KEY!, response.token, {
-			path: "/",
-			httpOnly: true,
-			sameSite: "strict",
-			expires: dayjs().add(2, "day").toDate(),
-		});
+		cookies().set(process.env.USER_SESSION_COOKIE_KEY!, response.token, cookieOptions);
 
-		// save the user token in the cookie
+		// save the user info in the cookie
 		cookies().set(
 			process.env.USER_SESSION_USER_COOKIE_KEY!,
 			JSON.stringify({
@@ -63,57 +80,39 @@ export async function POST(request: Request) {
 				name: response.user.name,
 				email: response.user.email,
 			}),
-			{
-				path: "/",
-				httpOnly: true,
-				sameSite: "strict",
-				expires: dayjs().add(2, "day").toDate(),
-			},
+			cookieOptions,
 		);
 
-		// save the user institution in the cookie
+		// save the user organisation in the cookie (format standardisé avec 'type')
 		cookies().set(
 			process.env.USER_SESSION_INSTITUTE_KEY!,
-			JSON.stringify(response.user.institution),
-			{
-				path: "/",
-				httpOnly: true,
-				sameSite: "strict",
-				expires: dayjs().add(2, "day").toDate(),
-			},
+			JSON.stringify(organisation),
+			cookieOptions,
 		);
 
 		// save the user profiles in the cookie
 		cookies().set(
 			process.env.USER_SESSION_PROFILES_COOKIE_KEY!,
 			JSON.stringify(profiles),
-			{
-				path: "/",
-				httpOnly: true,
-				sameSite: "strict",
-				expires: dayjs().add(2, "day").toDate(),
-			},
+			cookieOptions,
 		);
 
 		// save the user authorizations in the cookie
 		cookies().set(
 			process.env.USER_SESSION_AUTHORIZATIONS_COOKIE_KEY!,
 			JSON.stringify(rights),
-			{
-				path: "/",
-				httpOnly: true,
-				sameSite: "strict",
-				expires: dayjs().add(2, "day").toDate(),
-			},
+			cookieOptions,
 		);
+
 		return new Response(
 			JSON.stringify({
-				institution: response.user.institution,
+				organisation,
 				authorizations: rights,
 			}),
 			{ status: 200 },
 		);
 	} catch (error) {
+		console.error("Login API error:", error);
 		return new Response(JSON.stringify(serializeError(error)), { status: 500 });
 	}
 }

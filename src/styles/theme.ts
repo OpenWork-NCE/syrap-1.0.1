@@ -226,35 +226,66 @@ export const themeCenadi = createTheme({
 });
 
 /**
- * Ipes theme - Gray color scheme
+ * University theme - Orange/Amber color scheme
+ */
+export const themeUniversity = createTheme({
+	...baseThemeConfig,
+	colors: {
+		university: [
+			"#FFFBEB",
+			"#FEF3C7",
+			"#FDE68A",
+			"#FCD34D",
+			"#FBBF24",
+			"#F59E0B",
+			"#D97706",
+			"#B45309",
+			"#92400E",
+			"#78350F",
+		] as MantineColorsTuple,
+		gray: [
+			"#f8f9fa",
+			"#f1f3f5",
+			"#e9ecef",
+			"#dee2e6",
+			"#ced4da",
+			"#adb5bd",
+			"#868e96",
+			"#495057",
+			"#343a40",
+			"#212529",
+		] as MantineColorsTuple,
+	},
+	primaryColor: "university",
+	other: {
+		...baseThemeConfig.other,
+		gradients: {
+			primary: "linear-gradient(45deg, #F59E0B, #FBBF24)",
+			secondary: "linear-gradient(45deg, #D97706, #F59E0B)",
+			text: "linear-gradient(45deg, #D97706, #F59E0B)",
+			border:
+				"linear-gradient(90deg, transparent, #F59E0B, #FBBF24, transparent)",
+		},
+	},
+});
+
+/**
+ * Ipes theme - Violet/Purple color scheme
  */
 export const themeIpes = createTheme({
 	...baseThemeConfig,
 	colors: {
 		ipes: [
-			"3F4F52",
-			"#4F6367",
-			"#C2CCCC",
-			"#9EADAF",
-			"#7B8F91",
-			"#587174",
-			"#4F6367",
-			"#3F4F52",
-			"#303B3D",
-			"#202729",
-		] as MantineColorsTuple,
-		emerald: [
-			"#f0fdf5",
-			"#dcfce8",
-			"#bbf7d1",
-			"#86efad",
-			"#4ade80",
-			"#22c55e",
-			"#16a34a",
-			"#15803c",
-			"#166533",
-			"#14532b",
-			"#052e14",
+			"#F5F3FF",
+			"#EDE9FE",
+			"#DDD6FE",
+			"#C4B5FD",
+			"#A78BFA",
+			"#8B5CF6",
+			"#7C3AED",
+			"#6D28D9",
+			"#5B21B6",
+			"#4C1D95",
 		] as MantineColorsTuple,
 		gray: [
 			"#f8f9fa",
@@ -273,11 +304,11 @@ export const themeIpes = createTheme({
 	other: {
 		...baseThemeConfig.other,
 		gradients: {
-			primary: "linear-gradient(45deg, #4F6367, #7B8F91)",
-			secondary: "linear-gradient(45deg, #3F4F52, #587174)",
-			text: "linear-gradient(45deg, #4F6367, #7B8F91)",
+			primary: "linear-gradient(45deg, #8B5CF6, #A78BFA)",
+			secondary: "linear-gradient(45deg, #7C3AED, #8B5CF6)",
+			text: "linear-gradient(45deg, #7C3AED, #8B5CF6)",
 			border:
-				"linear-gradient(90deg, transparent, #4F6367, #7B8F91, transparent)",
+				"linear-gradient(90deg, transparent, #8B5CF6, #A78BFA, transparent)",
 		},
 	},
 });

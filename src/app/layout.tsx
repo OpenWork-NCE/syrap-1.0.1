@@ -5,9 +5,8 @@ import "mantine-react-table/styles.css";
 import "@/styles/global.css";
 import "@/styles/theme.css";
 
-import { ColorSchemeScript, MantineProvider } from "@mantine/core";
+import { ColorSchemeScript } from "@mantine/core";
 import { interFont } from "@/styles/fonts";
-import { themeCenadi } from "@/styles/theme";
 import { AppProvider } from "./provider";
 import { SessionProvider } from "@/app/context/SessionContext";
 
@@ -28,16 +27,13 @@ export default function RootLayout({
 				<link rel="apple-touch-icon" href="/favicon.jpeg" />
 			</head>
 			<body className={interFont.className}>
-				{/* MantineProvider de base pour le chargement initial */}
-				<MantineProvider theme={themeCenadi}>
-					{/* SessionProvider unique: charge user, institution et authorizations en un seul appel */}
-					<SessionProvider>
-						{/* AppProvider applique le thème dynamique basé sur l'institution */}
-						<AppProvider>
-							{children}
-						</AppProvider>
-					</SessionProvider>
-				</MantineProvider>
+				{/* SessionProvider: charge user, organisation et authorizations */}
+				<SessionProvider>
+					{/* AppProvider: applique le thème dynamique + MantineProvider */}
+					<AppProvider>
+						{children}
+					</AppProvider>
+				</SessionProvider>
 			</body>
 		</html>
 	);

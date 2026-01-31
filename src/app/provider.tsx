@@ -2,24 +2,28 @@
 
 import { useMemo } from "react";
 import { MantineProvider } from "@mantine/core";
-import { themeCenadi, themeIpes, themeMinesup } from "@/styles/theme";
+import { themeCenadi, themeIpes, themeMinesup, themeUniversity } from "@/styles/theme";
 import { ThemeProvider } from "@/components/ui/ThemeComponents";
-import { useInstitution } from "@/app/context/SessionContext";
+import { useOrganisation } from "@/app/context/SessionContext";
+
+/**
+ * Mapping des types d'organisation vers les thèmes Mantine
+ */
+const ORGANISATION_THEMES = {
+	MINESUP: themeMinesup,
+	Université: themeUniversity,
+	IPES: themeIpes,
+	CENADI: themeCenadi,
+} as const;
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-	const { institution } = useInstitution();
+	const { organisation } = useOrganisation();
 
-	// Memoize theme to prevent re-renders when institution hasn't changed
+	// Thème basé sur le type d'organisation
 	const theme = useMemo(() => {
-		const model = institution?.model || "";
-		if (model.includes("Minesup")) {
-			return themeMinesup;
-		}
-		if (model.includes("University") || model.includes("Ipes")) {
-			return themeIpes;
-		}
-		return themeCenadi;
-	}, [institution?.model]);
+		const type = organisation?.type as keyof typeof ORGANISATION_THEMES;
+		return ORGANISATION_THEMES[type] || themeCenadi;
+	}, [organisation?.type]);
 
 	return (
 		<MantineProvider theme={theme}>
