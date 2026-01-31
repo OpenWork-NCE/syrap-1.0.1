@@ -3,8 +3,7 @@
 import { Container, Grid, Stack } from "@mantine/core";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import { useAuthorizations } from "@/app/context/SessionContext";
-import BranchesTable from "@/components/BranchesTable/BranchesTable";
-import LevelsTable from "@/components/LevelsTable/LevelsTable";
+import { LazyBranchesTable, LazyLevelsTable } from "@/components/tables";
 
 const items = [{ title: "Filières et Niveaux", href: "#" }];
 
@@ -23,7 +22,7 @@ function Page() {
 					<Grid my={10}>
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<PageHeader title="Filières" />
-							<BranchesTable
+							<LazyBranchesTable
 								authorizations={authorizations.filter((authorization) =>
 									authorization.includes("branchs"),
 								)}
@@ -31,7 +30,7 @@ function Page() {
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<PageHeader title="Niveaux" />
-							<LevelsTable
+							<LazyLevelsTable
 								authorizations={authorizations.filter((authorization) =>
 									authorization.includes("levels"),
 								)}

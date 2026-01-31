@@ -4,7 +4,7 @@ import { Container, Stack } from "@mantine/core";
 import { IconBuildingSkyscraper } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import { useAuthorizations, useInstitution, useUser } from "@/app/context/SessionContext";
-import IpessTable from "@/components/IpessTable/IpessTable";
+import { LazyIpessTable } from "@/components/tables";
 
 const breadcrumbItems = [
 	{ title: "Acteurs", href: "/dashboard" },
@@ -30,7 +30,7 @@ function Page() {
 						icon={<IconBuildingSkyscraper size={24} />}
 						breadcrumbItems={breadcrumbItems}
 					/>
-					<IpessTable
+					<LazyIpessTable
 						authorizations={authorizations.filter((authorization) =>
 							authorization.includes("ipes"),
 						)}

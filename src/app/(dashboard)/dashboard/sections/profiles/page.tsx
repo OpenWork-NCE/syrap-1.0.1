@@ -4,7 +4,7 @@ import { Container, Stack } from "@mantine/core";
 import { IconUserCog } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import { useAuthorizations } from "@/app/context/SessionContext";
-import ProfilesTable from "@/components/ProfilesTable/ProfilesTable";
+import { LazyProfilesTable } from "@/components/tables";
 
 const breadcrumbItems = [
 	{ title: "Administration", href: "/dashboard" },
@@ -28,7 +28,7 @@ function Page() {
 						icon={<IconUserCog size={24} />}
 						breadcrumbItems={breadcrumbItems}
 					/>
-					<ProfilesTable
+					<LazyProfilesTable
 						authorizations={authorizations?.filter((authorization) =>
 							authorization.includes("role"),
 						) ?? []}

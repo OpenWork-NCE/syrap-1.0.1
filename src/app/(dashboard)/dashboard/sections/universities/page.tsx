@@ -4,7 +4,7 @@ import { Container, Stack } from "@mantine/core";
 import { IconSchool } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import { useAuthorizations, useInstitution, useUser } from "@/app/context/SessionContext";
-import UniversitiesTable from "@/components/UniversitiesTable/UniversitiesTable";
+import { LazyUniversitiesTable } from "@/components/tables";
 
 const breadcrumbItems = [
 	{ title: "Acteurs", href: "/dashboard" },
@@ -33,7 +33,7 @@ function Page() {
 						icon={<IconSchool size={24} />}
 						breadcrumbItems={breadcrumbItems}
 					/>
-					<UniversitiesTable
+					<LazyUniversitiesTable
 						authorizations={safeAuthorizations.filter((authorization) =>
 							authorization.includes("universities"),
 						)}

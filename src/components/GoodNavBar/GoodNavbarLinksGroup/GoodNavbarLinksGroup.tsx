@@ -43,6 +43,7 @@ export function LinksGroup({
 		<Link
 			href={link.link}
 			key={link.label}
+			prefetch={true}
 			className={`${classes.link} ${link.link === pathname && classes.activeLink}`}
 		>
 			{link.label}
@@ -54,6 +55,7 @@ export function LinksGroup({
 			{link ? (
 				<Link
 					href={link}
+					prefetch={true}
 					className={`${classes.control} ${link === pathname && classes.activeControl}`}
 				>
 					<Group gap={0} justify="space-between">

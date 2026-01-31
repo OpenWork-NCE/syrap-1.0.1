@@ -18,7 +18,7 @@ import {
 	IconClock,
 } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import UesTable from "@/components/UesTable/UesTable";
+import { LazyUesTable } from "@/components/tables";
 import { useAuthorizations } from "@/app/context/SessionContext";
 import { useQuery } from "@tanstack/react-query";
 import { innerUrl } from "@/app/lib/utils";
@@ -166,7 +166,7 @@ function Page() {
 					</SimpleGrid>
 
 					{/* Table */}
-					<UesTable
+					<LazyUesTable
 						authorizations={authorizations.filter((authorization) =>
 							authorization.includes("ues"),
 						)}

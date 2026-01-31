@@ -1,23 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import {
 	Container,
-	Grid,
-	Paper,
 	Stack,
-	Title,
-	Text,
-	Group,
-	Card,
-	RingProgress,
-	SimpleGrid,
-	ThemeIcon,
-	useMantineTheme
 } from "@mantine/core";
-import { IconUsers, IconUserPlus, IconUserCheck, IconUserX } from "@tabler/icons-react";
+import { IconUsers } from "@tabler/icons-react";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import UsersTable from "@/components/UsersTable/UsersTable";
+import { LazyUsersTable } from "@/components/tables";
 import { useAuthorizations, useInstitution } from "@/app/context/SessionContext";
 
 const breadcrumbItems = [
@@ -49,15 +38,6 @@ const breadcrumbItems = [
 function Page() {
 	const { authorizations } = useAuthorizations();
 	const { institution } = useInstitution();
-	const theme = useMantineTheme();
-	
-	// Ces données seraient idéalement récupérées d'une API
-	const userStats = {
-		total: "24",
-		active: "19",
-		new: "5",
-		inactive: "3"
-	};
 
 	return (
 		<>
@@ -104,7 +84,7 @@ function Page() {
 						/>
 					</SimpleGrid> */}
 					
-						<UsersTable
+						<LazyUsersTable
 							authorizations={authorizations?.filter((authorization) =>
 								authorization.includes("user")
 							) ?? []}
