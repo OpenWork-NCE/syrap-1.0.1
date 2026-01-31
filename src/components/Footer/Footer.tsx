@@ -1,40 +1,29 @@
 "use client";
 
-import { ActionIcon, Anchor, Container, Group, Text } from "@mantine/core";
-import {
-	IconBrandInstagram,
-	IconBrandTwitter,
-	IconBrandYoutube,
-} from "@tabler/icons-react";
+import { Anchor, Box, Group, Text } from "@mantine/core";
 import classes from "./Footer.module.css";
 
 export function Footer() {
+	const currentYear = new Date().getFullYear();
+
 	return (
-		<div className={classes.footer}>
-			<Container className={classes.inner}>
-				<Text c="dimmed" fz="sm">
-					Fait pour vous par{" "}
-					<Anchor href="https://github.com/" size="sm">
-						IPES-SCpro.
-					</Anchor>
+		<Box component="footer" className={classes.footer}>
+			<Group justify="space-between" align="center" wrap="wrap" gap="md">
+				<Text size="sm" c="dimmed">
+					© {currentYear} IPES-SCpro - Système de Rapprochement Automatique des Programmes
 				</Text>
-				<Group
-					gap={0}
-					className={classes.links}
-					justify="flex-end"
-					wrap="nowrap"
-				>
-					<ActionIcon size="lg" color="gray" variant="subtle">
-						<IconBrandTwitter size="1.05rem" stroke={1.5} />
-					</ActionIcon>
-					<ActionIcon size="lg" color="gray" variant="subtle">
-						<IconBrandYoutube size="1.05rem" stroke={1.5} />
-					</ActionIcon>
-					<ActionIcon size="lg" color="gray" variant="subtle">
-						<IconBrandInstagram size="1.05rem" stroke={1.5} />
-					</ActionIcon>
+				<Group gap="md">
+					<Anchor href="/aide" size="sm" c="dimmed" className={classes.link}>
+						Aide
+					</Anchor>
+					<Anchor href="/documentation" size="sm" c="dimmed" className={classes.link}>
+						Documentation
+					</Anchor>
+					<Anchor href="mailto:support@ipes-scpro.cm" size="sm" c="dimmed" className={classes.link}>
+						Support
+					</Anchor>
 				</Group>
-			</Container>
-		</div>
+			</Group>
+		</Box>
 	);
 }

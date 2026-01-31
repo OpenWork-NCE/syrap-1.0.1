@@ -1,22 +1,15 @@
+/* Footer - Non-fixed, in document flow */
 .footer {
-	margin-top: rem(120px);
-	border-top: rem(1px) solid var(--gray-2));
+	padding: var(--mantine-spacing-md) var(--mantine-spacing-lg);
+	margin-top: auto;
+	border-top: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+	background-color: light-dark(rgba(255, 255, 255, 0.8), rgba(26, 27, 30, 0.8));
 }
 
-.inner {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding-top: var(--spacing-xl);
-	padding-bottom: var(--spacing-xl);
-
-	@media (max-width: $mantine-breakpoint-xs) {
-		flex-direction: column;
-	}
+.link {
+	transition: color 0.2s ease;
 }
 
-.links {
-	@media (max-width: $mantine-breakpoint-xs) {
-		margin-top: var(--spacing-md);
-	}
+.link:hover {
+	color: light-dark(var(--mantine-color-blue-6), var(--mantine-color-blue-4));
 }

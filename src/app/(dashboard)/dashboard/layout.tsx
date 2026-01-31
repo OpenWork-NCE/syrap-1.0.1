@@ -4,17 +4,16 @@ import { Suspense, useMemo } from "react";
 import {
 	AppShell,
 	Burger,
-	Text,
 	Center,
 	Loader,
-	useMantineColorScheme,
-	useMantineTheme,
+	Stack,
 } from "@mantine/core";
 import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { AdminHeader } from "@/components/Headers/AdminHeader";
 import { GoodNavbar } from "@/components/GoodNavBar/GoodNavBar";
+import { Footer } from "@/components/Footer";
 import { navLinks, adminNavLinks } from "@/config";
 import { useAuthorizations } from "@/app/context/SessionContext";
 import classes from "./layout.module.css";
@@ -95,60 +94,65 @@ const queryClient = new QueryClient({
 	},
 });
 
-export default function DashboardLayout({ children }: Props) {
+// Composant interne pour le shell du dashboard
+function DashboardShell({ children }: { children: React.ReactNode }) {
 	const { authorizations } = useAuthorizations();
 	const [opened, { toggle }] = useDisclosure();
-	const { colorScheme } = useMantineColorScheme();
-	const theme = useMantineTheme();
 
 	// Memoize nav items to prevent recalculation on every render
 	const navItems = useMemo(() => navLinks(authorizations), [authorizations]);
 	const adminNavItems = useMemo(() => adminNavLinks(authorizations), [authorizations]);
 
 	return (
+		<AppShell
+			header={{ height: 60 }}
+			navbar={{
+				width: 280,
+				breakpoint: "sm",
+				collapsed: { mobile: !opened },
+			}}
+			padding="lg"
+			transitionDuration={200}
+			transitionTimingFunction="ease-out"
+			className={classes.appShell}
+			layout="default"
+		>
+			<AppShell.Navbar className={classes.navbar}>
+				<GoodNavbar data={navItems} adminData={adminNavItems} hidden={!opened} />
+			</AppShell.Navbar>
+			<AppShell.Header className={classes.header}>
+				<AdminHeader
+					burger={
+						<Burger
+							opened={opened}
+							onClick={toggle}
+							hiddenFrom="sm"
+							size="sm"
+							mr="xl"
+						/>
+					}
+				/>
+			</AppShell.Header>
+			<AppShell.Main className={classes.main}>
+				<Stack gap={0} mih="calc(100vh - 60px - var(--mantine-spacing-lg) * 2)">
+					<Suspense fallback={<PageLoader />}>
+						<div style={{ flex: 1 }}>
+							{children}
+						</div>
+					</Suspense>
+					<Footer />
+				</Stack>
+			</AppShell.Main>
+		</AppShell>
+	);
+}
+
+export default function DashboardLayout({ children }: Props) {
+	return (
 		<AppProvider>
 			<ModalsProvider>
 				<QueryClientProvider client={queryClient}>
-				<AppShell
-					header={{ height: 60 }}
-					navbar={{
-						width: 300,
-						breakpoint: "sm",
-						collapsed: { mobile: !opened },
-					}}
-					padding="lg"
-					transitionDuration={200}
-					transitionTimingFunction="ease-out"
-					className={classes.appShell}
-					layout="default"
-				>
-					<AppShell.Navbar className={classes.navbar}>
-						<GoodNavbar data={navItems} adminData={adminNavItems} hidden={!opened} />
-					</AppShell.Navbar>
-					<AppShell.Header className={classes.header}>
-						<AdminHeader
-							burger={
-								<Burger
-									opened={opened}
-									onClick={toggle}
-									hiddenFrom="sm"
-									size="sm"
-									mr="xl"
-								/>
-							}
-						/>
-					</AppShell.Header>
-					<AppShell.Main className={classes.main}>
-						<Suspense fallback={<PageLoader />}>
-							{children}
-						</Suspense>
-					</AppShell.Main>
-					<AppShell.Footer className={classes.footer}>
-						<Text w="full" size="sm" c="gray" ta="center">
-							© {new Date().getFullYear()} IPES-SCpro. Tous droits réservés.
-						</Text>
-					</AppShell.Footer>
-				</AppShell>
+					<DashboardShell>{children}</DashboardShell>
 				</QueryClientProvider>
 			</ModalsProvider>
 		</AppProvider>
