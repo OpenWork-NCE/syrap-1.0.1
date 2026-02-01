@@ -46,7 +46,13 @@ const updateSchema = z.object({
   arrondissement_id: z
     .union([z.string(), z.number()])
     .transform((val) => (typeof val === 'string' ? parseInt(val, 10) : val))
-    .optional(),
+    .optional()
+    .nullable(),
+  user_id: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === 'string' ? parseInt(val, 10) : val))
+    .optional()
+    .nullable(),
 });
 
 export async function PUT(

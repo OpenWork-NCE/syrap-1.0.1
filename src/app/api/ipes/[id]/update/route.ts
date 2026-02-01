@@ -10,26 +10,27 @@ import accessTokenMiddleware from "@/app/lib/middleware/accessTokenMiddleware";
 
 export const dynamic = "force-dynamic";
 
-const createSchema = z.object({
+// Schema pour la mise à jour d'un IPES (tous les champs optionnels sauf name)
+const updateSchema = z.object({
 	name: z
-		.string({ required_error: "Le nom de la filiere est requis." })
+		.string({ required_error: "Le nom de l'IPES est requis." })
 		.min(3, "Plus de trois caractères")
 		.max(100, "Moins de 100 caractères."),
 	code: z
 		.string()
-		.min(1, "Plus de trois caractères")
-		.max(20, "Moins de 100 caractères.")
-		.optional(),
+		.max(20, "Moins de 20 caractères.")
+		.optional()
+		.nullable(),
 	phone: z
 		.string()
-		.min(3, "Plus de trois caractères")
-		.max(20, "Moins de 100 caractères.")
-		.optional(),
+		.max(20, "Moins de 20 caractères.")
+		.optional()
+		.nullable(),
 	email: z
 		.string()
 		.refine(
 			(val) => {
-				// Custom regex for email validation
+				if (!val) return true; // Permet vide
 				const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 				return emailRegex.test(val);
 			},
@@ -37,22 +38,16 @@ const createSchema = z.object({
 				message: "Format d'email invalide",
 			},
 		)
-		.optional(),
-	arrondissement_id: z.string({
-		required_error: "L'identifiant d'un arrondissement est requis.",
-	}),
-	user_id: z.string({
-		required_error: "L'identifiant d'un utilisateur est requis.",
-	}),
-	cenadi_id: z.string({
-		required_error: "L'identifiant de l'entité Cenadi est requis.",
-	}),
+		.optional()
+		.nullable(),
+	arrondissement_id: z.string().optional().nullable(),
+	user_id: z.string().optional().nullable(),
 	university_id: z.string({
 		required_error: "L'identifiant de l'université de tutelle est requis.",
 	}),
-	decret_creation: z.string().optional(),
-	arrete_ouverture: z.string().optional(),
-	promoteur_id: z.string().optional(),
+	decret_creation: z.string().optional().nullable(),
+	arrete_ouverture: z.string().optional().nullable(),
+	promoteur: z.string().optional().nullable(),
 });
 
 export async function PUT(
@@ -61,8 +56,18 @@ export async function PUT(
 ) {
 	return accessTokenMiddleware(async ({ authHeaders }) => {
 		try {
-			const bodyPayload = createSchema.parse(await requestJsonBody(request));
-			const branch = await fetchJson<any>(
+			const rawBody = await requestJsonBody(request);
+			const parseResult = updateSchema.safeParse(rawBody);
+
+			if (!parseResult.success) {
+				return new Response(JSON.stringify({
+					error: "Validation failed",
+					details: parseResult.error.errors
+				}), { status: 400 });
+			}
+
+			const bodyPayload = parseResult.data;
+			const result = await fetchJson<any>(
 				backendUrl(`/api/acteurs/ipes/${id}`),
 				{
 					method: "PUT",
@@ -76,7 +81,7 @@ export async function PUT(
 					},
 				},
 			);
-			return new Response(JSON.stringify(branch));
+			return new Response(JSON.stringify(result));
 		} catch (error) {
 			return new Response(JSON.stringify(serializeError(error)), {
 				status: 500,

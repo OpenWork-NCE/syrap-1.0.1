@@ -14,9 +14,7 @@ import {
 import { useCustomTable } from "@/hooks/use-custom-table";
 import {
 	ActionIcon,
-	Box,
 	Button,
-	Divider,
 	Flex,
 	Menu,
 	Stack,
@@ -135,18 +133,21 @@ const Section = (props: any) => {
 			{
 				accessorKey: "code",
 				header: "Sigle",
-
+				size: 80,
+				maxSize: 100,
+				Cell: ({ cell }) => {
+					const value = cell.getValue<string>();
+					return value ? value : <Text c="dimmed" size="sm">-</Text>;
+				},
 				mantineEditTextInputProps: {
 					type: "text",
 					required: true,
 					error: validationErrors?.code,
-					//remove any previous validation errors when user focuses on the input
 					onFocus: () =>
 						setValidationErrors({
 							...validationErrors,
 							code: undefined,
 						}),
-					//optionally add validation checking for onBlur or onChange
 				},
 			},
 			{
@@ -156,23 +157,25 @@ const Section = (props: any) => {
 					type: "text",
 					required: true,
 					error: validationErrors?.name,
-					//remove any previous validation errors when user focuses on the input
 					onFocus: () =>
 						setValidationErrors({
 							...validationErrors,
 							name: undefined,
 						}),
-					//optionally add validation checking for onBlur or onChange
 				},
 			},
 			{
 				accessorKey: "phone",
 				header: "Téléphone",
+				size: 120,
 				enableHiding: true,
+				Cell: ({ cell }) => {
+					const value = cell.getValue<string>();
+					return value ? value : <Text c="dimmed" size="sm">-</Text>;
+				},
 				mantineEditTextInputProps: {
 					type: "tel",
 					error: validationErrors?.phone,
-					//remove any previous validation errors when user focuses on the input
 					onFocus: () =>
 						setValidationErrors({
 							...validationErrors,
@@ -183,10 +186,14 @@ const Section = (props: any) => {
 			{
 				accessorKey: "email",
 				header: "Email",
+				size: 150,
+				Cell: ({ cell }) => {
+					const value = cell.getValue<string>();
+					return value ? value : <Text c="dimmed" size="sm">-</Text>;
+				},
 				mantineEditTextInputProps: {
 					type: "email",
 					error: validationErrors?.email,
-					//remove any previous validation errors when user focuses on the input
 					onFocus: () =>
 						setValidationErrors({
 							...validationErrors,
@@ -196,12 +203,14 @@ const Section = (props: any) => {
 			},
 			{
 				accessorKey: "arrondissement_id",
-				accessorFn: (row) =>
-					fetchedLocalizations.find(
-						(localisation) =>
-							String(localisation.id) === String(row.arrondissement_id),
-					)?.name,
 				header: "Localisation",
+				size: 100,
+				Cell: ({ row }) => {
+					const localization = fetchedLocalizations.find(
+						(loc) => String(loc.id) === String(row.original.arrondissement_id),
+					);
+					return localization?.name ?? "-";
+				},
 				editVariant: "select",
 				mantineEditSelectProps: {
 					data: fetchedLocalizations.map((localization) => ({
@@ -210,7 +219,6 @@ const Section = (props: any) => {
 					})),
 					required: true,
 					error: validationErrors?.arrondissement_id,
-					//remove any previous validation errors when user focuses on the input
 					onFocus: () =>
 						setValidationErrors({
 							...validationErrors,
@@ -220,53 +228,60 @@ const Section = (props: any) => {
 			},
 			{
 				accessorKey: "university_id",
-				accessorFn: (row) =>
-					fetchedUniversities.find(
-						(university) => String(university.id) === String(row.university_id),
-					)?.name,
-				header: "Université de Tutelle",
+				header: "Univ. Tutelle",
+				size: 130,
+				Cell: ({ row }) => {
+					const university = fetchedUniversities.find(
+						(u) => String(u.id) === String(row.original.university_id),
+					);
+					return university?.name ?? "-";
+				},
 				editVariant: "select",
 				mantineEditSelectProps: {
 					data: fetchedUniversities.map((university) => ({
 						value: String(university.id),
 						label: university.name,
 					})),
+					required: true,
+					error: validationErrors?.university_id,
+					onFocus: () =>
+						setValidationErrors({
+							...validationErrors,
+							university_id: undefined,
+						}),
 				},
 			},
+			// Colonnes masquées dans le tableau mais présentes dans le formulaire d'édition
 			{
 				accessorKey: "arrete_ouverture",
 				header: "Arreté d'Ouverture",
+				enableHiding: true,
 				mantineEditTextInputProps: {
 					type: "text",
-					required: true,
 					error: validationErrors?.arrete_ouverture,
-					//remove any previous validation errors when user focuses on the input
 					onFocus: () =>
 						setValidationErrors({
 							...validationErrors,
 							arrete_ouverture: undefined,
 						}),
-					//optionally add validation checking for onBlur or onChange
 				},
 			},
 			{
 				accessorKey: "decret_creation",
 				header: "Decret de création",
+				enableHiding: true,
 				mantineEditTextInputProps: {
 					type: "text",
-					required: true,
 					error: validationErrors?.decret_creation,
-					//remove any previous validation errors when user focuses on the input
 					onFocus: () =>
 						setValidationErrors({
 							...validationErrors,
 							decret_creation: undefined,
 						}),
-					//optionally add validation checking for onBlur or onChange
 				},
 			},
 		],
-		[validationErrors, fetchedLocalizations],
+		[validationErrors, fetchedLocalizations, fetchedUniversities],
 	);
 
 	const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
@@ -314,9 +329,7 @@ const Section = (props: any) => {
 		setValidationErrors(values);
 		await createIpes({
 			...values,
-			cenadi_id: String(institution.id),
 			user_id: String(user.id),
-			promoteur_id: String(user.id),
 		});
 		exitCreatingMode();
 	};
@@ -335,9 +348,7 @@ const Section = (props: any) => {
 		await updateIpes({
 			...values,
 			id: row.original.id,
-			cenadi_id: String(institution.id),
 			user_id: String(user.id),
-			promoteur_id: String(user.id),
 		});
 		table.setEditingRow(null);
 	};
@@ -361,7 +372,16 @@ const Section = (props: any) => {
 		data: fetchedIpess,
 		createDisplayMode: "modal",
 		editDisplayMode: "modal",
-
+		enableRowNumbers: false,
+		manualFiltering: false,
+		onGlobalFilterChange: setGlobalFilter,
+		initialState: {
+			density: "xs",
+			columnVisibility: {
+				arrete_ouverture: false,
+				decret_creation: false,
+			},
+		},
 		mantineSearchTextInputProps: {
 			placeholder: "Rechercher des Ipes",
 		},
@@ -375,6 +395,16 @@ const Section = (props: any) => {
 		mantineTableContainerProps: {
 			style: {
 				minHeight: "auto",
+			},
+		},
+		mantineTableBodyCellProps: {
+			style: {
+				padding: "8px 12px",
+			},
+		},
+		mantineTableHeadCellProps: {
+			style: {
+				padding: "10px 12px",
 			},
 		},
 		mantineCreateRowModalProps: {
@@ -412,87 +442,18 @@ const Section = (props: any) => {
 			</Stack>
 		),
 
-		renderDetailPanel: ({ row }) => (
-			<Box
-				style={{
-					display: "flex",
-					justifyContent: "flex-start",
-					alignItems: "center",
-					gap: "16px",
-					padding: "16px",
-					width: "100%",
-				}}
-			>
-				<Box style={{ width: "100%" }}>
-					<Title order={5} pb={10}>
-						{row.original.name}
-					</Title>
-					<Box style={{ fontSize: "16px" }}>
-						<Text size={"sm"}>
-							Sigle de l'Ipes :{" "}
-							<span style={{ fontWeight: "bolder" }}>{row.original.code}</span>
-						</Text>
-						<Text size={"sm"}>
-							Intitulé de l'Ipes :{" "}
-							<span style={{ fontWeight: "bolder" }}>{row.original.name}</span>
-						</Text>
-						<Text size={"sm"}>
-							Téléphone :{" "}
-							<span style={{ fontWeight: "bolder" }}>{row.original.phone}</span>
-						</Text>
-						<Text size={"sm"}>
-							Email :{" "}
-							<span style={{ fontWeight: "bolder" }}>{row.original.email}</span>
-						</Text>
-						<Text size={"sm"}>
-							Arrété d'ouverture :{" "}
-							<span style={{ fontWeight: "bolder" }}>
-								{row.original.arrete_ouverture}
-							</span>
-						</Text>
-						<Text size={"sm"}>
-							Décrêt de création :{" "}
-							<span style={{ fontWeight: "bolder" }}>
-								{row.original.decret_creation}
-							</span>
-						</Text>
-						{/*<Text size={'sm'}>*/}
-						{/*	Arrondissement :{' '}*/}
-						{/*	<span style={{ fontWeight: 'bolder' }}>{row.original.arrondissement_id}</span>*/}
-						{/*</Text>*/}
-						{/*<Text size={'sm'}>*/}
-						{/*	Université de tutelle :{' '}*/}
-						{/*	<span style={{ fontWeight: 'bolder' }}>{row.original.university_id}</span>*/}
-						{/*</Text>*/}
-						{/*<Text size={'sm'}>*/}
-						{/*  Nombre d'IPES sous tutelle :{' '}*/}
-						{/*  <span style={{ fontWeight: 'bolder' }}>*/}
-						{/*    {row.original.ipes_count}*/}
-						{/*  </span>*/}
-						{/*</Text>*/}
-						{/*<Text size={'sm'}>*/}
-						{/*  Nombre de filières :{' '}*/}
-						{/*  <span style={{ fontWeight: 'bolder' }}>*/}
-						{/*    {row.original.branch_count}*/}
-						{/*  </span>*/}
-						{/*</Text>*/}
-						<Divider pb={1} mb={10} />
-						<Button
-							variant={"outline"}
-							leftSection={<IconEye />}
-							onClick={() => {
-								push(PATH_SECTIONS.ipes.ipes_details(row.original.id));
-							}}
-						>
-							Details
-						</Button>
-					</Box>
-				</Box>
-			</Box>
-		),
-
 		renderRowActions: ({ row, table }) => (
-			<Flex gap="md">
+			<Flex gap="md" align="center">
+				<Button
+					variant="light"
+					size="compact-sm"
+					leftSection={<IconEye size={16} />}
+					onClick={() => {
+						push(PATH_SECTIONS.ipes.ipes_details(row.original.id));
+					}}
+				>
+					Détails
+				</Button>
 				{authorizations?.includes("update-ipes") && (
 					<Tooltip label="Editer">
 						<ActionIcon
@@ -892,34 +853,21 @@ const IpesTable = ({ authorizations, institution, user }: IpesProps) => (
 
 export default IpesTable;
 
-const validateRequired = (value: string) => !!value.length;
-const validateEmail = (email: string) =>
-	!!email.length &&
-	email
-		.toLowerCase()
-		.match(
-			/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-		);
+const validateRequired = (value: string | undefined | null) => !!value && value.length > 0;
 
 function validateIpes(ipess: Ipes) {
 	return {
 		code: !validateRequired(ipess.code)
-			? "Le sigle de l'Université est requis"
+			? "Le sigle de l'IPES est requis"
 			: "",
 		name: !validateRequired(ipess.name)
-			? "L'intitulé de l'Université est requis"
+			? "L'intitulé de l'IPES est requis"
 			: "",
-		// description: !validateRequired(ipess.description)
-		//   ? "L'intitulé de l'Université est requis"
-		//   : '',
-		// phone: !validateRequired(ipess.phone)
-		//   ? "Le nombre d'heures est requis : "
-		//   : '',
-		// email: !validateEmail(ipess.email)
-		//   ? "L'intitulé de l'Université est requis"
-		//   : '',
 		arrondissement_id: ipess.arrondissement_id == undefined
-		  ? "La localisation est requise"
-		  : '',
+			? "La localisation est requise"
+			: "",
+		university_id: ipess.university_id == undefined
+			? "L'université de tutelle est requise"
+			: "",
 	};
 }

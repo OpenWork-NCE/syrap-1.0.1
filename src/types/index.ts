@@ -97,7 +97,6 @@ export type University = {
 	email: string;
 	arrondissement: Localization;
 	user_id: string;
-	cenadi_id: string;
 	branches_count: string;
 	levels_count: string;
 };
@@ -179,11 +178,10 @@ export type Ipes = {
 	email: string;
 	arrondissement_id: string;
 	user_id: string;
-	cenadi_id: string;
 	university_id: string;
 	arrete_ouverture: string;
 	decret_creation: string;
-	promoteur_id: string;
+	promoteur: string;
 	levels_count: string;
 	branches_count: string;
 };
@@ -195,17 +193,16 @@ export type ShowIpesWithClassrooms = {
 	phone: string;
 	email: string;
 	user: string;
-	cenadi: string;
 	institute: string;
 	arrondissement?: Localization;
 	user_id: string;
-	cenadi_id: string;
 	salles: ClassroomForWithSyllabus[];
 	university: ShowUniversitWihClassrooms;
 	arrete_ouverture: string;
 	decret_creation: string;
+	promoteur: string;
 	levels_count: string;
-	branches_count	: string;
+	branches_count: string;
 };
 
 export type ShowIpes = {
@@ -215,7 +212,6 @@ export type ShowIpes = {
 	phone: string;
 	email: string;
 	user: string;
-	cenadi: string;
 	institute: string;
 	university: ShowUniversity;
 	arrondissement?: Localization;
@@ -322,4 +318,78 @@ export interface ComparisonResult {
 	onlyInRecord1: Ue[];
 	onlyInRecord2: Ue[];
 	differentsUes: Ue[];
+}
+
+// ============================================
+// MESSAGERIE INTERNE (Module M10)
+// ============================================
+
+export interface MessageUser {
+	id: string;
+	name: string;
+	email: string;
+	avatar?: string;
+	institution?: {
+		id: string;
+		name: string;
+		type: string;
+	};
+}
+
+export interface Message {
+	id: string;
+	conversation_id: string;
+	sender_id: string;
+	sender: MessageUser;
+	body: string;
+	attachments?: string[];
+	created_at: string;
+	updated_at: string;
+}
+
+export interface ConversationParticipant {
+	id: string;
+	name: string;
+	email: string;
+	avatar?: string;
+	pivot?: {
+		last_read_at: string | null;
+		joined_at: string;
+	};
+}
+
+export interface Conversation {
+	id: string;
+	subject?: string;
+	type: "direct" | "group";
+	participants: ConversationParticipant[];
+	latest_message?: Message;
+	unread_count: number;
+	created_at: string;
+	updated_at: string;
+}
+
+export interface ConversationWithMessages {
+	conversation: Conversation;
+	messages: {
+		data: Message[];
+		current_page: number;
+		last_page: number;
+		per_page: number;
+		total: number;
+	};
+}
+
+export interface UnreadCountResponse {
+	unread_count: number;
+}
+
+export interface SendMessagePayload {
+	body: string;
+	attachments?: string[];
+}
+
+export interface CreateConversationPayload {
+	recipient_id: string;
+	message: string;
 }

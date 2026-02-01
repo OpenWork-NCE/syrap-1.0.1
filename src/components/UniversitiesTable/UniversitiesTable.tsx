@@ -16,7 +16,6 @@ import {
 	ActionIcon,
 	Box,
 	Button,
-	Divider,
 	Flex,
 	Menu,
 	Stack,
@@ -111,23 +110,6 @@ const Section = (props: any) => {
 	const columns = useMemo<MRT_ColumnDef<University>[]>(
 		() => [
 			{
-				accessorKey: "code",
-				header: "Sigle",
-
-				mantineEditTextInputProps: {
-					type: "text",
-					required: true,
-					error: validationErrors?.code,
-					//remove any previous validation errors when user focuses on the input
-					onFocus: () =>
-						setValidationErrors({
-							...validationErrors,
-							code: undefined,
-						}),
-					//optionally add validation checking for onBlur or onChange
-				},
-			},
-			{
 				accessorKey: "name",
 				header: "Université",
 				mantineEditTextInputProps: {
@@ -143,22 +125,6 @@ const Section = (props: any) => {
 					//optionally add validation checking for onBlur or onChange
 				},
 			},
-			{
-				accessorKey: "description",
-				header: "Description",
-				mantineEditTextInputProps: {
-					type: "text",
-					required: true,
-					error: validationErrors?.description,
-					//remove any previous validation errors when user focuses on the input
-					onFocus: () =>
-						setValidationErrors({
-							...validationErrors,
-							description: undefined,
-						}),
-					//optionally add validation checking for onBlur or onChange
-				},
-			},
 			// {
 			//   accessorKey: 'ipes_count',
 			//   header: 'Nbre IPES sous tutelle',
@@ -169,6 +135,10 @@ const Section = (props: any) => {
 				accessorKey: "phone",
 				header: "Téléphone",
 				enableHiding: true,
+				Cell: ({ cell }) => {
+					const value = cell.getValue<string>();
+					return value ? value : <Text c="dimmed" size="sm">-</Text>;
+				},
 				mantineEditTextInputProps: {
 					type: "tel",
 					error: validationErrors?.phone,
@@ -183,6 +153,10 @@ const Section = (props: any) => {
 			{
 				accessorKey: "email",
 				header: "Email",
+				Cell: ({ cell }) => {
+					const value = cell.getValue<string>();
+					return value ? value : <Text c="dimmed" size="sm">-</Text>;
+				},
 				mantineEditTextInputProps: {
 					type: "email",
 					error: validationErrors?.email,
@@ -200,7 +174,7 @@ const Section = (props: any) => {
 					fetchedLocalizations.find(
 						(localisation) =>
 							String(localisation.id) == String(row?.arrondissement?.id),
-					)?.name,
+					)?.name ?? "-",
 				header: "Localisation",
 				editVariant: "select",
 				mantineEditSelectProps: ({ row }) => ({
@@ -265,7 +239,6 @@ const Section = (props: any) => {
 			setValidationErrors(values);
 			await createUniversity({
 				...values,
-				cenadi_id: String(institution.id),
 				user_id: String(user.id),
 			});
 			exitCreatingMode();
@@ -282,8 +255,7 @@ const Section = (props: any) => {
 			await updateUniversity({
 				...values,
 				id: row.original.id,
-				cenadi_id: institution.id,
-				user_id: user.id,
+				user_id: String(user.id),
 			});
 			table.setEditingRow(null);
 		};
@@ -314,6 +286,9 @@ const Section = (props: any) => {
 			placeholder: "Rechercher des Universités",
 		},
 		getRowId: (row) => row.id,
+		initialState: {
+			density: "xs", // Tableau compact
+		},
 		mantineToolbarAlertBannerProps: isError
 			? {
 					color: "red",
@@ -323,6 +298,16 @@ const Section = (props: any) => {
 		mantineTableContainerProps: {
 			style: {
 				minHeight: "auto",
+			},
+		},
+		mantineTableBodyCellProps: {
+			style: {
+				padding: "8px 12px",
+			},
+		},
+		mantineTableHeadCellProps: {
+			style: {
+				padding: "10px 12px",
 			},
 		},
 		mantineCreateRowModalProps: {
@@ -360,69 +345,22 @@ const Section = (props: any) => {
 			</Stack>
 		),
 
-		renderDetailPanel: ({ row }) => (
-			<Box
-				style={{
-					display: "flex",
-					justifyContent: "flex-start",
-					alignItems: "center",
-					gap: "16px",
-					padding: "16px",
-					width: "100%",
-				}}
-			>
-				<Box style={{ width: "100%" }}>
-					<Title order={5} pb={10}>
-						{row.original.name}
-					</Title>
-					<Box style={{ fontSize: "16px" }}>
-						<Text size={"sm"}>
-							Sigle de l'Université :{" "}
-							<span style={{ fontWeight: "bolder" }}>{row.original.code}</span>
-						</Text>
-						<Text size={"sm"}>
-							Intitulé de l'Université :{" "}
-							<span style={{ fontWeight: "bolder" }}>{row.original.name}</span>
-						</Text>
-						<Text size={"sm"}>
-							Description :{" "}
-							<span style={{ fontWeight: "bolder" }}>
-								{row.original.description}
-							</span>
-						</Text>
-						<Text size={"sm"}>
-							Téléphone :{" "}
-							<span style={{ fontWeight: "bolder" }}>{row.original.phone}</span>
-						</Text>
-						<Text size={"sm"}>
-							Email :{" "}
-							<span style={{ fontWeight: "bolder" }}>{row.original.email}</span>
-						</Text>
-						<Text size={'sm'}>
-							Arrondissement :{' '}
-							<span style={{ fontWeight: 'bolder' }}>{row.original.arrondissement?.name}</span>
-						</Text>
-						<Divider pb={1} mb={10} />
-						<Button
-							variant={"outline"}
-							leftSection={<IconEye />}
-							onClick={() => {
-								push(
-									PATH_SECTIONS.universities.university_details(
-										row.original.id,
-									),
-								);
-							}}
-						>
-							Details
-						</Button>
-					</Box>
-				</Box>
-			</Box>
-		),
-
 		renderRowActions: ({ row, table }) => (
-			<Flex gap="md">
+			<Flex gap="md" align="center">
+				<Button
+					variant="light"
+					size="compact-sm"
+					leftSection={<IconEye size={16} />}
+					onClick={() => {
+						push(
+							PATH_SECTIONS.universities.university_details(
+								row.original.id,
+							),
+						);
+					}}
+				>
+					Détails
+				</Button>
 				{authorizations?.includes("update-universities") && (
 					<Tooltip label="Editer">
 						<ActionIcon
@@ -485,7 +423,7 @@ const Section = (props: any) => {
 								disabled={table.getPrePaginationRowModel().rows.length === 0}
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRowsAsPDF(["code", "name", "description", "phone", "email"], table.getPrePaginationRowModel().rows.map(row => [row.original.code, row.original.name, row.original.description, row.original.phone, row.original.email]))
+									handleExportRowsAsPDF(["name", "phone", "email", "localisation"], table.getPrePaginationRowModel().rows.map(row => [row.original.name, row.original.phone, row.original.email, row.original.arrondissement?.name || ""]))
 								}
 							>
 								Exporter tout
@@ -494,7 +432,7 @@ const Section = (props: any) => {
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
 								leftSection={<IconFileTypePdf />}
-								onClick={() => handleExportRowsAsPDF(["code", "name", "description", "phone", "email"], table.getRowModel().rows.map(row => [row.original.code, row.original.name, row.original.description, row.original.phone, row.original.email]))}
+								onClick={() => handleExportRowsAsPDF(["name", "phone", "email", "localisation"], table.getRowModel().rows.map(row => [row.original.name, row.original.phone, row.original.email, row.original.arrondissement?.name || ""]))}
 							>
 								Exporter la page
 							</Menu.Item>
@@ -506,7 +444,7 @@ const Section = (props: any) => {
 								//only export selected rows
 								leftSection={<IconFileTypePdf />}
 								onClick={() =>
-									handleExportRowsAsPDF(["code", "name", "description", "phone", "email"], table.getSelectedRowModel().rows.map(row => [row.original.code, row.original.name, row.original.description, row.original.phone, row.original.email]))
+									handleExportRowsAsPDF(["name", "phone", "email", "localisation"], table.getSelectedRowModel().rows.map(row => [row.original.name, row.original.phone, row.original.email, row.original.arrondissement?.name || ""]))
 								}
 							>
 								Exporter la selection
@@ -516,11 +454,10 @@ const Section = (props: any) => {
 							<Menu.Item
 								//export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
 								onClick={() => handleExportAsCSV(fetchedUniversities.map(row => ({
-									code: row.code,
 									name: row.name,
-									description: row.description,
 									phone: row.phone,
 									email: row.email,
+									localisation: row.arrondissement?.name || "",
 								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -531,11 +468,10 @@ const Section = (props: any) => {
 								//export all rows, including from the next page, (still respects filtering and sorting)
 								onClick={() =>
 									handleExportAsCSV(table.getPrePaginationRowModel().rows.map(row => ({
-										code: row.original.code,
 										name: row.original.name,
-										description: row.original.description,
 										phone: row.original.phone,
 										email: row.original.email,
+										localisation: row.original.arrondissement?.name || "",
 									})))
 								}
 								leftSection={<IconFileTypeCsv />}
@@ -545,13 +481,12 @@ const Section = (props: any) => {
 							<Menu.Item
 								disabled={table.getRowModel().rows.length === 0}
 								//export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
-								
+
 								onClick={() => handleExportAsCSV(table.getRowModel().rows.map(row => ({
-									code: row.original.code,
 									name: row.original.name,
-									description: row.original.description,
 									phone: row.original.phone,
 									email: row.original.email,
+									localisation: row.original.arrondissement?.name || "",
 								})))}
 								leftSection={<IconFileTypeCsv />}
 							>
@@ -565,11 +500,10 @@ const Section = (props: any) => {
 								//only export selected rows
 								onClick={() =>
 									handleExportAsCSV(table.getSelectedRowModel().rows.map(row => ({
-										code: row.original.code,
 										name: row.original.name,
-										description: row.original.description,
 										phone: row.original.phone,
 										email: row.original.email,
+										localisation: row.original.arrondissement?.name || "",
 									})))
 								}
 								leftSection={<IconFileTypeCsv />}
@@ -783,20 +717,10 @@ const UniversityTable = ({
 
 export default UniversityTable;
 
-const validateRequired = (value: string) => !!value.length;
-// const validateEmail = (email: string) =>
-// 	!!email.length &&
-// 	email
-// 		.toLowerCase()
-// 		.match(
-// 			/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-// 		);
+const validateRequired = (value: string | undefined | null) => !!value && value.length > 0;
 
 function validateUniversity(university: any) {
 	return {
-		code: !validateRequired(university.code)
-			? "Le sigle de l'Université est requis"
-			: "",
 		name: !validateRequired(university.name)
 			? "L'intitulé de l'Université est requis"
 			: "",

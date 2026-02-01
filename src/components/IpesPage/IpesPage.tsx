@@ -66,7 +66,6 @@ const IpesPage = ({ id }: IpesPageProps) => {
 		name: "",
 		phone: "",
 		user: "",
-		cenadi: "",
 		arrete_ouverture: "",
 		decret_creation: "",
 		promoteur: "",
