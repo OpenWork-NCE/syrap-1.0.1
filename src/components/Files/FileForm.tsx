@@ -16,6 +16,7 @@ import {
 	Loader,
 	Title,
 	Badge,
+	Select,
 } from "@mantine/core";
 import {
 	IconUpload,
@@ -24,8 +25,10 @@ import {
 	IconFileDescription,
 	IconEye,
 	IconBuilding,
+	IconFolder,
+	IconNotes,
 } from "@tabler/icons-react";
-import { FileDocument, FileFormData } from "@/types";
+import { FileDocument, FileFormData, Folder } from "@/types";
 import {
 	getFileTypeFromExtension,
 	getFileTypeIcon,
@@ -38,6 +41,9 @@ interface FileFormProps {
 	onSubmit: (values: FileFormData) => Promise<void>;
 	onCancel: () => void;
 	institution?: { id: string | number | null; name: string | null; slug: string | null; type: string | null; } | null;
+	folders?: Folder[];
+	currentFolderId?: string | null;
+	isNewVersion?: boolean;
 }
 
 const FileValueComponent: React.FC<{ value: File | File[] | null }> = ({
@@ -61,11 +67,11 @@ const FileValueComponent: React.FC<{ value: File | File[] | null }> = ({
 	);
 };
 
-export function FileForm({ initialData, onSubmit, onCancel, institution }: FileFormProps) {
+export function FileForm({ initialData, onSubmit, onCancel, institution, folders = [], currentFolderId, isNewVersion = false }: FileFormProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<string | null>(null);
-	
+
 	// Determine model type based on institution
 	const getModelInfo = () => {
 		if (!institution?.slug) return null;
@@ -84,20 +90,39 @@ export function FileForm({ initialData, onSubmit, onCancel, institution }: FileF
 			name: institution.name ?? ''
 		};
 	};
-	
+
 	const modelInfo = getModelInfo();
+
+	// Flatten folders for select options
+	const flattenFolders = (folderList: Folder[], prefix = ""): { value: string; label: string }[] => {
+		let result: { value: string; label: string }[] = [];
+		for (const folder of folderList) {
+			const label = prefix ? `${prefix} / ${folder.name}` : folder.name;
+			result.push({ value: folder.id, label });
+			if (folder.children && folder.children.length > 0) {
+				result = result.concat(flattenFolders(folder.children, label));
+			}
+		}
+		return result;
+	};
+
+	const folderOptions = flattenFolders(folders);
 
 	const form = useForm<{
 		title: string;
 		description: string;
 		visibility: string[];
 		file: File | null;
+		folder_id: string | null;
+		change_notes: string;
 	}>({
 		initialValues: {
 			title: initialData?.title || "",
 			description: initialData?.description || "",
 			visibility: initialData?.visibility || [],
 			file: null,
+			folder_id: currentFolderId || initialData?.folder?.id || null,
+			change_notes: "",
 		},
 		validate: {
 			title: (value) =>
@@ -113,7 +138,7 @@ export function FileForm({ initialData, onSubmit, onCancel, institution }: FileF
 						? "La description doit être plus détaillée"
 						: null,
 			file: (value, values) =>
-				!initialData && !value ? "Le fichier est requis" : null,
+				(!initialData || isNewVersion) && !value ? "Le fichier est requis" : null,
 		},
 	});
 
@@ -244,9 +269,9 @@ export function FileForm({ initialData, onSubmit, onCancel, institution }: FileF
 						{...form.getInputProps("description")}
 					/>
 
-					{!initialData && (
+					{(!initialData || isNewVersion) && (
 						<FileInput
-							label="Fichier"
+							label={isNewVersion ? "Nouvelle version du fichier" : "Fichier"}
 							placeholder="Charger le fichier"
 							accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,application/zip,image/*"
 							required
@@ -256,6 +281,32 @@ export function FileForm({ initialData, onSubmit, onCancel, institution }: FileF
 							clearable
 							description="Formats acceptés: PDF, Word, Excel, texte, ZIP, images"
 							{...form.getInputProps("file")}
+						/>
+					)}
+
+					{isNewVersion && (
+						<Textarea
+							label="Notes de modification"
+							placeholder="Décrivez les modifications apportées (optionnel)"
+							disabled={isLoading}
+							minRows={2}
+							{...form.getInputProps("change_notes")}
+						/>
+					)}
+
+					{folderOptions.length > 0 && !initialData && (
+						<Select
+							label="Dossier"
+							placeholder="Sélectionnez un dossier (optionnel)"
+							data={[
+								{ value: "", label: "Racine (aucun dossier)" },
+								...folderOptions,
+							]}
+							leftSection={<IconFolder size={16} />}
+							disabled={isLoading}
+							clearable
+							searchable
+							{...form.getInputProps("folder_id")}
 						/>
 					)}
 

@@ -2,6 +2,7 @@ import {
 	IconAdjustmentsBolt,
 	IconAffiliate,
 	IconAlertCircle,
+	IconCalendar,
 	IconChartArea,
 	IconComponents,
 	IconDashboard,
@@ -13,6 +14,7 @@ import {
 	IconHomeCog,
 	IconHomeEdit,
 	IconLock,
+	IconMessage,
 	IconMoodSmile,
 	IconNotebook,
 	IconSchool,
@@ -132,6 +134,16 @@ export const navLinks = (authorizations: string[]) => {
 			},
 		// ]
 		// : []),
+		{
+			label: "Calendrier",
+			icon: IconCalendar,
+			link: `${PATH_SECTIONS.calendar}`,
+		},
+		{
+			label: "Messagerie",
+			icon: IconMessage,
+			link: `${PATH_SECTIONS.messages}`,
+		},
 	] as NavItem[];
 };
 

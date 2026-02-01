@@ -36,6 +36,8 @@ import {
 	IconFileUpload,
 	IconChevronUp,
 	IconChevronDown,
+	IconHistory,
+	IconFolder,
 } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -64,6 +66,8 @@ interface FileListProps {
 	isLoading: boolean;
 	sortOrder: "asc" | "desc";
 	onToggleSort: () => void;
+	onViewHistory?: (file: FileDocument) => void;
+	currentFolderName?: string | null;
 }
 
 export function FileList({
@@ -80,6 +84,8 @@ export function FileList({
 	isLoading,
 	sortOrder,
 	onToggleSort,
+	onViewHistory,
+	currentFolderName,
 }: FileListProps) {
 	// Ensure files is always an array, even if undefined is passed
 	const filesList = Array.isArray(files) ? files : [];
@@ -211,8 +217,15 @@ export function FileList({
 		<Paper p="md" radius="md" withBorder>
 			<Stack gap="md">
 				<Group justify="space-between">
-					<Title order={3}>Liste des documents</Title>
-					<Button 
+					<Group gap="xs">
+						<Title order={3}>Liste des documents</Title>
+						{currentFolderName && (
+							<Badge size="lg" variant="light" color="yellow" leftSection={<IconFolder size={14} />}>
+								{currentFolderName}
+							</Badge>
+						)}
+					</Group>
+					<Button
 						leftSection={<IconFileUpload/>}
 						onClick={onUpload}
 						disabled={isLoading || localLoading}
@@ -296,17 +309,14 @@ export function FileList({
 					</Alert>
 				) : (
 					<ScrollArea h={'60vh'}>
-						<Table striped highlightOnHover withColumnBorders verticalSpacing={'sm'} >
+						<Table striped highlightOnHover verticalSpacing={'sm'} >
 							<Table.Thead>
 								<Table.Tr>
-									<Table.Th>Type</Table.Th>
-									<Table.Th>Titre</Table.Th>
-									<Table.Th>Description</Table.Th>
-									<Table.Th>Taille</Table.Th>
-									<Table.Th>Auteur</Table.Th>
-									<Table.Th>Date d'upload</Table.Th>
-									<Table.Th>Visibilité</Table.Th>
-									<Table.Th>Actions</Table.Th>
+									<Table.Th style={{ width: '35%' }}>Document</Table.Th>
+									<Table.Th style={{ width: '15%' }}>Taille</Table.Th>
+									<Table.Th style={{ width: '15%' }}>Auteur</Table.Th>
+									<Table.Th style={{ width: '15%' }}>Date</Table.Th>
+									<Table.Th style={{ width: '20%', textAlign: 'right' }}>Actions</Table.Th>
 								</Table.Tr>
 							</Table.Thead>
 							<Table.Tbody>
@@ -316,68 +326,107 @@ export function FileList({
 									return (
 										<Table.Tr key={file.id}>
 											<Table.Td>
-												<Tooltip label={file.type.toUpperCase()}>
-													<Box>
-														<Icon color={color} />
-													</Box>
-												</Tooltip>
-											</Table.Td>
-											<Table.Td>
-												<Text fw={500}>{file.title}</Text>
-											</Table.Td>
-											<Table.Td>
-												<Text lineClamp={2}>{file.description}</Text>
-											</Table.Td>
-											<Table.Td>{formatFileSize(file.size)}</Table.Td>
-											<Table.Td>{file.author}</Table.Td>
-											<Table.Td>{formatDate(file.uploadDate)}</Table.Td>
-											<Table.Td>
-												<Group gap="xs">
-													{file.visibility.map((v) => (
-														<Badge key={v} size="sm" variant="light">
-															{v}
-														</Badge>
-													))}
+												<Group gap="sm" wrap="nowrap">
+													<Tooltip label={file.type.toUpperCase()}>
+														<Box
+															style={{
+																padding: '8px',
+																borderRadius: '8px',
+																backgroundColor: `${color}15`,
+																display: 'flex',
+																alignItems: 'center',
+																justifyContent: 'center',
+															}}
+														>
+															<Icon size={22} color={color} />
+														</Box>
+													</Tooltip>
+													<Stack gap={2}>
+														<Group gap="xs">
+															<Text fw={500} size="sm">{file.title}</Text>
+															{file.current_version && file.current_version > 1 && (
+																<Badge size="xs" variant="light" color="blue" radius="sm">
+																	v{file.current_version}
+																</Badge>
+															)}
+														</Group>
+														<Text size="xs" c="dimmed" lineClamp={1}>
+															{file.description}
+														</Text>
+														{file.folder && (
+															<Group gap={4}>
+																<IconFolder size={12} color="var(--mantine-color-dimmed)" />
+																<Text size="xs" c="dimmed" fs="italic">
+																	{file.folder.path}
+																</Text>
+															</Group>
+														)}
+													</Stack>
 												</Group>
 											</Table.Td>
 											<Table.Td>
-												<Group gap="xs">
+												<Text size="sm">{formatFileSize(file.size)}</Text>
+											</Table.Td>
+											<Table.Td>
+												<Text size="sm">{file.author}</Text>
+											</Table.Td>
+											<Table.Td>
+												<Text size="sm">{formatDate(file.uploadDate)}</Text>
+											</Table.Td>
+											<Table.Td>
+												<Group gap="xs" justify="flex-end">
 													<Tooltip label="Modifier">
 														<ActionIcon
 															variant="subtle"
 															color="blue"
+															size="sm"
 															onClick={() => {
 																setEditingFile(file);
 																openEditModal();
 															}}
 															disabled={localLoading}
 														>
-															<IconEdit />
+															<IconEdit size={16} />
 														</ActionIcon>
 													</Tooltip>
+													{onViewHistory && (
+														<Tooltip label="Historique des versions">
+															<ActionIcon
+																variant="subtle"
+																color="violet"
+																size="sm"
+																onClick={() => onViewHistory(file)}
+																disabled={localLoading}
+															>
+																<IconHistory size={16} />
+															</ActionIcon>
+														</Tooltip>
+													)}
 													<Tooltip label="Supprimer">
 														<ActionIcon
 															variant="subtle"
 															color="red"
+															size="sm"
 															onClick={() => {
 																setDeleteConfirmFile(file);
 																openDeleteModal();
 															}}
 															disabled={localLoading}
 														>
-															<IconTrash />
+															<IconTrash size={16} />
 														</ActionIcon>
 													</Tooltip>
 													<Tooltip label="Télécharger">
 														<ActionIcon
 															variant="subtle"
 															color="green"
+															size="sm"
 															onClick={() =>
 																handleDownload(file.url, file.title)
 															}
 															disabled={localLoading}
 														>
-															<IconDownload />
+															<IconDownload size={16} />
 														</ActionIcon>
 													</Tooltip>
 												</Group>
@@ -440,13 +489,13 @@ export function FileList({
 					<Alert
 						icon={<IconAlertCircle size={16} />}
 						title="Attention"
-						color="red"
+						color="orange"
 						variant="light"
 					>
 						Êtes-vous sûr de vouloir supprimer le document "
 						{deleteConfirmFile?.title}" ?
 						<Text size="sm" mt="xs">
-							Cette action est irréversible.
+							Le document sera déplacé dans la corbeille et pourra être restauré ultérieurement.
 						</Text>
 					</Alert>
 					<Group justify="flex-end" mt="md">

@@ -43,7 +43,7 @@ function StatCard({ title, value, icon, color, description, loading, active, onC
 	return (
 		<Paper
 			withBorder
-			p="md"
+			p="sm"
 			radius="md"
 			onClick={onClick}
 			style={{
@@ -66,20 +66,20 @@ function StatCard({ title, value, icon, color, description, loading, active, onC
 				e.currentTarget.style.opacity = active ? "1" : "0.75";
 			}}
 		>
-			<Group justify="space-between">
+			<Group justify="space-between" gap="xs">
 				<div>
 					<Text c="dimmed" tt="uppercase" fw={700} fz="xs">
 						{title}
 					</Text>
 					{loading ? (
-						<Skeleton height={32} width={60} mt={4} />
+						<Skeleton height={24} width={50} mt={2} />
 					) : (
-						<Text fw={700} fz={rem(28)}>
+						<Text fw={700} fz={rem(22)} lh={1.2}>
 							{value}
 						</Text>
 					)}
 					{description && (
-						<Text fz="xs" c="dimmed" mt={4}>
+						<Text fz="xs" c="dimmed" mt={2}>
 							{description}
 						</Text>
 					)}
@@ -87,7 +87,7 @@ function StatCard({ title, value, icon, color, description, loading, active, onC
 				<ThemeIcon
 					color={color}
 					variant={active ? "filled" : "light"}
-					size={48}
+					size={36}
 					radius="md"
 				>
 					{icon}

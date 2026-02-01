@@ -1,0 +1,251 @@
+/* ==========================================
+   MESSAGERIE - LAYOUT & STYLES
+
+   Solution permanente et autonome.
+   Ne modifie pas le layout global.
+   ========================================== */
+
+/**
+ * CALCUL DE HAUTEUR (à mettre à jour si AppShell change):
+ *
+ * 100vh (viewport)
+ * - 60px  (AppShell.header height, défini dans layout.tsx ligne 42)
+ * - 40px  (AppShell.padding "lg" × 2 = 20px top + 20px bottom)
+ * - 104px (PageHeader: breadcrumb ~28px + header ~64px + gap 12px)
+ * - 16px  (Grid gutter "md")
+ * ─────────────────────────────────────────
+ * = calc(100vh - 220px)
+ *
+ * Si AppShell.padding change:
+ * - "xl" = 24px × 2 = 48px → calc(100vh - 228px)
+ * - "lg" = 20px × 2 = 40px → calc(100vh - 220px) [ACTUEL]
+ * - "md" = 16px × 2 = 32px → calc(100vh - 212px)
+ */
+
+/* Container Grid - hauteur fixe calculée */
+.messagesGrid {
+  height: calc(100vh - 220px);
+  min-height: 400px;
+  max-height: calc(100vh - 220px);
+  overflow: hidden;
+}
+
+/* S'assurer que le Grid inner utilise toute la hauteur */
+.messagesGrid :global(.mantine-Grid-inner) {
+  height: 100%;
+}
+
+/* Colonnes du Grid - même hauteur */
+.messagesGrid :global(.mantine-Grid-col) {
+  height: 100%;
+}
+
+/* ==========================================
+   PANNEAUX
+   ========================================== */
+
+/* Panneau gauche - Liste des conversations */
+.conversationPanel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Panneau droit - Thread de messages */
+.messagePanel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ==========================================
+   LISTE DES CONVERSATIONS
+   ========================================== */
+
+.conversationItem {
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid var(--mantine-color-gray-2);
+}
+
+.conversationItem:hover {
+  background-color: var(--mantine-color-blue-0);
+  border-color: var(--mantine-color-blue-3);
+  transform: translateX(2px);
+}
+
+[data-mantine-color-scheme="dark"] .conversationItem {
+  border-color: var(--mantine-color-dark-4);
+}
+
+[data-mantine-color-scheme="dark"] .conversationItem:hover {
+  background-color: var(--mantine-color-dark-5);
+  border-color: var(--mantine-color-blue-7);
+}
+
+.conversationItem.selected {
+  background-color: var(--mantine-color-blue-0);
+  border-color: var(--mantine-color-blue-4);
+  border-left: 3px solid var(--mantine-color-blue-6);
+}
+
+[data-mantine-color-scheme="dark"] .conversationItem.selected {
+  background-color: var(--mantine-color-dark-4);
+  border-color: var(--mantine-color-blue-6);
+  border-left: 3px solid var(--mantine-color-blue-5);
+}
+
+.unreadPreview {
+  font-weight: 600;
+  color: var(--mantine-color-dark-9);
+}
+
+[data-mantine-color-scheme="dark"] .unreadPreview {
+  color: var(--mantine-color-white);
+}
+
+/* ==========================================
+   THREAD DE MESSAGES
+   ========================================== */
+
+.threadHeader {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  flex-shrink: 0;
+  background: var(--mantine-color-gray-0);
+}
+
+[data-mantine-color-scheme="dark"] .threadHeader {
+  background: var(--mantine-color-dark-6);
+}
+
+.messagesScrollArea {
+  flex: 1;
+  min-height: 0;
+  background: var(--mantine-color-gray-0);
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+}
+
+[data-mantine-color-scheme="dark"] .messagesScrollArea {
+  background: var(--mantine-color-dark-7);
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+}
+
+.inputArea {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  flex-shrink: 0;
+  background: var(--mantine-color-white);
+}
+
+[data-mantine-color-scheme="dark"] .inputArea {
+  background: var(--mantine-color-dark-6);
+}
+
+/* ==========================================
+   BULLES DE MESSAGES
+   ========================================== */
+
+.messageOwn {
+  background: linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-blue-7) 100%);
+  color: white;
+  border-radius: 18px 18px 4px 18px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+[data-mantine-color-scheme="dark"] .messageOwn {
+  background: linear-gradient(135deg, var(--mantine-color-blue-7) 0%, var(--mantine-color-blue-8) 100%);
+}
+
+.messageOther {
+  background: var(--mantine-color-white);
+  border: 1px solid var(--mantine-color-gray-2);
+  border-radius: 18px 18px 18px 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+[data-mantine-color-scheme="dark"] .messageOther {
+  background: var(--mantine-color-dark-5);
+  border-color: var(--mantine-color-dark-4);
+}
+
+.messageWrapperOwn {
+  max-width: 70%;
+  margin-left: auto;
+}
+
+.messageWrapperOther {
+  max-width: 70%;
+  margin-right: auto;
+}
+
+/* ==========================================
+   SÉPARATEURS DE DATE
+   ========================================== */
+
+.dateDivider {
+  margin: var(--mantine-spacing-md) 0;
+}
+
+.dateDivider :global(.mantine-Divider-label) {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--mantine-color-dimmed);
+  text-transform: capitalize;
+  background: var(--mantine-color-gray-0);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+[data-mantine-color-scheme="dark"] .dateDivider :global(.mantine-Divider-label) {
+  background: var(--mantine-color-dark-6);
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.messageOwn {
+  animation: slideInRight 0.2s ease-out;
+}
+
+.messageOther {
+  animation: slideInLeft 0.2s ease-out;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 768px) {
+  .messagesGrid {
+    /* Sur mobile: padding "md" × 2 = 32px au lieu de 40px */
+    height: calc(100vh - 212px);
+    max-height: calc(100vh - 212px);
+  }
+
+  .messageWrapperOwn,
+  .messageWrapperOther {
+    max-width: 85%;
+  }
+}

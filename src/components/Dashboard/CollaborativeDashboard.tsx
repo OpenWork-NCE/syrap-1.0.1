@@ -677,14 +677,7 @@ export function CollaborativeDashboard() {
 								onChange={(value) => setActiveVisibility(value || "all")}
 								variant="pills"
 								radius="xl"
-								styles={{
-									tab: {
-										'&[data-active]': {
-											background: `linear-gradient(135deg, ${theme.colors[primaryColor][5]} 0%, ${theme.colors[primaryColor][6]} 100%)`,
-											color: 'white',
-										},
-									},
-								}}
+								color={primaryColor}
 							>
 								<Tabs.List mb="md">
 									<Tabs.Tab value="all" leftSection={<IconFile size={14} />}>

@@ -44,6 +44,8 @@ export const PATH_SECTIONS = {
 	minesups: path(ROOT_SECTIONS, "/minesups"),
 	reports: path(ROOT_SECTIONS, "/reports"),
 	logs: path(ROOT_SECTIONS, "/logs"),
+	messages: path(ROOT_SECTIONS, "/messages"),
+	calendar: path(ROOT_SECTIONS, "/calendar"),
 };
 
 export const PATH_AUTHENTICATIONS = {

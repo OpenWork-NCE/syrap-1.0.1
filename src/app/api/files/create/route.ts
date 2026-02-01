@@ -13,6 +13,8 @@ const createSchema = z.object({
   model: z.enum(['cenadi', 'minsup', 'institute'], { required_error: 'Le modèle est requis.' }),
   model_id: z.string({ required_error: "L'ID du modèle est requis." }),
   title: z.string({ required_error: 'Le titre est requis.' }),
+  folder_id: z.string().optional().nullable(),
+  change_notes: z.string().optional().nullable(),
 });
 
 export async function POST(req: Request) {
@@ -26,42 +28,52 @@ export async function POST(req: Request) {
       const model = formData.get('model') as string;
       const model_id = formData.get('model_id') as string;
       const title = formData.get('title') as string;
-      
+      const folder_id = formData.get('folder_id') as string | null;
+      const change_notes = formData.get('change_notes') as string | null;
+
       // Extract file - as shown in Insomnia, a single file field
       const file = formData.get('file') as File;
 
-      console.log('Form data received:', { description, model, model_id, title, file });
-      
+      console.log('Form data received:', { description, model, model_id, title, folder_id, file });
+
       if (!file) {
         console.log('Error: File is missing');
-        return new Response(JSON.stringify({ error: 'Fichier manquant.' }), { 
+        return new Response(JSON.stringify({ error: 'Fichier manquant.' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' }
         });
       }
-      
+
       // Validate the data
       try {
         createSchema.parse({
           description,
           model,
           model_id,
-          title
+          title,
+          folder_id,
+          change_notes
         });
       } catch (validationError) {
         console.log('Validation error:', validationError);
-        return new Response(JSON.stringify({ error: validationError }), { 
+        return new Response(JSON.stringify({ error: validationError }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' }
         });
       }
-      
+
       // Create a new FormData to send to the backend - maintain same structure as Insomnia
       const backendFormData = new FormData();
       backendFormData.append('description', description);
       backendFormData.append('model', model);
       backendFormData.append('model_id', model_id);
       backendFormData.append('title', title);
+      if (folder_id) {
+        backendFormData.append('folder_id', folder_id);
+      }
+      if (change_notes) {
+        backendFormData.append('change_notes', change_notes);
+      }
       backendFormData.append('file', file); // Send as simple 'file', not 'files[]'
 
       console.log('Sending request to backend:', backendUrl('/documents'));

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
 	MantineReactTable,
 	type MRT_ColumnDef,
@@ -82,37 +82,15 @@ interface Params {
 
 const Section = (props: any) => {
 	const { authorizations, filterStatus = "all" } = props;
-	// console.log("UesAuthorizations : ", authorizations);
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string | undefined>
 	>({});
 
-	//custom react-query hook
-	const useGetUes = ({
-		columnFilterFns,
-		columnFilters,
-		globalFilter,
-		sorting,
-		// pagination,
-	}: Params) => {
-		const select = !authorizations.includes("validate-ues")
-			? (data: UeApiResponse) => {
-					const filteredData = data.data.filter(
-						(ue: Ue) => ue.validate !== null,
-					);
-					return { data: filteredData } as UeApiResponse;
-				}
-			: undefined;
-
-		return useQuery<UeApiResponse>({
-			// queryKey: ['ues', fetchURL.href], //refetch whenever the URL changes (columnFilters, globalFilter, sorting, pagination),
-			queryKey: ["ues"], //refetch whenever the URL changes (columnFilters, globalFilter, sorting, pagination)
-			queryFn: () => fetch(innerUrl("/api/ues")).then((res) => res.json()),
-			select,
-			placeholderData: keepPreviousData, //useful for paginated queries by keeping data from previous pages on screen while fetching the next page
-			staleTime: 30_000, //don't refetch previously viewed pages until cache is more than 30 seconds old
-		});
-	};
+	// Retarder le rendu de la table pour éviter les mises à jour d'état avant le montage
+	const [isMounted, setIsMounted] = useState(false);
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
 
 	const columns = useMemo<MRT_ColumnDef<Ue>[]>(
 		() => [
@@ -217,12 +195,14 @@ const Section = (props: any) => {
 	const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
 		[],
 	);
-	const [columnFilterFns, setColumnFilterFns] = //filter modes
-		useState<MRT_ColumnFilterFnsState>(
-			Object.fromEntries(
-				columns.map(({ accessorKey }) => [accessorKey, "contains"]),
-			),
-		); //default to "contains" for all columns
+	// Initialisation statique pour éviter les mises à jour d'état pendant le rendu
+	const [columnFilterFns, setColumnFilterFns] = useState<MRT_ColumnFilterFnsState>({
+		id: "contains",
+		name: "contains",
+		description: "contains",
+		created: "contains",
+		validate: "contains",
+	});
 	const [globalFilter, setGlobalFilter] = useState("");
 	const [sorting, setSorting] = useState<MRT_SortingState>([]);
 	// const [pagination, setPagination] = useState<MRT_PaginationState>({
@@ -230,16 +210,27 @@ const Section = (props: any) => {
 	// 	pageSize: 10,
 	// });
 
-	//call our custom react-query hook
-	const { data, isError, isFetching, isLoading, refetch } = useGetUes({
-		columnFilterFns,
-		columnFilters,
-		globalFilter,
-		// pagination,
-		sorting,
+	// Fonction select mémoïsée pour filtrer les UEs selon les autorisations
+	const selectFn = useMemo(() => {
+		if (!authorizations.includes("validate-ues")) {
+			return (data: UeApiResponse) => {
+				const filteredData = data.data.filter((ue: Ue) => ue.validate !== null);
+				return { data: filteredData } as UeApiResponse;
+			};
+		}
+		return undefined;
+	}, [authorizations]);
+
+	// Appel direct à useQuery (hook au niveau du composant, pas imbriqué)
+	const { data, isError, isFetching, isLoading, refetch } = useQuery<UeApiResponse>({
+		queryKey: ["ues"],
+		queryFn: () => fetch(innerUrl("/api/ues")).then((res) => res.json()),
+		select: selectFn,
+		placeholderData: keepPreviousData,
+		staleTime: 30_000,
 	});
 
-	//this will depend on your API response shape
+	// Extraction des données
 	const allUes = data?.data ?? [];
 
 	// Apply filter based on filterStatus prop
@@ -378,6 +369,16 @@ const Section = (props: any) => {
 		mantineTableContainerProps: {
 			style: {
 				minHeight: "auto",
+			},
+		},
+		mantineTableBodyCellProps: {
+			style: {
+				padding: "8px 12px",
+			},
+		},
+		mantineTableHeadCellProps: {
+			style: {
+				padding: "10px 12px",
 			},
 		},
 		mantineCreateRowModalProps: {
@@ -708,6 +709,15 @@ const Section = (props: any) => {
 			sorting,
 		},
 	});
+
+	// Retarder le rendu pour éviter les mises à jour d'état avant le montage
+	if (!isMounted) {
+		return (
+			<Stack align="center" justify="center" py={40}>
+				<Text c="dimmed">Chargement...</Text>
+			</Stack>
+		);
+	}
 
 	return <MantineReactTable table={table} />;
 };

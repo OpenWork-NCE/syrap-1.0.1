@@ -9,15 +9,12 @@ import {
 	type ContainerProps,
 	Flex,
 	Paper,
-	rem,
 	Stack,
 	Text,
-	useMantineTheme,
 } from "@mantine/core";
 import type { FC } from "react";
 import { ThemedTitle } from "@/components/ui/ThemeComponents";
 import Surface from "@/components/Surface";
-import { useColorScheme } from "@mantine/hooks";
 import classes from "./PageContainer.module.css";
 
 type PageContainerProps = {
@@ -34,27 +31,8 @@ export const PageContainer: FC<PageContainerProps> = ({
 	withActions = false,
 	fluid = true,
 }) => {
-	const theme = useMantineTheme();
-	const colorScheme = useColorScheme();
-
 	const BREADCRUMBS_PROPS: Omit<BreadcrumbsProps, "children"> = {
-		style: {
-			a: {
-				padding: rem(8),
-				borderRadius: theme.radius.sm,
-				fontWeight: 500,
-				color: colorScheme === "dark" ? theme.white : theme.black,
-
-				"&:hover": {
-					transition: "all ease 150ms",
-					backgroundColor:
-						colorScheme === "dark"
-							? theme.colors.dark[5]
-							: theme.colors.gray[2],
-					textDecoration: "none",
-				},
-			},
-		},
+		className: classes.breadcrumbs,
 	};
 
 	return (

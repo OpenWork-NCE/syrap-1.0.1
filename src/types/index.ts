@@ -268,6 +268,63 @@ export type FileType =
 	| "image"
 	| "other";
 
+// ============================================
+// GESTION DOCUMENTAIRE (Module M06)
+// ============================================
+
+export interface DocumentVersion {
+	id: string;
+	version_number: number;
+	is_current: boolean;
+	creator: {
+		id: string;
+		name: string;
+		email: string;
+	};
+	file: {
+		name: string;
+		mime_type: string;
+		size: number;
+		size_formatted: string;
+		download_url: string;
+	};
+	change_notes: string | null;
+	created_at: string;
+}
+
+export interface Folder {
+	id: string;
+	name: string;
+	description: string | null;
+	parent_id: string | null;
+	owner: {
+		id: string;
+		name: string;
+		email: string;
+	};
+	scope: {
+		type: string;
+		id: string;
+	} | null;
+	path: string;
+	breadcrumbs: { id: string; name: string }[];
+	children_count: number;
+	documents_count: number;
+	children?: Folder[];
+	documents?: FileDocument[];
+	created_at: string;
+	updated_at: string;
+	deleted_at: string | null;
+}
+
+export interface FolderFormData {
+	name: string;
+	description?: string;
+	parent_id?: string | null;
+	model?: string;
+	model_id?: string;
+}
+
 export interface FileDocument {
 	id: string;
 	title: string;
@@ -278,6 +335,15 @@ export interface FileDocument {
 	uploadDate: string;
 	visibility: ("CENADI" | "MINESUP" | "IPES")[];
 	url: string;
+	folder?: {
+		id: string;
+		name: string;
+		path: string;
+	} | null;
+	current_version?: number;
+	versions?: DocumentVersion[];
+	latest_version?: DocumentVersion;
+	deleted_at?: string | null;
 }
 
 export const mockFiles: FileDocument[] = [
@@ -311,6 +377,8 @@ export interface FileFormData {
 	description: string;
 	visibility: string[];
 	file: File | null;
+	folder_id?: string | null;
+	change_notes?: string;
 }
 
 export interface ComparisonResult {
