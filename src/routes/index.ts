@@ -46,6 +46,7 @@ export const PATH_SECTIONS = {
 	logs: path(ROOT_SECTIONS, "/logs"),
 	messages: path(ROOT_SECTIONS, "/messages"),
 	calendar: path(ROOT_SECTIONS, "/calendar"),
+	statistics: path(ROOT_SECTIONS, "/statistics"),
 };
 
 export const PATH_AUTHENTICATIONS = {

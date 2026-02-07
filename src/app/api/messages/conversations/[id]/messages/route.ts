@@ -4,8 +4,8 @@ import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
-// Mock data pour le développement
-const USE_MOCK = true;
+// Mock data pour le développement (désactivé - utilise le backend Laravel)
+const USE_MOCK = false;
 
 // Fonction pour obtenir les données utilisateur depuis les cookies
 async function getCurrentUser(): Promise<{ id: string; name: string; email: string }> {

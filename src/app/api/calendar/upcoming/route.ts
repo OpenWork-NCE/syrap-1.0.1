@@ -3,26 +3,18 @@ import { backendUrl, fetchJson } from "@/app/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-// Mock data pour le développement (désactivé - utilise le backend Laravel)
-const USE_MOCK = false;
-
-// GET - Récupérer le nombre de messages non lus
+// GET - Événements à venir (pour le dashboard)
 export async function GET(req: Request) {
-	if (USE_MOCK) {
-		// Simule 3 messages non lus (cohérent avec les mock conversations)
-		return new Response(
-			JSON.stringify({ unread_count: 3 }),
-			{ status: 200 }
-		);
-	}
+	const { searchParams } = new URL(req.url);
+	const limit = searchParams.get("limit") || "5";
 
 	return accessTokenMiddleware(async ({ authHeaders }) => {
 		try {
 			const response = await fetchJson(
-				backendUrl("/api/messages/unread-count"),
+				backendUrl(`/api/calendar/upcoming?limit=${limit}`),
 				{
+					method: "GET",
 					headers: {
-						method: "GET",
 						"Content-Type": "application/json",
 						...authHeaders,
 					},
@@ -31,7 +23,7 @@ export async function GET(req: Request) {
 			);
 			return new Response(JSON.stringify(response), { status: 200 });
 		} catch (error) {
-			return new Response(JSON.stringify({ unread_count: 0 }), { status: 200 });
+			return new Response(JSON.stringify(error), { status: 500 });
 		}
 	});
 }

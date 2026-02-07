@@ -4,6 +4,7 @@ import {
 	IconAlertCircle,
 	IconCalendar,
 	IconChartArea,
+	IconChartBar,
 	IconComponents,
 	IconDashboard,
 	IconFiles,
@@ -134,6 +135,11 @@ export const navLinks = (authorizations: string[]) => {
 			},
 		// ]
 		// : []),
+		{
+			label: "Statistiques",
+			icon: IconChartBar,
+			link: `${PATH_SECTIONS.statistics}`,
+		},
 		{
 			label: "Calendrier",
 			icon: IconCalendar,

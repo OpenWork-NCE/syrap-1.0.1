@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	Container,
 	Stack,
@@ -282,8 +283,54 @@ const generateMockEvents = (): CalendarEvent[] => {
 };
 
 const MOCK_EVENTS = generateMockEvents();
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false; // Désactivé - utilise le backend Laravel
 // ===== END MOCK DATA =====
+
+// ===== API FUNCTIONS =====
+const fetchCalendarEvents = async (): Promise<CalendarEvent[]> => {
+	const response = await fetch("/api/calendar/events");
+	if (!response.ok) throw new Error("Erreur lors du chargement des événements");
+	const data = await response.json();
+	return data.data || [];
+};
+
+const createCalendarEvent = async (eventData: CalendarEventFormData): Promise<CalendarEvent> => {
+	const response = await fetch("/api/calendar/events", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			...eventData,
+			start_date: eventData.start_date?.toISOString(),
+			end_date: eventData.end_date?.toISOString(),
+		}),
+	});
+	if (!response.ok) throw new Error("Erreur lors de la création");
+	const data = await response.json();
+	return data.data;
+};
+
+const updateCalendarEvent = async ({ id, ...eventData }: CalendarEventFormData & { id: string }): Promise<CalendarEvent> => {
+	const response = await fetch(`/api/calendar/events/${id}`, {
+		method: "PUT",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			...eventData,
+			start_date: eventData.start_date?.toISOString(),
+			end_date: eventData.end_date?.toISOString(),
+		}),
+	});
+	if (!response.ok) throw new Error("Erreur lors de la modification");
+	const data = await response.json();
+	return data.data;
+};
+
+const deleteCalendarEvent = async (id: string): Promise<void> => {
+	const response = await fetch(`/api/calendar/events/${id}`, {
+		method: "DELETE",
+	});
+	if (!response.ok) throw new Error("Erreur lors de la suppression");
+};
+// ===== END API FUNCTIONS =====
 
 const breadcrumbItems = [{ title: "Calendrier", href: "#" }];
 
@@ -304,13 +351,85 @@ const getSourceIcon = (source: string) => {
 };
 
 export function CalendarPage() {
+	const queryClient = useQueryClient();
 	const [viewMode, setViewMode] = useState<ViewMode>("list");
 	const [currentDate, setCurrentDate] = useState(new Date());
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 	const [typeFilter, setTypeFilter] = useState<string | null>(null);
 	const [sourceFilter, setSourceFilter] = useState<string | null>(null);
 	const [showPastEvents, setShowPastEvents] = useState<boolean>(false);
-	const [events, setEvents] = useState<CalendarEvent[]>(MOCK_EVENTS);
+
+	// ===== REACT QUERY HOOKS =====
+	const { data: apiEvents = [], isLoading, refetch } = useQuery({
+		queryKey: ["calendar-events"],
+		queryFn: fetchCalendarEvents,
+		enabled: !USE_MOCK_DATA,
+		refetchOnWindowFocus: false,
+	});
+
+	// Utiliser les données mock ou API selon le flag
+	const events = USE_MOCK_DATA ? MOCK_EVENTS : apiEvents;
+
+	const createMutation = useMutation({
+		mutationFn: createCalendarEvent,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["calendar-events"] });
+			notifications.show({
+				title: "Événement créé",
+				message: "L'événement a été ajouté au calendrier",
+				color: "green",
+				icon: <IconCheck size={16} />,
+			});
+		},
+		onError: () => {
+			notifications.show({
+				title: "Erreur",
+				message: "Impossible de créer l'événement",
+				color: "red",
+			});
+		},
+	});
+
+	const updateMutation = useMutation({
+		mutationFn: updateCalendarEvent,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["calendar-events"] });
+			notifications.show({
+				title: "Événement modifié",
+				message: "L'événement a été mis à jour",
+				color: "green",
+				icon: <IconCheck size={16} />,
+			});
+		},
+		onError: () => {
+			notifications.show({
+				title: "Erreur",
+				message: "Impossible de modifier l'événement",
+				color: "red",
+			});
+		},
+	});
+
+	const deleteMutation = useMutation({
+		mutationFn: deleteCalendarEvent,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["calendar-events"] });
+			notifications.show({
+				title: "Événement supprimé",
+				message: "L'événement a été supprimé du calendrier",
+				color: "green",
+				icon: <IconCheck size={16} />,
+			});
+		},
+		onError: () => {
+			notifications.show({
+				title: "Erreur",
+				message: "Impossible de supprimer l'événement",
+				color: "red",
+			});
+		},
+	});
+	// ===== END REACT QUERY HOOKS =====
 
 	// Modal states
 	const [eventModalOpened, { open: openEventModal, close: closeEventModal }] = useDisclosure(false);
@@ -407,14 +526,19 @@ export function CalendarPage() {
 	};
 
 	const handleDeleteEvent = (eventId: string) => {
-		setEvents((prev) => prev.filter((e) => e.id !== eventId));
+		if (USE_MOCK_DATA) {
+			// Mode mock - pas de suppression persistante
+			closeDetailModal();
+			notifications.show({
+				title: "Mode démo",
+				message: "La suppression n'est pas persistante en mode démo",
+				color: "yellow",
+			});
+			return;
+		}
+
+		deleteMutation.mutate(eventId);
 		closeDetailModal();
-		notifications.show({
-			title: "Événement supprimé",
-			message: "L'événement a été supprimé du calendrier",
-			color: "green",
-			icon: <IconCheck size={16} />,
-		});
 	};
 
 	const handleSubmitEvent = () => {
@@ -427,54 +551,24 @@ export function CalendarPage() {
 			return;
 		}
 
-		const eventColor = getEventTypeColor(formData.type);
+		if (USE_MOCK_DATA) {
+			// Mode mock - pas de persistance
+			closeEventModal();
+			notifications.show({
+				title: "Mode démo",
+				message: "Les modifications ne sont pas persistantes en mode démo",
+				color: "yellow",
+			});
+			return;
+		}
 
 		if (editingEvent) {
-			setEvents((prev) =>
-				prev.map((e) =>
-					e.id === editingEvent.id
-						? {
-								...e,
-								...formData,
-								start_date: format(formData.start_date!, "yyyy-MM-dd"),
-								end_date: formData.end_date ? format(formData.end_date, "yyyy-MM-dd") : undefined,
-								color: eventColor,
-								updated_at: new Date().toISOString(),
-						  }
-						: e
-				)
-			);
-			notifications.show({
-				title: "Événement modifié",
-				message: "L'événement a été mis à jour",
-				color: "green",
-				icon: <IconCheck size={16} />,
+			updateMutation.mutate({
+				id: editingEvent.id,
+				...formData,
 			});
 		} else {
-			const newEvent: CalendarEvent = {
-				id: `evt-${Date.now()}`,
-				title: formData.title,
-				description: formData.description,
-				start_date: format(formData.start_date, "yyyy-MM-dd"),
-				end_date: formData.end_date ? format(formData.end_date, "yyyy-MM-dd") : undefined,
-				all_day: formData.all_day,
-				type: formData.type,
-				color: eventColor,
-				source: "IPES",
-				source_name: "Mon Institution",
-				visibility: formData.visibility,
-				recurrence: formData.recurrence,
-				reminder_days: formData.reminder_days,
-				created_by: { id: "current", name: "Utilisateur actuel" },
-				created_at: new Date().toISOString(),
-			};
-			setEvents((prev) => [...prev, newEvent]);
-			notifications.show({
-				title: "Événement créé",
-				message: "L'événement a été ajouté au calendrier",
-				color: "green",
-				icon: <IconCheck size={16} />,
-			});
+			createMutation.mutate(formData);
 		}
 
 		closeEventModal();
@@ -856,7 +950,13 @@ export function CalendarPage() {
 										</Box>
 									</Group>
 									<Tooltip label="Actualiser">
-										<ActionIcon variant="subtle" color="gray" size="sm">
+										<ActionIcon
+											variant="subtle"
+											color="gray"
+											size="sm"
+											onClick={() => refetch()}
+											loading={isLoading}
+										>
 											<IconRefresh size={16} />
 										</ActionIcon>
 									</Tooltip>
