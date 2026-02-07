@@ -6,6 +6,7 @@ import {
 	Button,
 	Stack,
 	Textarea,
+	TextInput,
 	Select,
 	Text,
 	Group,
@@ -17,17 +18,34 @@ import { IconPlus, IconSend } from "@tabler/icons-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import type { Conversation } from "@/types";
+import classes from "./Messages.module.css";
 
 interface UserOption {
 	value: string;
 	label: string;
 	email: string;
 	avatar?: string;
+	role?: string;
+	institution?: {
+		id: string;
+		name: string;
+		type: "cenadi" | "minesup" | "university" | "ipes";
+	};
 }
 
 interface NewConversationModalProps {
 	currentUserId: string;
 	onConversationCreated?: (conversation: Conversation) => void;
+}
+
+function getAvatarColor(institutionType?: string): string {
+	switch (institutionType) {
+		case "cenadi": return "teal";
+		case "minesup": return "blue";
+		case "university": return "orange";
+		case "ipes": return "violet";
+		default: return "gray";
+	}
 }
 
 export function NewConversationModal({
@@ -36,10 +54,10 @@ export function NewConversationModal({
 }: NewConversationModalProps) {
 	const [opened, { open, close }] = useDisclosure(false);
 	const [selectedUser, setSelectedUser] = useState<string | null>(null);
+	const [subject, setSubject] = useState("");
 	const [message, setMessage] = useState("");
 	const queryClient = useQueryClient();
 
-	// Fetch users
 	const { data: usersData, isLoading: loadingUsers } = useQuery({
 		queryKey: ["users-for-message"],
 		queryFn: async () => {
@@ -52,15 +70,17 @@ export function NewConversationModal({
 
 	const users: UserOption[] = (usersData?.data || [])
 		.filter((u: { id: string | number }) => String(u.id) !== String(currentUserId))
-		.map((u: { id: string | number; name: string; email: string; avatar?: string }) => ({
+		.map((u: { id: string | number; name: string; email: string; avatar?: string; role?: string; institution?: UserOption["institution"] }) => ({
 			value: String(u.id),
 			label: u.name || "Utilisateur",
 			email: u.email || "",
 			avatar: u.avatar,
+			role: u.role,
+			institution: u.institution,
 		}));
 
 	const createMutation = useMutation({
-		mutationFn: async (data: { recipient_id: string; message: string }) => {
+		mutationFn: async (data: { recipient_id: string; message: string; subject?: string }) => {
 			const res = await fetch("/api/messages/conversations", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -78,6 +98,7 @@ export function NewConversationModal({
 			});
 			close();
 			setSelectedUser(null);
+			setSubject("");
 			setMessage("");
 			if (onConversationCreated && data.conversation) {
 				onConversationCreated(data.conversation);
@@ -97,6 +118,7 @@ export function NewConversationModal({
 			createMutation.mutate({
 				recipient_id: selectedUser,
 				message: message.trim(),
+				subject: subject.trim() || undefined,
 			});
 		}
 	};
@@ -135,13 +157,27 @@ export function NewConversationModal({
 							const user = users.find((u) => u.value === option.value);
 							return (
 								<Group gap="sm">
-									<Avatar size="sm" radius="xl" color="blue">
+									<Avatar
+										size="sm"
+										radius="xl"
+										color={getAvatarColor(user?.institution?.type)}
+									>
 										{option.label.charAt(0).toUpperCase()}
 									</Avatar>
-									<div>
-										<Text size="sm">{option.label}</Text>
-										<Text size="xs" c="dimmed">
-											{user?.email}
+									<div style={{ flex: 1, minWidth: 0 }}>
+										<Group gap={6} wrap="nowrap">
+											<Text size="sm" truncate>{option.label}</Text>
+											{user?.institution && (
+												<span
+													className={classes.institutionBadge}
+													data-type={user.institution.type}
+												>
+													{user.institution.name}
+												</span>
+											)}
+										</Group>
+										<Text size="xs" c="dimmed" truncate>
+											{user?.role ? `${user.role} · ` : ""}{user?.email}
 										</Text>
 									</div>
 								</Group>
@@ -150,28 +186,49 @@ export function NewConversationModal({
 					/>
 
 					{selectedUserData && (
-						<Group gap="sm" p="xs" bg="gray.0" style={{ borderRadius: 8 }}>
-							<Avatar size="md" radius="xl" color="blue">
+						<Group gap="sm" p="xs" style={{ borderRadius: 8, border: "1px solid var(--mantine-color-gray-3)" }}>
+							<Avatar
+								size="md"
+								radius="xl"
+								color={getAvatarColor(selectedUserData.institution?.type)}
+							>
 								{selectedUserData.label.charAt(0).toUpperCase()}
 							</Avatar>
-							<div>
-								<Text size="sm" fw={500}>
-									{selectedUserData.label}
-								</Text>
+							<div style={{ flex: 1, minWidth: 0 }}>
+								<Group gap={6}>
+									<Text size="sm" fw={500}>
+										{selectedUserData.label}
+									</Text>
+									{selectedUserData.institution && (
+										<span
+											className={classes.institutionBadge}
+											data-type={selectedUserData.institution.type}
+										>
+											{selectedUserData.institution.name}
+										</span>
+									)}
+								</Group>
 								<Text size="xs" c="dimmed">
-									{selectedUserData.email}
+									{selectedUserData.role ? `${selectedUserData.role} · ` : ""}{selectedUserData.email}
 								</Text>
 							</div>
 						</Group>
 					)}
 
+					<TextInput
+						label="Objet"
+						placeholder="Objet de la conversation"
+						value={subject}
+						onChange={(e) => setSubject(e.target.value)}
+					/>
+
 					<Textarea
 						label="Message"
-						placeholder="Écrivez votre premier message..."
+						placeholder="Rédigez votre message..."
 						value={message}
 						onChange={(e) => setMessage(e.target.value)}
-						minRows={3}
-						maxRows={6}
+						minRows={4}
+						maxRows={8}
 						autosize
 					/>
 

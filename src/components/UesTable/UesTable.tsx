@@ -31,6 +31,7 @@ import {
 	IconCheck,
 	IconChecks,
 	IconClock,
+	IconDots,
 	IconDownload,
 	IconEdit,
 	IconEye,
@@ -323,20 +324,19 @@ const Section = (props: any) => {
 		onGlobalFilterChange: setGlobalFilter, // Permet à la recherche de fonctionner
 		displayColumnDefOptions: {
 			"mrt-row-actions": {
-				size: 200, // Plus de place pour les boutons explicites
+				size: 120,
+				header: "",
 			},
 		},
 		initialState: {
 			columnVisibility: { id: false },
 			density: "xs",
+			showGlobalFilter: true,
 		},
 		mantineTableBodyRowProps: ({ row }) => ({
 			style: {
-				backgroundColor: row.original.validate === null
-					? "var(--mantine-color-orange-0)"
-					: undefined,
 				borderLeft: row.original.validate === null
-					? "3px solid var(--mantine-color-orange-5)"
+					? "3px solid var(--mantine-color-orange-3)"
 					: "3px solid transparent",
 			},
 		}),
@@ -417,8 +417,8 @@ const Section = (props: any) => {
 		),
 
 		renderRowActions: ({ row, table }) => (
-			<Flex gap="xs">
-				{/* Bouton Valider - visible uniquement si l'UE n'est pas validée */}
+			<Group gap={4} wrap="nowrap" justify="flex-end">
+				{/* Bouton Valider visible directement - action principale */}
 				{authorizations.includes("validate-ues") && row.original.validate == null && (
 					<Button
 						size="compact-xs"
@@ -431,26 +431,34 @@ const Section = (props: any) => {
 						Valider
 					</Button>
 				)}
-				{/* Bouton Editer - visible uniquement si l'UE est validée */}
-				{authorizations.includes("update-ues") && row.original.validate != null && (
-					<Button
-						size="compact-xs"
-						color="blue"
-						variant="light"
-						leftSection={<IconEdit size={14} />}
-						onClick={() => table.setEditingRow(row)}
-					>
-						Éditer
-					</Button>
-				)}
-				{authorizations.includes("delete-ues") && (
-					<Tooltip label="Supprimer">
-						<ActionIcon color="red" variant="light" onClick={() => openDeleteConfirmModal(row)}>
-							<IconTrash size={16} />
+				{/* Menu pour actions secondaires */}
+				<Menu shadow="sm" position="bottom-end" withArrow>
+					<Menu.Target>
+						<ActionIcon variant="subtle" color="gray" size="sm">
+							<IconDots size={16} />
 						</ActionIcon>
-					</Tooltip>
-				)}
-			</Flex>
+					</Menu.Target>
+					<Menu.Dropdown>
+						{authorizations.includes("update-ues") && row.original.validate != null && (
+							<Menu.Item
+								leftSection={<IconEdit size={16} />}
+								onClick={() => table.setEditingRow(row)}
+							>
+								Éditer
+							</Menu.Item>
+						)}
+						{authorizations.includes("delete-ues") && (
+							<Menu.Item
+								leftSection={<IconTrash size={16} />}
+								color="red"
+								onClick={() => openDeleteConfirmModal(row)}
+							>
+								Supprimer
+							</Menu.Item>
+						)}
+					</Menu.Dropdown>
+				</Menu>
+			</Group>
 		),
 
 		renderTopToolbarCustomActions: ({ table }) => {

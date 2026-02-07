@@ -1,25 +1,11 @@
 /* ==========================================
-   MESSAGERIE - LAYOUT & STYLES
-
-   Solution permanente et autonome.
-   Ne modifie pas le layout global.
+   MESSAGERIE PROFESSIONNELLE - STYLE LINKEDIN
    ========================================== */
 
 /**
- * CALCUL DE HAUTEUR (à mettre à jour si AppShell change):
- *
- * 100vh (viewport)
- * - 60px  (AppShell.header height, défini dans layout.tsx ligne 42)
- * - 40px  (AppShell.padding "lg" × 2 = 20px top + 20px bottom)
- * - 104px (PageHeader: breadcrumb ~28px + header ~64px + gap 12px)
- * - 16px  (Grid gutter "md")
- * ─────────────────────────────────────────
+ * CALCUL DE HAUTEUR:
+ * 100vh - 60px (header) - 40px (padding) - 104px (PageHeader) - 16px (gutter)
  * = calc(100vh - 220px)
- *
- * Si AppShell.padding change:
- * - "xl" = 24px × 2 = 48px → calc(100vh - 228px)
- * - "lg" = 20px × 2 = 40px → calc(100vh - 220px) [ACTUEL]
- * - "md" = 16px × 2 = 32px → calc(100vh - 212px)
  */
 
 /* Container Grid - hauteur fixe calculée */
@@ -30,12 +16,10 @@
   overflow: hidden;
 }
 
-/* S'assurer que le Grid inner utilise toute la hauteur */
 .messagesGrid :global(.mantine-Grid-inner) {
   height: 100%;
 }
 
-/* Colonnes du Grid - même hauteur */
 .messagesGrid :global(.mantine-Grid-col) {
   height: 100%;
 }
@@ -44,7 +28,6 @@
    PANNEAUX
    ========================================== */
 
-/* Panneau gauche - Liste des conversations */
 .conversationPanel {
   height: 100%;
   display: flex;
@@ -52,7 +35,6 @@
   overflow: hidden;
 }
 
-/* Panneau droit - Thread de messages */
 .messagePanel {
   height: 100%;
   display: flex;
@@ -61,40 +43,60 @@
 }
 
 /* ==========================================
+   FILTRES (SegmentedControl)
+   ========================================== */
+
+.filterTabs {
+  padding: 0 var(--mantine-spacing-md);
+  padding-bottom: var(--mantine-spacing-xs);
+  flex-shrink: 0;
+}
+
+/* ==========================================
    LISTE DES CONVERSATIONS
    ========================================== */
 
 .conversationItem {
   cursor: pointer;
-  transition: all 0.15s ease;
-  border: 1px solid var(--mantine-color-gray-2);
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid var(--mantine-color-gray-2);
+  border-radius: 0;
 }
 
 .conversationItem:hover {
-  background-color: var(--mantine-color-blue-0);
-  border-color: var(--mantine-color-blue-3);
-  transform: translateX(2px);
+  background-color: var(--mantine-color-gray-0);
 }
 
 [data-mantine-color-scheme="dark"] .conversationItem {
-  border-color: var(--mantine-color-dark-4);
+  border-bottom-color: var(--mantine-color-dark-4);
 }
 
 [data-mantine-color-scheme="dark"] .conversationItem:hover {
   background-color: var(--mantine-color-dark-5);
-  border-color: var(--mantine-color-blue-7);
 }
 
 .conversationItem.selected {
-  background-color: var(--mantine-color-blue-0);
-  border-color: var(--mantine-color-blue-4);
-  border-left: 3px solid var(--mantine-color-blue-6);
+  background-color: var(--mantine-color-gray-1);
+  border-left: 3px solid var(--mantine-primary-color-filled);
 }
 
 [data-mantine-color-scheme="dark"] .conversationItem.selected {
   background-color: var(--mantine-color-dark-4);
-  border-color: var(--mantine-color-blue-6);
-  border-left: 3px solid var(--mantine-color-blue-5);
+  border-left: 3px solid var(--mantine-primary-color-filled);
+}
+
+.conversationSubject {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conversationSubjectUnread {
+  font-weight: 600;
+  color: var(--mantine-color-text);
 }
 
 .unreadPreview {
@@ -107,7 +109,62 @@
 }
 
 /* ==========================================
-   THREAD DE MESSAGES
+   BADGES INSTITUTION
+   ========================================== */
+
+.institutionBadge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-block;
+  line-height: 1.4;
+}
+
+.institutionBadge[data-type="cenadi"] {
+  background-color: var(--mantine-color-teal-0);
+  color: var(--mantine-color-teal-8);
+}
+
+.institutionBadge[data-type="minesup"] {
+  background-color: var(--mantine-color-blue-0);
+  color: var(--mantine-color-blue-8);
+}
+
+.institutionBadge[data-type="university"] {
+  background-color: var(--mantine-color-orange-0);
+  color: var(--mantine-color-orange-8);
+}
+
+.institutionBadge[data-type="ipes"] {
+  background-color: var(--mantine-color-violet-0);
+  color: var(--mantine-color-violet-8);
+}
+
+[data-mantine-color-scheme="dark"] .institutionBadge[data-type="cenadi"] {
+  background-color: rgba(32, 201, 151, 0.15);
+  color: var(--mantine-color-teal-4);
+}
+
+[data-mantine-color-scheme="dark"] .institutionBadge[data-type="minesup"] {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--mantine-color-blue-4);
+}
+
+[data-mantine-color-scheme="dark"] .institutionBadge[data-type="university"] {
+  background-color: rgba(251, 146, 60, 0.15);
+  color: var(--mantine-color-orange-4);
+}
+
+[data-mantine-color-scheme="dark"] .institutionBadge[data-type="ipes"] {
+  background-color: rgba(139, 92, 246, 0.15);
+  color: var(--mantine-color-violet-4);
+}
+
+/* ==========================================
+   THREAD HEADER
    ========================================== */
 
 .threadHeader {
@@ -116,28 +173,122 @@
   border-right: none;
   border-top: none;
   flex-shrink: 0;
-  background: var(--mantine-color-gray-0);
+  background: var(--mantine-color-white);
+  border-bottom: 1px solid var(--mantine-color-gray-3);
 }
 
 [data-mantine-color-scheme="dark"] .threadHeader {
   background: var(--mantine-color-dark-6);
+  border-bottom-color: var(--mantine-color-dark-4);
 }
+
+.threadSubject {
+  font-size: var(--mantine-font-size-md);
+  font-weight: 600;
+  color: var(--mantine-color-text);
+  line-height: 1.3;
+}
+
+.threadParticipants {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+/* ==========================================
+   ZONE DE MESSAGES
+   ========================================== */
 
 .messagesScrollArea {
   flex: 1;
   min-height: 0;
   background: var(--mantine-color-gray-0);
-  background-image:
-    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
 }
 
 [data-mantine-color-scheme="dark"] .messagesScrollArea {
   background: var(--mantine-color-dark-7);
-  background-image:
-    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
 }
+
+/* ==========================================
+   BLOCS DE MESSAGES (style plat)
+   ========================================== */
+
+.messageBlock {
+  padding: var(--mantine-spacing-md) var(--mantine-spacing-lg);
+  border-bottom: 1px solid var(--mantine-color-gray-1);
+  transition: background-color 0.1s ease;
+}
+
+.messageBlock:hover {
+  background-color: var(--mantine-color-gray-0);
+}
+
+[data-mantine-color-scheme="dark"] .messageBlock {
+  border-bottom-color: var(--mantine-color-dark-5);
+}
+
+[data-mantine-color-scheme="dark"] .messageBlock:hover {
+  background-color: var(--mantine-color-dark-6);
+}
+
+/* Distinction visuelle pour ses propres messages */
+.messageBlockOwn {
+  background-color: var(--mantine-color-gray-0);
+  border-left: 3px solid var(--mantine-primary-color-filled);
+}
+
+.messageBlockOwn:hover {
+  background-color: var(--mantine-color-gray-1);
+}
+
+[data-mantine-color-scheme="dark"] .messageBlockOwn {
+  background-color: var(--mantine-color-dark-6);
+}
+
+[data-mantine-color-scheme="dark"] .messageBlockOwn:hover {
+  background-color: var(--mantine-color-dark-5);
+}
+
+.messageBlockHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  margin-bottom: 4px;
+}
+
+.messageBlockBody {
+  padding-left: calc(38px + var(--mantine-spacing-sm));
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-text);
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+
+/* ==========================================
+   SÉPARATEURS DE DATE
+   ========================================== */
+
+.dateDivider {
+  margin: var(--mantine-spacing-sm) var(--mantine-spacing-lg);
+}
+
+.dateDivider :global(.mantine-Divider-label) {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mantine-color-dimmed);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--mantine-color-gray-0);
+  padding: 2px 10px;
+  border-radius: 3px;
+}
+
+[data-mantine-color-scheme="dark"] .dateDivider :global(.mantine-Divider-label) {
+  background: var(--mantine-color-dark-6);
+}
+
+/* ==========================================
+   ZONE DE SAISIE
+   ========================================== */
 
 .inputArea {
   border-radius: 0;
@@ -146,91 +297,12 @@
   border-bottom: none;
   flex-shrink: 0;
   background: var(--mantine-color-white);
+  border-top: 1px solid var(--mantine-color-gray-3);
 }
 
 [data-mantine-color-scheme="dark"] .inputArea {
   background: var(--mantine-color-dark-6);
-}
-
-/* ==========================================
-   BULLES DE MESSAGES
-   ========================================== */
-
-.messageOwn {
-  background: linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-blue-7) 100%);
-  color: white;
-  border-radius: 18px 18px 4px 18px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-[data-mantine-color-scheme="dark"] .messageOwn {
-  background: linear-gradient(135deg, var(--mantine-color-blue-7) 0%, var(--mantine-color-blue-8) 100%);
-}
-
-.messageOther {
-  background: var(--mantine-color-white);
-  border: 1px solid var(--mantine-color-gray-2);
-  border-radius: 18px 18px 18px 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-[data-mantine-color-scheme="dark"] .messageOther {
-  background: var(--mantine-color-dark-5);
-  border-color: var(--mantine-color-dark-4);
-}
-
-.messageWrapperOwn {
-  max-width: 70%;
-  margin-left: auto;
-}
-
-.messageWrapperOther {
-  max-width: 70%;
-  margin-right: auto;
-}
-
-/* ==========================================
-   SÉPARATEURS DE DATE
-   ========================================== */
-
-.dateDivider {
-  margin: var(--mantine-spacing-md) 0;
-}
-
-.dateDivider :global(.mantine-Divider-label) {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--mantine-color-dimmed);
-  text-transform: capitalize;
-  background: var(--mantine-color-gray-0);
-  padding: 4px 12px;
-  border-radius: 12px;
-}
-
-[data-mantine-color-scheme="dark"] .dateDivider :global(.mantine-Divider-label) {
-  background: var(--mantine-color-dark-6);
-}
-
-/* ==========================================
-   ANIMATIONS
-   ========================================== */
-
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-.messageOwn {
-  animation: slideInRight 0.2s ease-out;
-}
-
-.messageOther {
-  animation: slideInLeft 0.2s ease-out;
+  border-top-color: var(--mantine-color-dark-4);
 }
 
 /* ==========================================
@@ -239,13 +311,15 @@
 
 @media (max-width: 768px) {
   .messagesGrid {
-    /* Sur mobile: padding "md" × 2 = 32px au lieu de 40px */
     height: calc(100vh - 212px);
     max-height: calc(100vh - 212px);
   }
 
-  .messageWrapperOwn,
-  .messageWrapperOther {
-    max-width: 85%;
+  .messageBlock {
+    padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  }
+
+  .messageBlockBody {
+    padding-left: calc(34px + var(--mantine-spacing-xs));
   }
 }

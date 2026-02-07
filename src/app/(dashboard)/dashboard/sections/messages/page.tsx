@@ -73,10 +73,9 @@ function MessagesPage() {
 
 	return (
 		<Container fluid>
-			<Stack gap="lg">
+			<Stack gap="sm">
 				<PageHeader
 					title="Messagerie"
-					description="Communiquez avec les autres acteurs de la plateforme"
 					breadcrumbItems={breadcrumbItems}
 					icon={<IconMessageCircle size={24} />}
 				/>

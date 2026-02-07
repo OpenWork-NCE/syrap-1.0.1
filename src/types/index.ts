@@ -420,6 +420,12 @@ export interface ConversationParticipant {
 	name: string;
 	email: string;
 	avatar?: string;
+	role?: string;
+	institution?: {
+		id: string;
+		name: string;
+		type: "cenadi" | "minesup" | "university" | "ipes";
+	};
 	pivot?: {
 		last_read_at: string | null;
 		joined_at: string;
@@ -460,4 +466,5 @@ export interface SendMessagePayload {
 export interface CreateConversationPayload {
 	recipient_id: string;
 	message: string;
+	subject?: string;
 }

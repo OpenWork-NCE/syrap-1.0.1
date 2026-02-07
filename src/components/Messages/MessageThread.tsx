@@ -8,17 +8,17 @@ import {
 	Avatar,
 	Group,
 	Textarea,
-	ActionIcon,
+	Button,
 	ScrollArea,
 	Skeleton,
 	Center,
 	Divider,
 	Box,
 } from "@mantine/core";
-import { IconSend, IconPaperclip } from "@tabler/icons-react";
+import { IconSend } from "@tabler/icons-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
-import type { Conversation, Message, ConversationWithMessages } from "@/types";
+import type { Conversation, Message, ConversationWithMessages, ConversationParticipant } from "@/types";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import classes from "./Messages.module.css";
@@ -33,9 +33,9 @@ function formatMessageDate(date: Date): string {
 		return format(date, "HH:mm", { locale: fr });
 	}
 	if (isYesterday(date)) {
-		return `Hier ${format(date, "HH:mm", { locale: fr })}`;
+		return `Hier à ${format(date, "HH:mm", { locale: fr })}`;
 	}
-	return format(date, "d MMM HH:mm", { locale: fr });
+	return format(date, "d MMM à HH:mm", { locale: fr });
 }
 
 function formatDayDivider(date: Date): string {
@@ -46,6 +46,16 @@ function formatDayDivider(date: Date): string {
 		return "Hier";
 	}
 	return format(date, "EEEE d MMMM yyyy", { locale: fr });
+}
+
+function getAvatarColor(institutionType?: string): string {
+	switch (institutionType) {
+		case "cenadi": return "teal";
+		case "minesup": return "blue";
+		case "university": return "orange";
+		case "ipes": return "violet";
+		default: return "gray";
+	}
 }
 
 export function MessageThread({
@@ -65,11 +75,12 @@ export function MessageThread({
 			if (!res.ok) throw new Error("Erreur de chargement");
 			return res.json();
 		},
-		refetchInterval: 10000,
+		refetchInterval: 60000,
 		refetchOnWindowFocus: true,
 	});
 
 	const messages: Message[] = data?.messages?.data || [];
+	const conversationData = data?.conversation || conversation;
 
 	const sendMutation = useMutation({
 		mutationFn: async (body: string) => {
@@ -101,7 +112,6 @@ export function MessageThread({
 		},
 	});
 
-	// Scroll to bottom on new messages
 	useEffect(() => {
 		if (scrollRef.current) {
 			scrollRef.current.scrollTo({
@@ -125,13 +135,19 @@ export function MessageThread({
 		}
 	};
 
-	const otherParticipant = conversation.participants.find(
+	// Build a map of participant info by id
+	const participantMap = new Map<string, ConversationParticipant>();
+	for (const p of conversationData.participants) {
+		participantMap.set(String(p.id), p);
+	}
+
+	const otherParticipants = conversationData.participants.filter(
 		(p) => String(p.id) !== String(currentUserId)
 	);
 
 	// Group messages by day
 	const groupedMessages: { date: Date; messages: Message[] }[] = [];
-	messages.forEach((message) => {
+	for (const message of messages) {
 		const msgDate = new Date(message.created_at);
 		const lastGroup = groupedMessages[groupedMessages.length - 1];
 		if (lastGroup && isSameDay(lastGroup.date, msgDate)) {
@@ -139,22 +155,24 @@ export function MessageThread({
 		} else {
 			groupedMessages.push({ date: msgDate, messages: [message] });
 		}
-	});
+	}
 
 	if (isLoading) {
 		return (
 			<Stack h="100%" gap={0}>
 				<Paper p="md" withBorder className={classes.threadHeader}>
-					<Group gap="sm">
-						<Skeleton circle height={40} />
-						<Skeleton height={20} width={150} />
-					</Group>
+					<Skeleton height={20} width={300} mb="xs" />
+					<Skeleton height={14} width={200} />
 				</Paper>
-				<Stack flex={1} p="md" gap="sm">
-					{[1, 2, 3, 4].map((i) => (
-						<Group key={i} justify={i % 2 === 0 ? "flex-end" : "flex-start"}>
-							<Skeleton height={50} width="60%" radius="lg" />
-						</Group>
+				<Stack flex={1} p="md" gap="md">
+					{[1, 2, 3].map((i) => (
+						<Box key={i}>
+							<Group gap="sm" mb={4}>
+								<Skeleton circle height={38} />
+								<Skeleton height={14} width={150} />
+							</Group>
+							<Skeleton height={40} width="80%" ml={48} />
+						</Box>
 					))}
 				</Stack>
 			</Stack>
@@ -163,148 +181,119 @@ export function MessageThread({
 
 	return (
 		<Stack h="100%" gap={0} style={{ overflow: "hidden" }}>
-			{/* Header - Fixe */}
+			{/* Header - Sujet + Participants */}
 			<Paper p="md" withBorder className={classes.threadHeader}>
-				<Group gap="sm">
-					<Avatar
-						color="blue"
-						radius="xl"
-						size="md"
-						src={otherParticipant?.avatar}
-					>
-						{otherParticipant?.name?.charAt(0).toUpperCase() || "?"}
-					</Avatar>
-					<div>
-						<Text fw={500} size="sm">
-							{conversation.type === "group"
-								? conversation.subject
-								: otherParticipant?.name}
-						</Text>
-						<Text size="xs" c="dimmed">
-							{conversation.type === "group"
-								? `${conversation.participants.length} participants`
-								: otherParticipant?.email}
-						</Text>
-					</div>
-				</Group>
+				{conversationData.subject && (
+					<Text className={classes.threadSubject} mb={4}>
+						{conversationData.subject}
+					</Text>
+				)}
+				<Text className={classes.threadParticipants}>
+					{otherParticipants.map((p, i) => {
+						const participant = p as ConversationParticipant;
+						const parts = [participant.name];
+						if (participant.institution) {
+							parts.push(participant.institution.name);
+						}
+						return parts.join(" · ");
+					}).join(", ")}
+				</Text>
 			</Paper>
 
-			{/* Messages - Zone scrollable */}
+			{/* Messages */}
 			<ScrollArea
 				flex={1}
-				p="md"
 				viewportRef={scrollRef}
 				className={classes.messagesScrollArea}
 				style={{ minHeight: 0 }}
 			>
-				<Stack gap="md">
-					{groupedMessages.length === 0 ? (
-						<Center py="xl">
-							<Text c="dimmed" size="sm">
-								Commencez la conversation
-							</Text>
-						</Center>
-					) : (
-						groupedMessages.map((group, groupIndex) => (
-							<Stack key={groupIndex} gap="sm">
-								<Divider
-									label={formatDayDivider(group.date)}
-									labelPosition="center"
-									className={classes.dateDivider}
-								/>
-								{group.messages.map((message) => {
-									// Comparaison avec conversion en string pour éviter les problèmes de type
-									const isOwn = String(message.sender_id) === String(currentUserId);
+				{groupedMessages.length === 0 ? (
+					<Center py="xl">
+						<Text c="dimmed" size="sm">
+							Commencez la conversation
+						</Text>
+					</Center>
+				) : (
+					groupedMessages.map((group, groupIndex) => (
+						<Box key={groupIndex}>
+							<Divider
+								label={formatDayDivider(group.date)}
+								labelPosition="center"
+								className={classes.dateDivider}
+							/>
+							{group.messages.map((message) => {
+								const isOwn = String(message.sender_id) === String(currentUserId);
+								const senderParticipant = participantMap.get(String(message.sender_id));
+								const institution = (senderParticipant as ConversationParticipant)?.institution;
+								const senderName = message.sender?.name || senderParticipant?.name || "Inconnu";
 
-									return (
-										<Box
-											key={message.id}
-											className={isOwn ? classes.messageWrapperOwn : classes.messageWrapperOther}
-										>
-											<Group
-												justify={isOwn ? "flex-end" : "flex-start"}
-												wrap="nowrap"
-												align="flex-end"
-												gap="xs"
+								return (
+									<Box key={message.id} className={`${classes.messageBlock} ${isOwn ? classes.messageBlockOwn : ""}`}>
+										{/* Header: avatar + nom + institution + date */}
+										<div className={classes.messageBlockHeader}>
+											<Avatar
+												color={getAvatarColor(institution?.type)}
+												radius="xl"
+												size={38}
+												src={message.sender?.avatar}
 											>
-												{!isOwn && (
-													<Avatar
-														color="blue"
-														radius="xl"
-														size="sm"
-														src={message.sender?.avatar}
-													>
-														{message.sender?.name?.charAt(0).toUpperCase() || "?"}
-													</Avatar>
-												)}
-												<Box>
-													<Paper
-														p="sm"
-														className={isOwn ? classes.messageOwn : classes.messageOther}
-													>
-														<Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-															{message.body}
-														</Text>
-													</Paper>
-													<Text
-														size="xs"
-														c="dimmed"
-														ta={isOwn ? "right" : "left"}
-														mt={4}
-														px={4}
-													>
-														{formatMessageDate(new Date(message.created_at))}
-													</Text>
-												</Box>
-											</Group>
-										</Box>
-									);
-								})}
-							</Stack>
-						))
-					)}
-				</Stack>
+												{senderName.charAt(0).toUpperCase()}
+											</Avatar>
+											<Text fw={600} size="sm" lh={1}>
+												{senderName}
+											</Text>
+											{institution && (
+												<span
+													className={classes.institutionBadge}
+													data-type={institution.type}
+												>
+													{institution.name}
+												</span>
+											)}
+											<Text size="xs" c="dimmed" ml="auto" style={{ flexShrink: 0 }}>
+												{formatMessageDate(new Date(message.created_at))}
+											</Text>
+										</div>
+										{/* Body */}
+										<div className={classes.messageBlockBody}>
+											{message.body}
+										</div>
+									</Box>
+								);
+							})}
+						</Box>
+					))
+				)}
 			</ScrollArea>
 
-			{/* Input - Fixe en bas */}
-			<Paper p="md" withBorder className={classes.inputArea}>
-				<Group gap="sm" align="flex-end">
-					<ActionIcon
-						variant="subtle"
-						color="gray"
-						size="lg"
-						disabled
-						title="Pièces jointes (bientôt disponible)"
-					>
-						<IconPaperclip size={20} />
-					</ActionIcon>
+			{/* Input */}
+			<Paper p="sm" px="md" withBorder className={classes.inputArea}>
+				<Group gap="sm" align="flex-end" wrap="nowrap">
 					<Textarea
-						placeholder="Écrivez votre message..."
+						placeholder="Rédigez votre message..."
 						value={newMessage}
 						onChange={(e) => setNewMessage(e.target.value)}
 						onKeyDown={handleKeyDown}
 						autosize
-						minRows={1}
-						maxRows={4}
-						style={{ flex: 1 }}
+						minRows={2}
+						maxRows={5}
 						disabled={sendMutation.isPending}
+						style={{ flex: 1 }}
 						styles={{
 							input: {
-								borderRadius: 20,
+								borderRadius: 8,
 							}
 						}}
 					/>
-					<ActionIcon
-						size="lg"
-						color="blue"
-						variant="filled"
-						radius="xl"
+					<Button
+						leftSection={<IconSend size={16} />}
 						onClick={handleSend}
 						loading={sendMutation.isPending}
 						disabled={!newMessage.trim()}
+						size="sm"
 					>
-						<IconSend size={18} />
-					</ActionIcon>
+						Envoyer
+					</Button>
 				</Group>
 			</Paper>
 		</Stack>
