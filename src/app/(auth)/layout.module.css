@@ -1,12 +1,8 @@
 .wrapper {
 	min-height: 100vh;
-	background-color: #ffffff !important;
+	background-color: light-dark(#ffffff, #0f172a);
 	position: relative;
 	transition: var(--transition-default);
-}
-
-:global(.dark) .wrapper {
-	background-color: #0f172a !important;
 }
 
 .themeToggle {
@@ -55,7 +51,7 @@
 	font-family: var(--font-inter);
 	letter-spacing: -1px;
 	font-size: 2.75rem;
-	background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+	background: linear-gradient(135deg, var(--primary-6, #10b981) 0%, var(--primary-7, #059669) 50%, var(--primary-8, #047857) 100%);
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
@@ -98,15 +94,12 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: linear-gradient(
-		135deg,
-		#047857 0%,
-		#059669 25%,
-		#10b981 50%,
-		#059669 75%,
-		#047857 100%
+	background: light-dark(
+		linear-gradient(135deg, #047857 0%, #059669 25%, #10b981 50%, #059669 75%, #047857 100%),
+		linear-gradient(135deg, #022c22 0%, #064e3b 25%, #065f46 50%, #064e3b 75%, #022c22 100%)
 	);
 	z-index: 0;
+	transition: background 0.3s ease;
 }
 
 .gradientBackground::before {
@@ -138,12 +131,6 @@
 	max-width: 350px;
 	height: auto;
 	filter: drop-shadow(0 20px 40px rgba(0,0,0,0.2));
-	animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-	0%, 100% { transform: translateY(0); }
-	50% { transform: translateY(-15px); }
 }
 
 .imageContent {

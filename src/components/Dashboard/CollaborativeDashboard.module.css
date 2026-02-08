@@ -236,21 +236,7 @@
 	}
 }
 
-/* Dark mode adjustments */
-/* Le gradient du header est géré par React (useMantineTheme) */
-
-:global(.dark) .statCard,
-:global(.dark) .card,
-:global(.dark) .taskCard,
-:global(.dark) .quickActionCard,
-:global(.dark) .documentCard,
-:global(.dark) .calendarCard {
-	border-color: #334155;
-}
-
-:global(.dark) .calendarDateBox {
-	background: #0f172a;
-}
+/* Dark mode adjustments are handled via light-dark() on each component above */
 
 /* Notification Drawer */
 .notificationDrawer {
@@ -277,11 +263,4 @@
 	background: light-dark(#dcfce7, rgba(16, 185, 129, 0.15));
 }
 
-:global(.dark) .notificationItem {
-	border-color: #334155;
-}
-
-:global(.dark) .unreadNotification {
-	background: rgba(16, 185, 129, 0.1);
-	border-left-color: var(--mantine-color-green-6);
-}
+/* Notification dark mode handled via light-dark() above */

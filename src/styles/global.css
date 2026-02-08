@@ -13,7 +13,7 @@ body {
 	max-width: 100vw;
 	overflow-x: hidden;
 	font-family: var(--font-inter);
-	background-color: #ffffff;
+	background-color: light-dark(#ffffff, #0f172a);
 }
 
 h1,

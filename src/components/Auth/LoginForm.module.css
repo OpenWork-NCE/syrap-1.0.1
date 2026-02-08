@@ -6,18 +6,22 @@
 	position: relative;
 	overflow: hidden;
 	transition: var(--transition-default);
-	border: 1px solid light-dark(#e2e8f0, #334155);
+	border: 1px solid light-dark(var(--gray-2, #e2e8f0), var(--gray-8, #334155));
 	border-radius: 16px;
 	background: light-dark(#ffffff, #1e293b);
 	box-shadow:
-		0 4px 6px -1px rgba(0, 0, 0, 0.1),
-		0 2px 4px -2px rgba(0, 0, 0, 0.1);
+		light-dark(
+			0 4px 6px -1px rgba(0, 0, 0, 0.1),
+			0 4px 6px -1px rgba(0, 0, 0, 0.3)
+		);
 }
 
 .card:hover {
 	box-shadow:
-		0 20px 25px -5px rgba(0, 0, 0, 0.1),
-		0 8px 10px -6px rgba(0, 0, 0, 0.1);
+		light-dark(
+			0 20px 25px -5px rgba(0, 0, 0, 0.1),
+			0 20px 25px -5px rgba(0, 0, 0, 0.3)
+		);
 	transform: translateY(-2px);
 }
 
@@ -29,20 +33,20 @@
 	left: 0;
 	right: 0;
 	height: 3px;
-	background: linear-gradient(90deg, #10b981, #059669, #047857);
+	background: linear-gradient(90deg, var(--primary-6, #10b981), var(--primary-7, #059669), var(--primary-8, #047857));
 	border-radius: 16px 16px 0 0;
 }
 
 .forgotLink {
 	transition: var(--transition-fast);
 	position: relative;
-	color: light-dark(#10b981, #34d399);
+	color: light-dark(var(--primary-6, #10b981), var(--primary-4, #34d399));
 	text-decoration: none;
 }
 
 .forgotLink:hover {
 	text-decoration: none;
-	color: light-dark(#059669, #6ee7b7);
+	color: light-dark(var(--primary-7, #059669), var(--primary-3, #6ee7b7));
 }
 
 .submitButton {
@@ -52,11 +56,11 @@
 	letter-spacing: 0.01em;
 	border-radius: 10px;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+	background: linear-gradient(135deg, var(--primary-6, #10b981) 0%, var(--primary-7, #059669) 100%);
 	border: none;
 	position: relative;
 	overflow: hidden;
-	box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+	box-shadow: 0 4px 14px rgba(var(--primary-6-rgb, 16, 185, 129), 0.35);
 }
 
 .submitButton::before {
@@ -77,8 +81,8 @@
 
 .submitButton:hover {
 	transform: translateY(-2px);
-	box-shadow: 0 8px 25px rgba(16, 185, 129, 0.45);
-	background: linear-gradient(135deg, #059669 0%, #047857 100%);
+	box-shadow: 0 8px 25px rgba(var(--primary-6-rgb, 16, 185, 129), 0.45);
+	background: linear-gradient(135deg, var(--primary-7, #059669) 0%, var(--primary-8, #047857) 100%);
 }
 
 .submitButton:hover::before {
@@ -87,5 +91,5 @@
 
 .submitButton:active {
 	transform: translateY(0);
-	box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+	box-shadow: 0 4px 14px rgba(var(--primary-6-rgb, 16, 185, 129), 0.35);
 }

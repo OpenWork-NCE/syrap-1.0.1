@@ -4,21 +4,27 @@
 
 /* Filter Card */
 .filterCard {
-	background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
-	border: 1px solid rgba(0, 0, 0, 0.06);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+	background: light-dark(
+		linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%),
+		linear-gradient(135deg, rgba(37, 38, 43, 0.95) 0%, rgba(44, 46, 51, 0.95) 100%)
+	);
+	border: 1px solid light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
+	box-shadow: 0 2px 8px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.2));
 	transition: all 0.2s ease;
 }
 
 .filterCard:hover {
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+	box-shadow: 0 4px 16px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.3));
 }
 
 /* KPI Cards */
 .kpiCard {
-	background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 251, 252, 0.98) 100%);
-	border: 1px solid rgba(0, 0, 0, 0.05);
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+	background: light-dark(
+		linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 251, 252, 0.98) 100%),
+		linear-gradient(135deg, rgba(37, 38, 43, 0.98) 0%, rgba(44, 46, 51, 0.98) 100%)
+	);
+	border: 1px solid light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05));
+	box-shadow: 0 4px 20px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.2));
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	overflow: hidden;
 	position: relative;
@@ -38,7 +44,7 @@
 
 .kpiCard:hover {
 	transform: translateY(-4px);
-	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 12px 32px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.4));
 }
 
 .kpiCard:hover::before {
@@ -73,72 +79,53 @@
 
 /* Chart Cards */
 .chartCard {
-	background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 251, 252, 0.98) 100%);
-	border: 1px solid rgba(0, 0, 0, 0.05);
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+	background: light-dark(
+		linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 251, 252, 0.98) 100%),
+		linear-gradient(135deg, rgba(37, 38, 43, 0.98) 0%, rgba(44, 46, 51, 0.98) 100%)
+	);
+	border: 1px solid light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05));
+	box-shadow: 0 4px 20px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.2));
 	transition: all 0.3s ease;
 	height: 100%;
 }
 
 .chartCard:hover {
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+	box-shadow: 0 8px 32px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.3));
 }
 
 /* Rank Items */
 .rankItem {
-	background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%);
-	border: 1px solid rgba(0, 0, 0, 0.04);
+	background: light-dark(
+		linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%),
+		linear-gradient(135deg, rgba(44, 46, 51, 0.8) 0%, rgba(55, 58, 64, 0.8) 100%)
+	);
+	border: 1px solid light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.04));
 	transition: all 0.2s ease;
 }
 
 .rankItem:hover {
-	background: linear-gradient(135deg, rgba(241, 245, 249, 1) 0%, rgba(226, 232, 240, 1) 100%);
+	background: light-dark(
+		linear-gradient(135deg, rgba(241, 245, 249, 1) 0%, rgba(226, 232, 240, 1) 100%),
+		linear-gradient(135deg, rgba(55, 58, 64, 1) 0%, rgba(66, 70, 77, 1) 100%)
+	);
 	transform: translateX(4px);
 }
 
 /* Region Items */
 .regionItem {
-	background: linear-gradient(135deg, rgba(248, 250, 252, 0.6) 0%, rgba(241, 245, 249, 0.6) 100%);
-	border: 1px solid rgba(0, 0, 0, 0.03);
+	background: light-dark(
+		linear-gradient(135deg, rgba(248, 250, 252, 0.6) 0%, rgba(241, 245, 249, 0.6) 100%),
+		linear-gradient(135deg, rgba(44, 46, 51, 0.6) 0%, rgba(55, 58, 64, 0.6) 100%)
+	);
+	border: 1px solid light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03));
 	transition: all 0.2s ease;
 }
 
 .regionItem:hover {
-	background: linear-gradient(135deg, rgba(241, 245, 249, 0.9) 0%, rgba(226, 232, 240, 0.9) 100%);
-}
-
-/* Dark mode support */
-[data-mantine-color-scheme="dark"] .filterCard {
-	background: linear-gradient(135deg, rgba(37, 38, 43, 0.95) 0%, rgba(44, 46, 51, 0.95) 100%);
-	border-color: rgba(255, 255, 255, 0.06);
-}
-
-[data-mantine-color-scheme="dark"] .kpiCard {
-	background: linear-gradient(135deg, rgba(37, 38, 43, 0.98) 0%, rgba(44, 46, 51, 0.98) 100%);
-	border-color: rgba(255, 255, 255, 0.05);
-}
-
-[data-mantine-color-scheme="dark"] .chartCard {
-	background: linear-gradient(135deg, rgba(37, 38, 43, 0.98) 0%, rgba(44, 46, 51, 0.98) 100%);
-	border-color: rgba(255, 255, 255, 0.05);
-}
-
-[data-mantine-color-scheme="dark"] .rankItem {
-	background: linear-gradient(135deg, rgba(44, 46, 51, 0.8) 0%, rgba(55, 58, 64, 0.8) 100%);
-	border-color: rgba(255, 255, 255, 0.04);
-}
-
-[data-mantine-color-scheme="dark"] .rankItem:hover {
-	background: linear-gradient(135deg, rgba(55, 58, 64, 1) 0%, rgba(66, 70, 77, 1) 100%);
-}
-
-[data-mantine-color-scheme="dark"] .regionItem {
-	background: linear-gradient(135deg, rgba(44, 46, 51, 0.6) 0%, rgba(55, 58, 64, 0.6) 100%);
-	border-color: rgba(255, 255, 255, 0.03);
-}
-
-[data-mantine-color-scheme="dark"] .regionItem:hover {
-	background: linear-gradient(135deg, rgba(55, 58, 64, 0.9) 0%, rgba(66, 70, 77, 0.9) 100%);
+	background: light-dark(
+		linear-gradient(135deg, rgba(241, 245, 249, 0.9) 0%, rgba(226, 232, 240, 0.9) 100%),
+		linear-gradient(135deg, rgba(55, 58, 64, 0.9) 0%, rgba(66, 70, 77, 0.9) 100%)
+	);
 }
 
 /* Responsive adjustments */
