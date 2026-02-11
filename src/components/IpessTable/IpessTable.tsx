@@ -17,6 +17,7 @@ import {
 	Button,
 	Flex,
 	Menu,
+	Modal,
 	Stack,
 	Text,
 	Title,
@@ -24,6 +25,7 @@ import {
 } from "@mantine/core";
 import {
 	IconCheck,
+	IconDoor,
 	IconDownload,
 	IconEdit,
 	IconEye,
@@ -40,12 +42,14 @@ import {
 	useQueryClient,
 	useMutation,
 } from "@tanstack/react-query";
+import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { Localization, Ipes, University } from "@/types";
 import { PATH_SECTIONS } from "@/routes";
 import { useRouter } from "next/navigation";
 import { handleExportAsCSV, handleExportRowsAsPDF, innerUrl } from "@/app/lib/utils";
+import ClassroomsTable from "@/components/ClassroomsTable/ClassroomsTable";
 
 type LocalizationApiResponse = {
 	data: Array<Localization>;
@@ -107,6 +111,9 @@ const Section = (props: any) => {
 		Record<string, string | undefined>
 	>({});
 	const { push } = useRouter();
+	const [sallesOpened, { open: openSalles, close: closeSalles }] =
+		useDisclosure(false);
+	const [selectedIpes, setSelectedIpes] = useState<Ipes | null>(null);
 
 	const {
 		data: lData,
@@ -454,6 +461,18 @@ const Section = (props: any) => {
 				>
 					Détails
 				</Button>
+				<Button
+					variant="light"
+					color="teal"
+					size="compact-sm"
+					leftSection={<IconDoor size={16} />}
+					onClick={() => {
+						setSelectedIpes(row.original);
+						openSalles();
+					}}
+				>
+					Salles
+				</Button>
 				{authorizations?.includes("update-ipes") && (
 					<Tooltip label="Editer">
 						<ActionIcon
@@ -686,7 +705,30 @@ const Section = (props: any) => {
 		},
 	});
 
-	return <MantineReactTable table={table} />;
+	return (
+		<>
+			<MantineReactTable table={table} />
+			<Modal
+				opened={sallesOpened}
+				onClose={closeSalles}
+				title={
+					<Title order={4}>
+						Salles — {selectedIpes?.name}
+					</Title>
+				}
+				size="xl"
+				centered
+			>
+				{selectedIpes && (
+					<ClassroomsTable
+						institute="Ipes"
+						instituteId={selectedIpes.id}
+						parentInstitute={selectedIpes.institute}
+					/>
+				)}
+			</Modal>
+		</>
+	);
 };
 
 function useCreateIpes() {

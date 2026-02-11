@@ -1,20 +1,30 @@
 "use client";
 
-import { IconCategory, IconStack3 } from "@tabler/icons-react";
-import { SimpleGrid } from "@mantine/core";
-import { StatsCard } from "@/components/StatsCard/StasCard";
-import { CardGradient } from "@/components/CardGradientUniversity/CardGradient";
+import {
+	IconCategory,
+	IconStack3,
+	IconPhone,
+	IconMail,
+	IconMapPin,
+	IconBuilding,
+	IconHash,
+} from "@tabler/icons-react";
+import {
+	Grid,
+	Paper,
+	Group,
+	Stack,
+	Text,
+	Title,
+	ThemeIcon,
+	rem,
+	SimpleGrid,
+} from "@mantine/core";
 import { ShowUniversity } from "@/types";
 import { useEffect, useState } from "react";
 import { internalApiUrl } from "@/app/lib/utils";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import ClassroomsTable from "@/components/ClassroomsTable/ClassroomsTable";
-
-interface CardDataProps {
-	icon: React.FC<any>;
-	title: string;
-	count: string;
-}
 
 interface UniversityPageProps {
 	id: string;
@@ -41,57 +51,113 @@ const UniversityPage = ({ id }: UniversityPageProps) => {
 		levels_count: "",
 	});
 
-	const [cardDatas, setCardDatas] = useState<CardDataProps[]>([]);
-
 	useEffect(() => {
 		async function fetchUniversity() {
 			const response = await fetch(internalApiUrl(`/api/universities/${id}`));
 			const data = await response.json();
 			setUniversity(data);
-			setCardDatas([
-				{
-					icon: IconCategory,
-					title: "Nombre de filières",
-					count: data.branches_count,
-				},
-				{
-					icon: IconStack3,
-					title: "Nombre de niveaux",
-					count: data.levels_count,
-				},
-			]);
 		}
 		fetchUniversity();
 	}, []);
 
+	const infoItems = [
+		{ icon: IconHash, label: "Sigle", value: university.code },
+		{ icon: IconBuilding, label: "Intitulé", value: university.name },
+		{ icon: IconPhone, label: "Téléphone", value: university.phone },
+		{ icon: IconMail, label: "Email", value: university.email },
+		{
+			icon: IconMapPin,
+			label: "Arrondissement",
+			value: university.arrondissement?.name,
+		},
+	];
+
+	const statItems = [
+		{
+			icon: IconCategory,
+			label: "Filières",
+			value: university.branches_count,
+		},
+		{
+			icon: IconStack3,
+			label: "Niveaux",
+			value: university.levels_count,
+		},
+	];
+
 	return (
 		<>
-			<SimpleGrid
-				cols={{ base: 1, md: 1, lg: 3 }}
-				spacing={{ base: 10, sm: "xl" }}
-				verticalSpacing={{ base: "md", sm: "xl" }}
-			>
-				{cardDatas.map((item) => (
-					<StatsCard
-						key={item.title}
-						icon={item.icon}
-						title={item.title}
-						count={item.count}
-					/>
-				))}
-			</SimpleGrid>
-			<CardGradient
-				title={"Informations Générales sur l'Université"}
-				datas={{
-					code: university.code,
-					name: university.name,
-					phone: university.phone,
-					email: university.email,
-					levels_count: university.levels_count,
-					branches_count: university.branches_count,
-					arrondissement: university.arrondissement?.name,
-				}}
-			/>
+			<Grid gutter="md">
+				<Grid.Col span={{ base: 12, md: 8 }}>
+					<Paper withBorder p="lg" radius="md" h="100%">
+						<Title order={5} mb="md">
+							Informations générales
+						</Title>
+						<SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+							{infoItems.map((item) => (
+								<Group key={item.label} gap="sm" wrap="nowrap">
+									<ThemeIcon
+										variant="light"
+										size="lg"
+										radius="md"
+										color="green"
+									>
+										<item.icon
+											style={{ width: rem(18), height: rem(18) }}
+											stroke={1.5}
+										/>
+									</ThemeIcon>
+									<div>
+										<Text size="xs" c="dimmed">
+											{item.label}
+										</Text>
+										<Text size="sm" fw={600}>
+											{item.value || "—"}
+										</Text>
+									</div>
+								</Group>
+							))}
+						</SimpleGrid>
+					</Paper>
+				</Grid.Col>
+
+				<Grid.Col span={{ base: 12, md: 4 }}>
+					<Stack gap="md" h="100%">
+						{statItems.map((item) => (
+							<Paper
+								key={item.label}
+								withBorder
+								p="lg"
+								radius="md"
+								style={{ flex: 1 }}
+							>
+								<Group gap="md">
+									<ThemeIcon
+										variant="light"
+										size={48}
+										radius="md"
+										color="green"
+									>
+										<item.icon
+											style={{ width: rem(24), height: rem(24) }}
+											stroke={1.5}
+										/>
+									</ThemeIcon>
+									<div>
+										<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+											{item.label}
+										</Text>
+										<Text size="xl" fw={700}>
+											{item.value || "0"}
+										</Text>
+									</div>
+								</Group>
+							</Paper>
+						))}
+					</Stack>
+				</Grid.Col>
+			</Grid>
+
 			<PageHeader title="Salles" />
 			<ClassroomsTable
 				institute={"University"}

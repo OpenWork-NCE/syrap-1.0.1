@@ -1,31 +1,29 @@
 "use client";
 
-import { IconCategory, IconSchool, IconStack3 } from "@tabler/icons-react";
-import { Box, Paper, SimpleGrid, Title } from "@mantine/core";
-import { StatsCard } from "@/components/StatsCard/StasCard";
-import { CardGradient } from "@/components/CardGradientIpes/CardGradient";
+import {
+	IconHash,
+	IconBuilding,
+	IconPhone,
+	IconMail,
+	IconFileDescription,
+	IconCertificate,
+	IconSchool,
+} from "@tabler/icons-react";
+import {
+	Grid,
+	Paper,
+	Group,
+	Stack,
+	Text,
+	Title,
+	ThemeIcon,
+	rem,
+	SimpleGrid,
+} from "@mantine/core";
 import { ShowIpes } from "@/types";
 import { useEffect, useState } from "react";
 import { internalApiUrl } from "@/app/lib/utils";
 import ClassroomsTable from "@/components/ClassroomsTable/ClassroomsTable";
-
-const mockStats = [
-	{
-		icon: IconSchool,
-		title: "Nombre d'IPES",
-		count: "10",
-	},
-	{
-		icon: IconCategory,
-		title: "Nombre de filières",
-		count: "15",
-	},
-	{
-		icon: IconStack3,
-		title: "Nombre de niveaux",
-		count: "7",
-	},
-];
 
 interface IpesPageProps {
 	id: string;
@@ -47,7 +45,7 @@ const IpesPage = ({ id }: IpesPageProps) => {
 			phone: "",
 			description: "",
 			email: "",
-			arrondissement:  {
+			arrondissement: {
 				id: "",
 				name: "",
 				created_at: "",
@@ -80,35 +78,99 @@ const IpesPage = ({ id }: IpesPageProps) => {
 		fetchIpes();
 	}, []);
 
+	const infoItems = [
+		{ icon: IconHash, label: "Sigle", value: ipes.code },
+		{ icon: IconBuilding, label: "Intitulé", value: ipes.name },
+		{ icon: IconPhone, label: "Téléphone", value: ipes.phone },
+		{ icon: IconMail, label: "Email", value: ipes.email },
+		{
+			icon: IconCertificate,
+			label: "Décret de création",
+			value: ipes.decret_creation,
+		},
+		{
+			icon: IconFileDescription,
+			label: "Arrêté d'ouverture",
+			value: ipes.arrete_ouverture,
+		},
+	];
+
 	return (
 		<>
-			<SimpleGrid
-				cols={{ base: 1, md: 1, lg: 3 }}
-				spacing={{ base: 10, sm: "xl" }}
-				verticalSpacing={{ base: "md", sm: "xl" }}
-			>
-				{mockStats.map((item) => (
-					<StatsCard
-						key={item.title}
-						icon={item.icon}
-						title={item.title}
-						count={item.count}
-					/>
-				))}
-			</SimpleGrid>
-			<CardGradient
-				title={"Informations Générales sur l'IPES"}
-				datas={{
-					code: ipes.code,
-					name: ipes.name,
-					phone: ipes.phone,
-					email: ipes.email,
-					decret_creation: ipes.decret_creation,
-					arrete_ouverture: ipes.arrete_ouverture,
-					university: ipes.university?.name,
-				}}
+			<Grid gutter="md">
+				<Grid.Col span={{ base: 12, md: 8 }}>
+					<Paper withBorder p="lg" radius="md" h="100%">
+						<Title order={5} mb="md">
+							Informations générales
+						</Title>
+						<SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+							{infoItems.map((item) => (
+								<Group key={item.label} gap="sm" wrap="nowrap">
+									<ThemeIcon
+										variant="light"
+										size="lg"
+										radius="md"
+										color="green"
+									>
+										<item.icon
+											style={{ width: rem(18), height: rem(18) }}
+											stroke={1.5}
+										/>
+									</ThemeIcon>
+									<div>
+										<Text size="xs" c="dimmed">
+											{item.label}
+										</Text>
+										<Text size="sm" fw={600}>
+											{item.value || "—"}
+										</Text>
+									</div>
+								</Group>
+							))}
+						</SimpleGrid>
+					</Paper>
+				</Grid.Col>
+
+				<Grid.Col span={{ base: 12, md: 4 }}>
+					<Paper withBorder p="lg" radius="md" h="100%">
+						<Title order={5} mb="md">
+							Université de tutelle
+						</Title>
+						<Group gap="md">
+							<ThemeIcon
+								variant="light"
+								size={48}
+								radius="md"
+								color="green"
+							>
+								<IconSchool
+									style={{ width: rem(24), height: rem(24) }}
+									stroke={1.5}
+								/>
+							</ThemeIcon>
+							<div>
+								<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+									Rattachement
+								</Text>
+								<Text size="md" fw={700}>
+									{ipes.university?.name || "—"}
+								</Text>
+								{ipes.university?.code && (
+									<Text size="xs" c="dimmed">
+										{ipes.university.code}
+									</Text>
+								)}
+							</div>
+						</Group>
+					</Paper>
+				</Grid.Col>
+			</Grid>
+
+			<ClassroomsTable
+				institute={"Ipes"}
+				instituteId={id}
+				parentInstitute={ipes.institute}
 			/>
-			<ClassroomsTable institute={"Ipes"} instituteId={id} parentInstitute={ipes.institute} />
 		</>
 	);
 };

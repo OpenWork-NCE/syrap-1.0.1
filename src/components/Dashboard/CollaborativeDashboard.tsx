@@ -61,6 +61,8 @@ import {
 	IconInfoCircle,
 	IconMessage,
 	IconFileCheck,
+	IconTrendingUp,
+	IconArrowUpRight,
 } from "@tabler/icons-react";
 import { useEffect, useState, useCallback } from "react";
 import { innerUrl } from "@/app/lib/utils";
@@ -75,33 +77,6 @@ interface DashboardStats {
 	users_count: number;
 }
 
-// Données simulées pour les tâches en attente - à remplacer par API
-const mockPendingTasks = [
-	{
-		id: 1,
-		title: "Valider le programme de Licence Informatique",
-		institution: "IPES Cameroun",
-		type: "validation",
-		priority: "high",
-		dueDate: "2 jours",
-	},
-	{
-		id: 2,
-		title: "Réviser les UEs du Master Finance",
-		institution: "Université de Yaoundé",
-		type: "revision",
-		priority: "medium",
-		dueDate: "5 jours",
-	},
-	{
-		id: 3,
-		title: "Approuver les modifications du syllabus",
-		institution: "IPES Douala",
-		type: "approval",
-		priority: "low",
-		dueDate: "1 semaine",
-	},
-];
 
 // Fonction pour calculer l'année académique en cours
 const getAcademicYear = () => {
@@ -185,12 +160,6 @@ const mockCalendarEvents = [
 	},
 ];
 
-// Équipe en ligne simulée
-const mockOnlineUsers = [
-	{ id: 1, name: "Dr. Kamga Jean", role: "Coordinateur", status: "online" },
-	{ id: 2, name: "Prof. Mbarga Pierre", role: "Directeur", status: "online" },
-	{ id: 3, name: "Mme. Fouda Marie", role: "Secrétaire", status: "away" },
-];
 
 // Types de notifications
 type NotificationType = "validation" | "comment" | "document" | "system" | "calendar";
@@ -264,6 +233,7 @@ const initialNotifications: Notification[] = [
 	},
 ];
 
+
 export function CollaborativeDashboard() {
 	const { institution } = useInstitution();
 	const theme = useMantineTheme();
@@ -289,8 +259,13 @@ export function CollaborativeDashboard() {
 	// Style dynamique pour le header basé sur le thème de l'organisation
 	const primaryColor = theme.primaryColor;
 	const headerGradientStyle = {
-		background: `linear-gradient(135deg, ${theme.colors[primaryColor][5]} 0%, ${theme.colors[primaryColor][6]} 50%, ${theme.colors[primaryColor][7]} 100%)`,
+		background: `linear-gradient(135deg, ${theme.colors[primaryColor][6]} 0%, ${theme.colors[primaryColor][7]} 50%, ${theme.colors[primaryColor][8]} 100%)`,
 	};
+
+	// Upcoming events count for header summary
+	const upcomingEventsCount = mockCalendarEvents.filter(
+		(e) => new Date(e.date) >= new Date()
+	).length;
 
 	// Fetch documents
 	const fetchDocuments = useCallback(async () => {
@@ -447,7 +422,10 @@ export function CollaborativeDashboard() {
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
 		if (diffDays < 0) {
-			return "Passé";
+			return date.toLocaleDateString("fr-FR", {
+				day: "numeric",
+				month: "short",
+			});
 		} else if (diffDays === 0) {
 			return "Aujourd'hui";
 		} else if (diffDays === 1) {
@@ -462,18 +440,6 @@ export function CollaborativeDashboard() {
 		}
 	};
 
-	const getPriorityColor = (priority: string) => {
-		switch (priority) {
-			case "high":
-				return "red";
-			case "medium":
-				return "yellow";
-			case "low":
-				return "green";
-			default:
-				return "gray";
-		}
-	};
 
 	const getVisibilityIcon = (visibility: string) => {
 		switch (visibility) {
@@ -541,6 +507,11 @@ export function CollaborativeDashboard() {
 		setNotifications([]);
 	};
 
+	// Calendar events sorted chronologically
+	const upcomingEvents = [...mockCalendarEvents]
+		.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+		.slice(0, 5);
+
 	return (
 		<div className={classes.container}>
 			{/* Header Section */}
@@ -549,9 +520,6 @@ export function CollaborativeDashboard() {
 					<div className={classes.greeting}>
 						<Text className={classes.greetingText}>
 							{greeting}, <span className={classes.userName}>Administrateur</span>
-						</Text>
-						<Text className={classes.greetingSubtext}>
-							Voici un aperçu de votre espace de travail
 						</Text>
 					</div>
 					<Group gap="sm">
@@ -581,88 +549,64 @@ export function CollaborativeDashboard() {
 			</div>
 
 			{/* Stats Cards */}
-			<SimpleGrid cols={{ base: 2, sm: 4 }} spacing="lg" className={classes.statsGrid}>
-				<Card className={classes.statCard} padding="lg" radius="lg">
-					<Group justify="space-between" align="flex-start">
-						<div>
-							<Text className={classes.statLabel}>Universités</Text>
-							<Text className={classes.statValue}>
-								{isLoading ? "..." : stats.universities_count}
-							</Text>
-						</div>
-						<ThemeIcon size={48} radius="xl" variant="light" color="blue">
-							<IconSchool size={24} />
-						</ThemeIcon>
-					</Group>
-				</Card>
-
-				<Card className={classes.statCard} padding="lg" radius="lg">
-					<Group justify="space-between" align="flex-start">
-						<div>
-							<Text className={classes.statLabel}>IPES</Text>
-							<Text className={classes.statValue}>
-								{isLoading ? "..." : stats.ipes_count}
-							</Text>
-						</div>
-						<ThemeIcon size={48} radius="xl" variant="light" color="teal">
-							<IconBuildingCommunity size={24} />
-						</ThemeIcon>
-					</Group>
-				</Card>
-
-				<Card className={classes.statCard} padding="lg" radius="lg">
-					<Group justify="space-between" align="flex-start">
-						<div>
-							<Text className={classes.statLabel}>Programmes</Text>
-							<Text className={classes.statValue}>
-								{isLoading ? "..." : stats.salles_count ?? 0}
-							</Text>
-						</div>
-						<ThemeIcon size={48} radius="xl" variant="light" color="violet">
-							<IconBook size={24} />
-						</ThemeIcon>
-					</Group>
-				</Card>
-
-				<Card className={classes.statCard} padding="lg" radius="lg">
-					<Group justify="space-between" align="flex-start">
-						<div>
-							<Text className={classes.statLabel}>Utilisateurs</Text>
-							<Text className={classes.statValue}>
-								{isLoading ? "..." : stats.users_count}
-							</Text>
-						</div>
-						<ThemeIcon size={48} radius="xl" variant="light" color="orange">
-							<IconUsers size={24} />
-						</ThemeIcon>
-					</Group>
-				</Card>
+			<SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md" className={classes.statsGrid}>
+				{[
+					{
+						label: "Universités",
+						value: stats.universities_count,
+						icon: <IconSchool size={22} />,
+					},
+					{
+						label: "IPES",
+						value: stats.ipes_count,
+						icon: <IconBuildingCommunity size={22} />,
+					},
+					{
+						label: "Programmes",
+						value: stats.salles_count ?? 0,
+						icon: <IconBook size={22} />,
+					},
+					{
+						label: "Utilisateurs",
+						value: stats.users_count,
+						icon: <IconUsers size={22} />,
+					},
+				].map((stat, index) => (
+					<Card key={index} className={classes.statCard} padding="lg" radius="md">
+						<Group justify="space-between" align="flex-start">
+							<div>
+								<Text className={classes.statLabel}>{stat.label}</Text>
+								<Text className={classes.statValue}>
+									{isLoading ? "—" : stat.value}
+								</Text>
+							</div>
+							<ThemeIcon size={44} radius="md" variant="light" color={primaryColor}>
+								{stat.icon}
+							</ThemeIcon>
+						</Group>
+					</Card>
+				))}
 			</SimpleGrid>
 
 			{/* Main Content */}
-			<Grid gutter="lg">
-				{/* Left Column - Documents & Tasks */}
-				<Grid.Col span={{ base: 12, lg: 8 }}>
-					<Stack gap="lg">
-						{/* Documents Widget with Visibility Tabs */}
-						<Card className={classes.card} padding="lg" radius="lg">
+			<Grid gutter="md">
+				{/* Documents Widget */}
+				<Grid.Col span={{ base: 12, lg: 6 }}>
+					<Card className={classes.card} padding="lg" radius="md" h="100%">
 							<Group justify="space-between" mb="md">
-								<Group gap="xs">
-									<ThemeIcon size={32} radius="xl" color="blue" variant="light">
+								<div className={classes.sectionHeader}>
+									<ThemeIcon size={32} radius="md" color={primaryColor} variant="light">
 										<IconFileDescription size={18} />
 									</ThemeIcon>
 									<div>
-										<Text fw={600} size="lg">
-											Documents récents
-										</Text>
-										<Text size="xs" c="dimmed">
-											Filtrer par destinataire
-										</Text>
+										<Text className={classes.sectionTitle}>Documents récents</Text>
+										<Text className={classes.sectionSubtitle}>Filtrer par destinataire</Text>
 									</div>
-								</Group>
+								</div>
 								<Button
 									variant="subtle"
 									size="xs"
+									color="gray"
 									rightSection={<IconChevronRight size={14} />}
 									component="a"
 									href="/dashboard/sections/reports"
@@ -699,20 +643,23 @@ export function CollaborativeDashboard() {
 							{documentsLoading ? (
 								<Stack gap="sm">
 									{[1, 2, 3].map((i) => (
-										<Skeleton key={i} height={60} radius="md" />
+										<Skeleton key={i} height={56} radius="md" />
 									))}
 								</Stack>
 							) : filteredDocuments.length === 0 ? (
-								<Box py="xl" ta="center">
-									<ThemeIcon size={48} radius="xl" variant="light" color="gray" mx="auto" mb="sm">
-										<IconFileDescription size={24} />
-									</ThemeIcon>
-									<Text c="dimmed" size="sm">
+								<div className={classes.emptyState}>
+									<div className={classes.emptyStateIcon}>
+										<IconFileDescription size={24} color="var(--mantine-color-dimmed)" />
+									</div>
+									<Text className={classes.emptyStateTitle}>
 										Aucun document pour cette catégorie
 									</Text>
-								</Box>
+									<Text className={classes.emptyStateText}>
+										Les documents partagés avec votre organisation apparaîtront ici
+									</Text>
+								</div>
 							) : (
-								<Stack gap="sm">
+								<Stack gap="xs">
 									{filteredDocuments.map((doc) => (
 										<Card
 											key={doc.id}
@@ -723,7 +670,7 @@ export function CollaborativeDashboard() {
 											<Group justify="space-between" wrap="nowrap">
 												<Group gap="sm" wrap="nowrap" style={{ flex: 1 }}>
 													<ThemeIcon
-														size={40}
+														size={38}
 														radius="md"
 														variant="light"
 														color={getFileColor(doc.type)}
@@ -739,13 +686,13 @@ export function CollaborativeDashboard() {
 																{doc.author}
 															</Text>
 															<Text size="xs" c="dimmed">
-																•
+																&middot;
 															</Text>
 															<Text size="xs" c="dimmed">
 																{formatFileSize(doc.size)}
 															</Text>
 															<Text size="xs" c="dimmed">
-																•
+																&middot;
 															</Text>
 															<Text size="xs" c="dimmed">
 																{formatDate(doc.uploadDate)}
@@ -756,22 +703,12 @@ export function CollaborativeDashboard() {
 												<Group gap={4} wrap="nowrap">
 													{doc.visibility.map((v) => (
 														<Tooltip key={v} label={v}>
-															<Badge
-																size="xs"
-																variant="light"
-																color={
-																	v === "CENADI"
-																		? "red"
-																		: v === "MINESUP"
-																		? "blue"
-																		: "green"
-																}
-															>
+															<Badge size="xs" variant="light" color="gray">
 																{v}
 															</Badge>
 														</Tooltip>
 													))}
-													<ActionIcon variant="subtle" size="sm" ml="xs">
+													<ActionIcon variant="subtle" size="sm" color="gray" ml="xs">
 														<IconDownload size={14} />
 													</ActionIcon>
 												</Group>
@@ -785,80 +722,67 @@ export function CollaborativeDashboard() {
 								fullWidth
 								variant="light"
 								mt="md"
+								color={primaryColor}
 								leftSection={<IconFileUpload size={16} />}
 								component="a"
 								href="/dashboard/sections/reports"
 							>
 								Uploader un document
 							</Button>
-						</Card>
+					</Card>
+				</Grid.Col>
 
-						{/* Academic Calendar */}
-						<Card className={classes.card} padding="lg" radius="lg">
-							<Group justify="space-between" mb="md">
-								<Group gap="xs">
-									<ThemeIcon size={32} radius="xl" color="violet" variant="light">
+				{/* Academic Calendar */}
+				<Grid.Col span={{ base: 12, lg: 6 }}>
+					<Card className={classes.card} padding="lg" radius="md" h="100%">
+						<Group justify="space-between" mb="lg">
+								<div className={classes.sectionHeader}>
+									<ThemeIcon size={32} radius="md" color={primaryColor} variant="light">
 										<IconCalendar size={18} />
 									</ThemeIcon>
 									<div>
 										<Group gap="xs" align="center">
-											<Text fw={600} size="lg">
-												Calendrier académique
-											</Text>
-											<Badge size="sm" variant="filled" color="violet">
+											<Text className={classes.sectionTitle}>Calendrier académique</Text>
+											<Badge size="sm" variant="light" color={primaryColor}>
 												{getAcademicYear()}
 											</Badge>
 										</Group>
-										<Text size="xs" c="dimmed">
-											Événements à venir
+										<Text className={classes.sectionSubtitle}>
+											{upcomingEvents.length} événements
 										</Text>
 									</div>
-								</Group>
+								</div>
 								<Button
 									variant="subtle"
 									size="xs"
+									color="gray"
 									rightSection={<IconChevronRight size={14} />}
 								>
 									Voir tout
 								</Button>
 							</Group>
 
-							<Stack gap="sm">
-								{mockCalendarEvents
-									.filter((event) => new Date(event.date) >= new Date())
-									.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-									.slice(0, 4)
-									.map((event) => (
-									<Card
-										key={event.id}
-										className={classes.calendarCard}
-										padding="sm"
-										radius="md"
-									>
-										<Group justify="space-between" wrap="nowrap">
-											<Group gap="sm" wrap="nowrap" style={{ flex: 1 }}>
-												<Box
-													className={classes.calendarDateBox}
-													style={{
-														borderColor: `var(--mantine-color-${event.color}-5)`,
-													}}
-												>
-													<Text size="xs" fw={700} c={event.color}>
-														{new Date(event.date).toLocaleDateString("fr-FR", {
-															day: "numeric",
-														})}
-													</Text>
-													<Text size="xs" c="dimmed" tt="uppercase">
-														{new Date(event.date).toLocaleDateString("fr-FR", {
-															month: "short",
-														})}
-													</Text>
-												</Box>
+							{/* Timeline */}
+							<div className={classes.timelineContainer}>
+								<div
+									className={classes.timelineLine}
+									style={{ background: `var(--mantine-color-${primaryColor}-2)` }}
+								/>
+								<Stack gap="sm">
+									{upcomingEvents.map((event) => (
+										<div key={event.id} className={classes.timelineItem}>
+											<div
+												className={classes.timelineDot}
+												style={{
+													borderColor: `var(--mantine-color-${event.color}-5)`,
+												}}
+											/>
+											<Group justify="space-between" wrap="nowrap">
 												<div style={{ flex: 1, minWidth: 0 }}>
 													<Text fw={500} size="sm" truncate>
 														{event.title}
 													</Text>
-													<Group gap={4}>
+													<Group gap={6} mt={2}>
 														<Badge size="xs" variant="light" color={event.color}>
 															{getEventTypeLabel(event.type)}
 														</Badge>
@@ -867,247 +791,96 @@ export function CollaborativeDashboard() {
 														</Text>
 													</Group>
 												</div>
+												<Badge size="sm" variant="outline" color="gray">
+													{formatEventDate(event.date)}
+												</Badge>
 											</Group>
-											<Badge
-												size="sm"
-												variant="outline"
-												color={event.color}
-											>
-												{formatEventDate(event.date)}
-											</Badge>
-										</Group>
-									</Card>
-								))}
-							</Stack>
+										</div>
+									))}
+								</Stack>
+							</div>
 
 							<Button
 								fullWidth
 								variant="light"
-								mt="md"
+								mt="lg"
+								color={primaryColor}
 								leftSection={<IconCalendarEvent size={16} />}
-								color="violet"
 							>
 								Ajouter un événement
 							</Button>
-						</Card>
-
-						{/* Quick Actions */}
-						<SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
-							<Card
-								className={classes.quickActionCard}
-								padding="md"
-								radius="lg"
-								component="a"
-								href="/dashboard/sections/ues/list"
-							>
-								<ThemeIcon size={40} radius="xl" color="blue" variant="light" mb="sm">
-									<IconBook size={20} />
-								</ThemeIcon>
-								<Text fw={500} size="sm">
-									Gérer les UEs
-								</Text>
-								<Text size="xs" c="dimmed">
-									Ajouter ou modifier
-								</Text>
-							</Card>
-
-							<Card
-								className={classes.quickActionCard}
-								padding="md"
-								radius="lg"
-								component="a"
-								href="/dashboard/sections/universities/syllabus"
-							>
-								<ThemeIcon size={40} radius="xl" color="teal" variant="light" mb="sm">
-									<IconFileDescription size={20} />
-								</ThemeIcon>
-								<Text fw={500} size="sm">
-									Programmes
-								</Text>
-								<Text size="xs" c="dimmed">
-									Consulter les syllabus
-								</Text>
-							</Card>
-
-							<Card
-								className={classes.quickActionCard}
-								padding="md"
-								radius="lg"
-								component="a"
-								href="/dashboard/sections/crosscompare"
-							>
-								<ThemeIcon size={40} radius="xl" color="violet" variant="light" mb="sm">
-									<IconGitPullRequest size={20} />
-								</ThemeIcon>
-								<Text fw={500} size="sm">
-									Comparer
-								</Text>
-								<Text size="xs" c="dimmed">
-									Analyser les différences
-								</Text>
-							</Card>
-
-							<Card
-								className={classes.quickActionCard}
-								padding="md"
-								radius="lg"
-								component="a"
-								href="/dashboard/sections/reports"
-							>
-								<ThemeIcon size={40} radius="xl" color="orange" variant="light" mb="sm">
-									<IconFileUpload size={20} />
-								</ThemeIcon>
-								<Text fw={500} size="sm">
-									Documents
-								</Text>
-								<Text size="xs" c="dimmed">
-									Partager des fichiers
-								</Text>
-							</Card>
-						</SimpleGrid>
-					</Stack>
+					</Card>
 				</Grid.Col>
 
-				{/* Right Column - Team & Activity */}
-				<Grid.Col span={{ base: 12, lg: 4 }}>
-					<Stack gap="lg">
-						{/* Team Online */}
-						<Card className={classes.card} padding="lg" radius="lg">
-							<Group justify="space-between" mb="md">
-								<Group gap="xs">
-									<ThemeIcon size={32} radius="xl" color="green" variant="light">
-										<IconUsers size={18} />
-									</ThemeIcon>
-									<div>
-										<Text fw={600} size="lg">
-											Équipe en ligne
-										</Text>
-										<Text size="xs" c="dimmed">
-											{mockOnlineUsers.filter((u) => u.status === "online").length} actifs
-										</Text>
-									</div>
-								</Group>
-							</Group>
-
-							<Stack gap="sm">
-								{mockOnlineUsers.map((user) => (
-									<Group key={user.id} justify="space-between">
-										<Group gap="sm">
-											<Indicator
-												color={user.status === "online" ? "green" : "yellow"}
-												size={10}
-												offset={4}
-												position="bottom-end"
-												withBorder
-											>
-												<Avatar size={38} radius="xl" color="blue">
-													{user.name
-														.split(" ")
-														.map((n) => n[0])
-														.join("")
-														.slice(0, 2)}
-												</Avatar>
-											</Indicator>
-											<div>
-												<Text size="sm" fw={500}>
-													{user.name}
-												</Text>
-												<Text size="xs" c="dimmed">
-													{user.role}
-												</Text>
-											</div>
-										</Group>
-										<ActionIcon variant="subtle" size="sm">
-											<IconMessageCircle size={16} />
-										</ActionIcon>
-									</Group>
-								))}
-							</Stack>
-
-							<Button
-								fullWidth
-								variant="light"
-								mt="md"
-								leftSection={<IconUserPlus size={16} />}
-							>
-								Inviter un membre
-							</Button>
-						</Card>
-
-						{/* Pending Tasks */}
-						<Card className={classes.card} padding="lg" radius="lg">
-							<Group justify="space-between" mb="md">
-								<Group gap="xs">
-									<ThemeIcon size={32} radius="xl" color="red" variant="light">
-										<IconClipboardCheck size={18} />
-									</ThemeIcon>
-									<div>
-										<Text fw={600} size="lg">
-											Tâches en attente
-										</Text>
-										<Text size="xs" c="dimmed">
-											{mockPendingTasks.length} actions requises
-										</Text>
-									</div>
-								</Group>
-							</Group>
-
-							<Stack gap="xs">
-								{mockPendingTasks.map((task) => (
-									<Card
-										key={task.id}
-										className={classes.taskCard}
-										padding="xs"
-										radius="md"
+				{/* Quick Actions */}
+				<Grid.Col span={12}>
+					<SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
+							{[
+								{
+									icon: <IconBook size={20} />,
+									title: "Gérer les UEs",
+									subtitle: "Ajouter ou modifier",
+									href: "/dashboard/sections/ues/list",
+								},
+								{
+									icon: <IconFileDescription size={20} />,
+									title: "Programmes",
+									subtitle: "Consulter les syllabus",
+									href: "/dashboard/sections/universities/syllabus",
+								},
+								{
+									icon: <IconGitPullRequest size={20} />,
+									title: "Comparer",
+									subtitle: "Analyser les différences",
+									href: "/dashboard/sections/crosscompare",
+								},
+								{
+									icon: <IconFileUpload size={20} />,
+									title: "Documents",
+									subtitle: "Partager des fichiers",
+									href: "/dashboard/sections/reports",
+								},
+							].map((action, index) => (
+								<Card
+									key={index}
+									className={classes.quickActionCard}
+									padding="md"
+									radius="md"
+									component="a"
+									href={action.href}
+									style={{
+										["--action-color" as any]: `var(--mantine-color-${primaryColor}-6)`,
+									}}
+								>
+									<div
+										className={classes.quickActionCard}
+										style={{ all: "unset", display: "block", textAlign: "center" }}
 									>
-										<Group justify="space-between" wrap="nowrap">
-											<Group gap="xs" wrap="nowrap" style={{ flex: 1 }}>
-												<ThemeIcon
-													size={28}
-													radius="md"
-													variant="light"
-													color={getPriorityColor(task.priority)}
-												>
-													{task.type === "validation" ? (
-														<IconCheckbox size={14} />
-													) : task.type === "revision" ? (
-														<IconEdit size={14} />
-													) : (
-														<IconCircleCheck size={14} />
-													)}
-												</ThemeIcon>
-												<div style={{ flex: 1, minWidth: 0 }}>
-													<Text fw={500} size="xs" truncate>
-														{task.title}
-													</Text>
-													<Text size="xs" c="dimmed">
-														{task.institution}
-													</Text>
-												</div>
-											</Group>
-											<Badge
-												size="xs"
-												variant="light"
-												color={getPriorityColor(task.priority)}
-											>
-												{task.dueDate}
-											</Badge>
-										</Group>
-									</Card>
-								))}
-							</Stack>
-
-							<Button
-								fullWidth
-								variant="subtle"
-								mt="md"
-								size="xs"
-								rightSection={<IconChevronRight size={14} />}
-							>
-								Voir toutes les tâches
-							</Button>
-						</Card>
-					</Stack>
+										<ThemeIcon size={40} radius="md" color={primaryColor} variant="light" mb="sm" mx="auto">
+											{action.icon}
+										</ThemeIcon>
+										<Text fw={500} size="sm">
+											{action.title}
+										</Text>
+										<Text size="xs" c="dimmed" mt={2}>
+											{action.subtitle}
+										</Text>
+									</div>
+									<Box
+										style={{
+											position: "absolute",
+											top: 0,
+											left: 0,
+											right: 0,
+											height: 3,
+											background: `var(--mantine-color-${primaryColor}-5)`,
+											opacity: 0,
+											transition: "opacity 0.15s ease",
+										}}
+									/>
+								</Card>
+							))}
+						</SimpleGrid>
 				</Grid.Col>
 			</Grid>
 
