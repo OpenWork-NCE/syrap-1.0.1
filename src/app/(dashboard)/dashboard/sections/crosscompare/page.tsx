@@ -4,7 +4,7 @@ import { Container, Stack } from "@mantine/core";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import ComparePage from "@/components/Compare/ComparePage";
 
-const items = [{ title: "CrossCompare", href: "#" }];
+const items = [{ title: "Croisement et Comparaison", href: "#" }];
 
 function Page() {
 	return (

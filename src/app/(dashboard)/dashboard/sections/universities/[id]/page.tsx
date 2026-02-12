@@ -4,7 +4,10 @@ import { Container, Stack } from "@mantine/core";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import UniversityPage from "@/components/UniversityPage/UniversityPage";
 
-const items = [{ title: "Université", href: "#" }];
+const items = [
+	{ title: "Universités", href: "/dashboard/sections/universities" },
+	{ title: "Détails", href: "#" },
+];
 
 function Page({ params }: { params: { id: string } }) {
 	return (

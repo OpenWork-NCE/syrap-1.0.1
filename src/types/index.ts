@@ -176,6 +176,7 @@ export type Ipes = {
 	code: string;
 	phone: string;
 	email: string;
+	institute: string;
 	arrondissement_id: string;
 	user_id: string;
 	university_id: string;
@@ -456,6 +457,38 @@ export interface ConversationWithMessages {
 
 export interface UnreadCountResponse {
 	unread_count: number;
+}
+
+// ==================== NOTIFICATIONS ====================
+
+export type NotificationType =
+	| "validation"
+	| "comment"
+	| "document"
+	| "system"
+	| "calendar"
+	| "message";
+
+export interface AppNotification {
+	id: string;
+	type: NotificationType;
+	title: string;
+	message: string;
+	sender?: string;
+	link?: string;
+	read: boolean;
+	read_at?: string;
+	created_at: string;
+}
+
+export interface NotificationsResponse {
+	data: AppNotification[];
+	meta: {
+		current_page: number;
+		last_page: number;
+		per_page: number;
+		total: number;
+	};
 }
 
 export interface SendMessagePayload {

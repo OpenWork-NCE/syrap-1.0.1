@@ -3,25 +3,20 @@
 import { useState, useEffect } from "react";
 import {
 	Select,
-	Button,
 	Stack,
-	Text,
 	Group,
-	Badge,
 	Transition,
 	Box,
-	Divider,
 	Stepper,
 	Paper,
+	ThemeIcon,
 	useMantineTheme,
-	rem,
 } from "@mantine/core";
 import {
 	IconCheck,
 	IconSchool,
 	IconBuildingSkyscraper,
 	IconSelector,
-	IconListDetails,
 	IconChartBar,
 } from "@tabler/icons-react";
 import {
@@ -29,7 +24,7 @@ import {
 	ClassroomForWithSyllabus,
 	ShowIpesWithClassrooms,
 } from "@/types";
-import { Branch, Course, Level, Program } from "@/components/Syllabus/Syllabus";
+import { Branch, Level } from "@/components/Syllabus/Syllabus";
 import { ThemedTitle, ThemedText } from "@/components/ui/ThemeComponents";
 import classes from "./Compare.module.css";
 
@@ -38,6 +33,7 @@ interface ProgramSelectorProps {
 	institutes: ShowUniversitWihClassrooms[] | ShowIpesWithClassrooms[];
 	instituteType: "university" | "ipes";
 	onClassroomSelect: (classroom: ClassroomForWithSyllabus) => void;
+	onInstituteNameChange?: (name: string) => void;
 }
 
 export function ProgramSelector({
@@ -45,6 +41,7 @@ export function ProgramSelector({
 	institutes,
 	instituteType,
 	onClassroomSelect,
+	onInstituteNameChange,
 }: ProgramSelectorProps) {
 	const [activeStep, setActiveStep] = useState(0);
 	const [availableBranches, setAvalaibleBranches] = useState<Branch[]>([]);
@@ -64,11 +61,14 @@ export function ProgramSelector({
 		setSelectedInstitute(value);
 		if (value) {
 			setActiveStep(1);
+			const institute = institutes.find((i) => i.id.toString() === value);
+			onInstituteNameChange?.(institute?.name || "");
 		} else {
 			setActiveStep(0);
 			setSelectedBranch(null);
 			setSelectedLevel(null);
 			setSelectedClassroom(null);
+			onInstituteNameChange?.("");
 		}
 	};
 
@@ -84,10 +84,24 @@ export function ProgramSelector({
 		}
 	};
 
-	// Handle level selection
+	// Handle level selection — auto-select classroom when level is chosen
 	const handleLevelSelect = (value: string | null) => {
 		setSelectedLevel(value);
 		if (value) {
+			// Auto-select the classroom immediately
+			const classrooms = institutes.find(
+				(institute: ShowUniversitWihClassrooms | ShowIpesWithClassrooms) =>
+					institute.id == selectedInstitute,
+			)?.salles;
+
+			const classroom = classrooms?.find(
+				(s) => s.level.id == value && s.branch.id == selectedBranch,
+			);
+
+			if (classroom) {
+				setSelectedClassroom(classroom);
+				onClassroomSelect(classroom);
+			}
 			setActiveStep(3);
 		} else {
 			setActiveStep(2);
@@ -174,23 +188,6 @@ export function ProgramSelector({
 
 		fetchData();
 	}, [selectedBranch, selectedInstitute, institutes]);
-
-	const handleSelect = () => {
-		const classrooms = institutes.find(
-			(institute: ShowUniversitWihClassrooms | ShowIpesWithClassrooms) =>
-				institute.id == selectedInstitute,
-		)?.salles;
-
-		const classroom = classrooms?.find(
-			(s) => s.level.id == selectedLevel && s.branch.id == selectedBranch,
-		);
-
-		if (classroom) {
-			setSelectedClassroom(classroom);
-			onClassroomSelect(classroom);
-		}
-		setActiveStep(4);
-	};
 
 	const getInstitutionIcon = () => {
 		return title.toLowerCase().includes("université") ? (
@@ -324,63 +321,6 @@ export function ProgramSelector({
 						/>
 					</Paper>
 				</Stepper.Step>
-
-				<Stepper.Step
-					label="Confirmation"
-					icon={<IconListDetails size={18} />}
-					allowStepSelect={!!selectedLevel}
-				>
-					<Paper p="md" withBorder radius="md" className={classes.stepContent}>
-						<ThemedText size="sm" mb="md" className={classes.stepperText}>
-							Vérifiez les détails du programme et confirmez votre sélection.
-						</ThemedText>
-
-						<Box className={classes.confirmationBox}>
-							<Group mb="xs">
-								<ThemedText fw={500} size="sm">
-									Institut:
-								</ThemedText>
-								<Badge color="blue" variant="light" size="lg">
-									{getSelectedInstituteName()}
-								</Badge>
-							</Group>
-
-							<Group mb="xs">
-								<ThemedText fw={500} size="sm">
-									Filière:
-								</ThemedText>
-								<Badge color="cyan" variant="light" size="lg">
-									{getSelectedBranchName()}
-								</Badge>
-							</Group>
-
-							<Group mb="md">
-								<ThemedText fw={500} size="sm">
-									Niveau:
-								</ThemedText>
-								<Badge color="teal" variant="light" size="lg">
-									{getSelectedLevelName()}
-								</Badge>
-							</Group>
-
-							<Button
-								onClick={handleSelect}
-								disabled={!selectedLevel || isLoading}
-								variant="gradient"
-								gradient={{
-									from: "var(--primary-6)",
-									to: "var(--primary-4)",
-									deg: 45,
-								}}
-								leftSection={<IconCheck size={16} />}
-								className={`${classes.confirmButton} theme-button`}
-								fullWidth
-							>
-								Confirmer la sélection
-							</Button>
-						</Box>
-					</Paper>
-				</Stepper.Step>
 			</Stepper>
 
 			<Transition
@@ -396,26 +336,52 @@ export function ProgramSelector({
 								withBorder
 								radius="md"
 								className={classes.selectedProgramCard}
+								bg="var(--mantine-color-green-0)"
+								style={{
+									borderColor: "var(--mantine-color-green-3)",
+								}}
 							>
-								<ThemedTitle order={5} mb="sm">
-									Programme sélectionné
-								</ThemedTitle>
-								<Group justify="apart">
-									<Box>
-										<Badge
-											className="theme-badge"
-											size="xl"
-											variant="filled"
-											mb="xs"
+								<Group justify="space-between" align="center" wrap="nowrap" gap="md">
+									<Group gap="sm" wrap="nowrap" style={{ flex: 1 }}>
+										<ThemeIcon
+											variant="light"
+											color="green"
+											size="lg"
+											radius="md"
 										>
-											{selectedClassroom.designation}
-										</Badge>
-										<ThemedText size="sm" className={classes.stepperText}>
-											{selectedClassroom.branch.name} -{" "}
-											{selectedClassroom.level.name}
-										</ThemedText>
-									</Box>
-									<IconCheck size={24} className={classes.checkIcon} />
+											{getInstitutionIcon()}
+										</ThemeIcon>
+										<Box style={{ flex: 1 }}>
+											<ThemedText fw={700} size="sm" lineClamp={1}>
+												{getSelectedInstituteName()}
+											</ThemedText>
+											<Group gap="xs" mt={2}>
+												<ThemedText size="xs" c="dimmed">
+													Filière :
+												</ThemedText>
+												<ThemedText size="xs" fw={500}>
+													{selectedClassroom.branch.name}
+												</ThemedText>
+												<ThemedText size="xs" c="dimmed">
+													·
+												</ThemedText>
+												<ThemedText size="xs" c="dimmed">
+													Niveau :
+												</ThemedText>
+												<ThemedText size="xs" fw={500}>
+													{selectedClassroom.level.name}
+												</ThemedText>
+											</Group>
+										</Box>
+									</Group>
+									<ThemeIcon
+										variant="filled"
+										color="green"
+										size="md"
+										radius="xl"
+									>
+										<IconCheck size={14} />
+									</ThemeIcon>
 								</Group>
 							</Paper>
 						)}

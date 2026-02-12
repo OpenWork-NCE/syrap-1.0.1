@@ -5,7 +5,10 @@ import { useInstitution } from "@/app/context/SessionContext";
 import { Container, Box } from "@mantine/core";
 import { DocumentsPage } from "@/components/Files";
 
-const items = [{ title: "Documents", href: "#" }];
+const items = [
+	{ title: "Documents", href: "#" },
+	{ title: "Rapports", href: "#" },
+];
 
 function Page() {
 	const { institution } = useInstitution();

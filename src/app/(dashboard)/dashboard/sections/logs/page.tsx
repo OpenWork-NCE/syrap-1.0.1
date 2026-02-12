@@ -4,7 +4,10 @@ import { Box, Container } from "@mantine/core";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import Logs from "@/components/Logs/page";
 
-const items = [{ title: "Logs", href: "#" }];
+const items = [
+	{ title: "Documents", href: "#" },
+	{ title: "Logs", href: "#" },
+];
 
 function Page() {
 	return (

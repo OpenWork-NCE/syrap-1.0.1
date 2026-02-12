@@ -10,7 +10,7 @@ export function Footer() {
 		<Box component="footer" className={classes.footer}>
 			<Group justify="space-between" align="center" wrap="wrap" gap="md">
 				<Text size="sm" c="dimmed">
-					© {currentYear} IPES-SCpro - Système de Rapprochement Automatique des Programmes
+					© {currentYear} IPES-SCpro - Système de Coordination des Programmes des IPES
 				</Text>
 				<Group gap="md">
 					<Anchor href="/aide" size="sm" c="dimmed" className={classes.link}>

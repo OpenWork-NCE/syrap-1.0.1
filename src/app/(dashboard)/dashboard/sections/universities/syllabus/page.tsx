@@ -6,7 +6,10 @@ import PageHeader from "@/components/PageHeader/PageHeader";
 import { useInstitution, useAuthorizations } from "@/app/context/SessionContext";
 import Syllabus from "@/components/Syllabus/Syllabus";
 
-const items = [{ title: "Syllabus", href: "#" }];
+const items = [
+	{ title: "Universités", href: "/dashboard/sections/universities" },
+	{ title: "Programmes", href: "#" },
+];
 
 function Page() {
 	const { institution } = useInstitution();

@@ -65,9 +65,12 @@ import {
 	IconArrowUpRight,
 } from "@tabler/icons-react";
 import { useEffect, useState, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { innerUrl } from "@/app/lib/utils";
 import { useInstitution } from "@/app/context/SessionContext";
-import { FileDocument, FileType } from "@/types";
+import { FileDocument, FileType, AppNotification, NotificationsResponse, NotificationType, UnreadCountResponse } from "@/types";
+import { PATH_SECTIONS } from "@/routes";
+import Link from "next/link";
 import classes from "./CollaborativeDashboard.module.css";
 
 interface DashboardStats {
@@ -161,77 +164,21 @@ const mockCalendarEvents = [
 ];
 
 
-// Types de notifications
-type NotificationType = "validation" | "comment" | "document" | "system" | "calendar";
+// Formatage relatif des dates de notification
+const formatRelativeTime = (dateStr: string): string => {
+	const now = new Date();
+	const date = new Date(dateStr);
+	const diffMs = now.getTime() - date.getTime();
+	const diffMin = Math.floor(diffMs / 60000);
+	const diffHours = Math.floor(diffMin / 60);
+	const diffDays = Math.floor(diffHours / 24);
 
-interface Notification {
-	id: number;
-	type: NotificationType;
-	title: string;
-	message: string;
-	time: string;
-	read: boolean;
-	sender?: string;
-	link?: string;
-}
-
-// Notifications simulées - à remplacer par API
-const initialNotifications: Notification[] = [
-	{
-		id: 1,
-		type: "validation",
-		title: "Demande de validation",
-		message: "Le programme Master IA de l'IPES Yaoundé attend votre approbation",
-		time: "Il y a 5 min",
-		read: false,
-		sender: "Dr. Kamga Jean",
-		link: "/dashboard/sections/universities/syllabus",
-	},
-	{
-		id: 2,
-		type: "comment",
-		title: "Nouveau commentaire",
-		message: "Prof. Mbarga a commenté sur le syllabus Licence Informatique",
-		time: "Il y a 30 min",
-		read: false,
-		sender: "Prof. Mbarga Pierre",
-	},
-	{
-		id: 3,
-		type: "document",
-		title: "Document partagé",
-		message: "Un nouveau rapport a été partagé avec vous par le MINESUP",
-		time: "Il y a 1h",
-		read: false,
-		sender: "MINESUP",
-		link: "/dashboard/sections/reports",
-	},
-	{
-		id: 4,
-		type: "calendar",
-		title: "Rappel d'événement",
-		message: "Conseil d'établissement demain à 10h00",
-		time: "Il y a 2h",
-		read: true,
-	},
-	{
-		id: 5,
-		type: "system",
-		title: "Mise à jour système",
-		message: "De nouvelles fonctionnalités sont disponibles sur la plateforme",
-		time: "Il y a 1 jour",
-		read: true,
-	},
-	{
-		id: 6,
-		type: "validation",
-		title: "Programme validé",
-		message: "Votre programme de Licence Économie a été approuvé",
-		time: "Il y a 2 jours",
-		read: true,
-		sender: "MINESUP",
-	},
-];
+	if (diffMin < 1) return "À l'instant";
+	if (diffMin < 60) return `Il y a ${diffMin} min`;
+	if (diffHours < 24) return `Il y a ${diffHours}h`;
+	if (diffDays < 7) return `Il y a ${diffDays} jour${diffDays > 1 ? "s" : ""}`;
+	return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+};
 
 
 export function CollaborativeDashboard() {
@@ -251,10 +198,67 @@ export function CollaborativeDashboard() {
 
 	// Notifications state
 	const [notificationDrawerOpened, { open: openNotifications, close: closeNotifications }] = useDisclosure(false);
-	const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+	const queryClient = useQueryClient();
 
-	// Computed values for notifications
-	const unreadCount = notifications.filter((n) => !n.read).length;
+	// Fetch notifications (paginées, polling 60s)
+	const { data: notificationsData } = useQuery<NotificationsResponse>({
+		queryKey: ["notifications"],
+		queryFn: async () => {
+			const res = await fetch("/api/notifications?per_page=20");
+			if (!res.ok) return { data: [], meta: { current_page: 1, last_page: 1, per_page: 20, total: 0 } };
+			return res.json();
+		},
+		refetchInterval: 60000,
+		refetchOnWindowFocus: true,
+	});
+
+	// Fetch unread count (polling 30s - plus fréquent, requête légère)
+	const { data: unreadData } = useQuery<{ unread_count: number }>({
+		queryKey: ["notifications-unread-count"],
+		queryFn: async () => {
+			const res = await fetch("/api/notifications/unread-count");
+			if (!res.ok) return { unread_count: 0 };
+			return res.json();
+		},
+		refetchInterval: 30000,
+		refetchOnWindowFocus: true,
+	});
+
+	const notifications = notificationsData?.data ?? [];
+	const unreadCount = unreadData?.unread_count ?? 0;
+
+	// Mutation: marquer une notification comme lue
+	const markAsReadMutation = useMutation({
+		mutationFn: async (id: string) => {
+			await fetch(`/api/notifications/${id}/read`, { method: "POST" });
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["notifications"] });
+			queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
+		},
+	});
+
+	// Mutation: marquer toutes comme lues
+	const markAllAsReadMutation = useMutation({
+		mutationFn: async () => {
+			await fetch("/api/notifications/read-all", { method: "POST" });
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["notifications"] });
+			queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
+		},
+	});
+
+	// Mutation: supprimer une notification
+	const deleteNotificationMutation = useMutation({
+		mutationFn: async (id: string) => {
+			await fetch(`/api/notifications/${id}`, { method: "DELETE" });
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["notifications"] });
+			queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
+		},
+	});
 
 	// Style dynamique pour le header basé sur le thème de l'organisation
 	const primaryColor = theme.primaryColor;
@@ -266,6 +270,20 @@ export function CollaborativeDashboard() {
 	const upcomingEventsCount = mockCalendarEvents.filter(
 		(e) => new Date(e.date) >= new Date()
 	).length;
+
+	// Fetch unread messages count (polling 60s)
+	const { data: unreadMessagesData } = useQuery<UnreadCountResponse>({
+		queryKey: ["unread-count"],
+		queryFn: async () => {
+			const res = await fetch("/api/messages/unread-count");
+			if (!res.ok) return { unread_count: 0 };
+			return res.json();
+		},
+		refetchInterval: 60000,
+		refetchOnWindowFocus: true,
+	});
+
+	const unreadMessagesCount = unreadMessagesData?.unread_count ?? 0;
 
 	// Fetch documents
 	const fetchDocuments = useCallback(async () => {
@@ -489,22 +507,16 @@ export function CollaborativeDashboard() {
 		}
 	};
 
-	const markAsRead = (id: number) => {
-		setNotifications((prev) =>
-			prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-		);
+	const markAsRead = (id: string) => {
+		markAsReadMutation.mutate(id);
 	};
 
 	const markAllAsRead = () => {
-		setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+		markAllAsReadMutation.mutate();
 	};
 
-	const deleteNotification = (id: number) => {
-		setNotifications((prev) => prev.filter((n) => n.id !== id));
-	};
-
-	const clearAllNotifications = () => {
-		setNotifications([]);
+	const deleteNotification = (id: string) => {
+		deleteNotificationMutation.mutate(id);
 	};
 
 	// Calendar events sorted chronologically
@@ -524,7 +536,7 @@ export function CollaborativeDashboard() {
 					</div>
 					<Group gap="sm">
 						<Tooltip label={`${unreadCount} notification${unreadCount > 1 ? "s" : ""} non lue${unreadCount > 1 ? "s" : ""}`}>
-							<Indicator processing color="red" size={8} disabled={unreadCount === 0}>
+							<Indicator label={unreadCount > 0 ? unreadCount : undefined} color="red" size={18} disabled={unreadCount === 0} offset={4}>
 								<ActionIcon
 									variant="light"
 									size="lg"
@@ -533,6 +545,20 @@ export function CollaborativeDashboard() {
 									onClick={openNotifications}
 								>
 									<IconBell size={20} />
+								</ActionIcon>
+							</Indicator>
+						</Tooltip>
+						<Tooltip label={unreadMessagesCount > 0 ? `${unreadMessagesCount} message${unreadMessagesCount > 1 ? "s" : ""} non lu${unreadMessagesCount > 1 ? "s" : ""}` : "Messagerie"}>
+							<Indicator label={unreadMessagesCount > 0 ? unreadMessagesCount : undefined} color="blue" size={18} disabled={unreadMessagesCount === 0} offset={4}>
+								<ActionIcon
+									component={Link}
+									href={PATH_SECTIONS.messages}
+									variant="light"
+									size="lg"
+									radius="xl"
+									className={classes.headerAction}
+								>
+									<IconMessageCircle size={20} />
 								</ActionIcon>
 							</Indicator>
 						</Tooltip>
@@ -887,7 +913,12 @@ export function CollaborativeDashboard() {
 			{/* Notifications Drawer */}
 			<Drawer
 				opened={notificationDrawerOpened}
-				onClose={closeNotifications}
+				onClose={() => {
+					closeNotifications();
+					if (unreadCount > 0) {
+						markAllAsRead();
+					}
+				}}
 				title={
 					<Group justify="space-between" w="100%">
 						<Group gap="xs">
@@ -927,7 +958,10 @@ export function CollaborativeDashboard() {
 							<Menu.Item
 								leftSection={<IconTrash size={14} />}
 								color="red"
-								onClick={clearAllNotifications}
+								onClick={() => {
+									// Supprimer toutes les notifications une par une
+									notifications.forEach((n) => deleteNotification(n.id));
+								}}
 							>
 								Supprimer toutes les notifications
 							</Menu.Item>
@@ -979,7 +1013,7 @@ export function CollaborativeDashboard() {
 														{notification.title}
 													</Text>
 													<Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-														{notification.time}
+														{formatRelativeTime(notification.created_at)}
 													</Text>
 												</Group>
 												<Text size="xs" c="dimmed" lineClamp={2}>

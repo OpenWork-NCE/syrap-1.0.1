@@ -1,7 +1,6 @@
 "use client";
 
 import {
-	Text,
 	Grid,
 	RingProgress,
 	Group,
@@ -11,40 +10,23 @@ import {
 	Tooltip,
 	SimpleGrid,
 	Box,
-	Tabs,
-	rem,
-	Accordion,
 	ThemeIcon,
 	Divider,
-	Paper,
 	ScrollArea,
-	ActionIcon,
-	Collapse,
 	Center,
-	Menu,
 	Button,
+	Stack,
 } from "@mantine/core";
 import {
 	IconCheck,
 	IconX,
 	IconArrowsShuffle,
-	IconPercentage,
-	IconListDetails,
-	IconChartPie,
-	IconChartBar,
-	IconInfoCircle,
-	IconDownload,
 	IconFileTypePdf,
-	IconFileTypeCsv,
-	IconPrinter,
-	IconChevronDown,
-	IconChevronUp,
 	IconSchool,
 	IconBuildingSkyscraper,
-	IconTableExport,
 } from "@tabler/icons-react";
 import type { ClassroomForWithSyllabus, ComparisonResult, Ue } from "@/types";
-import React, { useState } from "react";
+import React from "react";
 import {
 	ThemedPaper,
 	ThemedTitle,
@@ -57,22 +39,22 @@ interface ComparisonResultProps {
 	result: ComparisonResult;
 	classroom1: ClassroomForWithSyllabus;
 	classroom2: ClassroomForWithSyllabus;
+	instituteName1?: string;
+	instituteName2?: string;
 }
 
 export function CompareResult({
 	result,
 	classroom1,
 	classroom2,
+	instituteName1,
+	instituteName2,
 }: ComparisonResultProps) {
-	const [activeTab, setActiveTab] = useState<string | null>("overview");
-	const [showDetails, setShowDetails] = useState(false);
-
 	const totalUEs =
 		result.commonsUes.length +
 		result.onlyInRecord1.length +
 		result.onlyInRecord2.length;
 	const commonPercentage = (result.commonsUes.length / totalUEs) * 100;
-	const differentPercentage = (result.differentsUes.length / totalUEs) * 100;
 
 	const renderUEList = (ues: Ue[], icon: React.ReactNode, color: string) => (
 		<List spacing="xs" size="sm" center icon={icon} className={classes.ueList}>
@@ -83,12 +65,9 @@ export function CompareResult({
 			) : (
 				ues.map((ue) => (
 					<List.Item key={ue.id} className={classes.ueItem}>
-						<Group>
-							<ThemedText fw={500}>{ue.name}</ThemedText>
-							<Badge color={color} variant="light" radius="sm">
-								{ue.slug}
-							</Badge>
-						</Group>
+						<ThemedText fw={500} size="sm">
+							{ue.name}
+						</ThemedText>
 					</List.Item>
 				))
 			)}
@@ -132,315 +111,10 @@ export function CompareResult({
 	const matchDescription = getMatchDescription();
 
 	const handleExportPDF = () => {
-		// Generate a filename based on the programs being compared
-		// Add null checks for classroom designations
 		const program1Name = classroom1.designation || "Programme_1";
 		const program2Name = classroom2.designation || "Programme_2";
 		const filename = `comparaison_${program1Name.replace(/\s+/g, "_")}_vs_${program2Name.replace(/\s+/g, "_")}`;
-
-		// Call our export function
-		handleExportComparisonAsPDF(result, classroom1, classroom2, filename);
-	};
-
-	const handleExportCSV = () => {
-		// Prepare data for CSV export
-		const totalUEs =
-			result.commonsUes.length +
-			result.onlyInRecord1.length +
-			result.onlyInRecord2.length;
-		const commonPercentage = (result.commonsUes.length / totalUEs) * 100;
-
-		// Add null checks for classroom designations
-		const program1Name = classroom1.designation || "Programme 1";
-		const program2Name = classroom2.designation || "Programme 2";
-		const program1Branch = classroom1.branch?.name || "Non spécifié";
-		const program2Branch = classroom2.branch?.name || "Non spécifié";
-		const program1Level = classroom1.level?.name || "Non spécifié";
-		const program2Level = classroom2.level?.name || "Non spécifié";
-
-		// Create CSV content
-		const csvContent = [
-			["Rapport de Comparaison de Programmes"],
-			[""],
-			["Programme 1", program1Name],
-			["Filière", program1Branch],
-			["Niveau", program1Level],
-			[""],
-			["Programme 2", program2Name],
-			["Filière", program2Branch],
-			["Niveau", program2Level],
-			[""],
-			["Résumé de la Comparaison"],
-			["Taux de correspondance", `${commonPercentage.toFixed(1)}%`],
-			["Niveau de correspondance", matchLabel],
-			["Total UEs", totalUEs.toString()],
-			["UEs en commun", result.commonsUes.length.toString()],
-			[
-				"UEs uniquement dans Programme 1",
-				result.onlyInRecord1.length.toString(),
-			],
-			[
-				"UEs uniquement dans Programme 2",
-				result.onlyInRecord2.length.toString(),
-			],
-			[""],
-			["UEs en commun"],
-		];
-
-		// Add common UEs
-		if (result.commonsUes.length > 0) {
-			csvContent.push(["Nom", "Slug", "Description"]);
-			result.commonsUes.forEach((ue: Ue) => {
-				csvContent.push([ue.name, ue.slug, ue.description || ""]);
-			});
-		} else {
-			csvContent.push(["Aucune UE en commun"]);
-		}
-
-		csvContent.push([""]);
-		csvContent.push(["UEs uniquement dans Programme 1"]);
-
-		// Add UEs only in Program 1
-		if (result.onlyInRecord1.length > 0) {
-			csvContent.push(["Nom", "Slug", "Description"]);
-			result.onlyInRecord1.forEach((ue: Ue) => {
-				csvContent.push([ue.name, ue.slug, ue.description || ""]);
-			});
-		} else {
-			csvContent.push(["Aucune UE uniquement dans Programme 1"]);
-		}
-
-		csvContent.push([""]);
-		csvContent.push(["UEs uniquement dans Programme 2"]);
-
-		// Add UEs only in Program 2
-		if (result.onlyInRecord2.length > 0) {
-			csvContent.push(["Nom", "Slug", "Description"]);
-			result.onlyInRecord2.forEach((ue: Ue) => {
-				csvContent.push([ue.name, ue.slug, ue.description || ""]);
-			});
-		} else {
-			csvContent.push(["Aucune UE uniquement dans Programme 2"]);
-		}
-
-		// Convert to CSV string
-		const csv = csvContent.map((row) => row.join(",")).join("\n");
-
-		// Create and download the CSV file
-		const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement("a");
-		link.setAttribute("href", url);
-		link.setAttribute(
-			"download",
-			`comparaison_${program1Name.replace(/\s+/g, "_")}_vs_${program2Name.replace(/\s+/g, "_")}.csv`,
-		);
-		link.style.visibility = "hidden";
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-	};
-
-	const handlePrint = () => {
-		// Create a printable version with all comparison details
-		const printWindow = window.open("", "_blank");
-		if (!printWindow) return;
-
-		const totalUEs =
-			result.commonsUes.length +
-			result.onlyInRecord1.length +
-			result.onlyInRecord2.length;
-		const commonPercentage = (result.commonsUes.length / totalUEs) * 100;
-
-		// Add null checks for classroom properties
-		const program1Name = classroom1.designation || "Programme 1";
-		const program2Name = classroom2.designation || "Programme 2";
-		const program1Branch = classroom1.branch?.name || "Non spécifié";
-		const program2Branch = classroom2.branch?.name || "Non spécifié";
-		const program1Level = classroom1.level?.name || "Non spécifié";
-		const program2Level = classroom2.level?.name || "Non spécifié";
-
-		const html = `
-			<html>
-				<head>
-					<title>Comparaison de Programmes</title>
-					<style>
-						body { font-family: Arial, sans-serif; margin: 20px; }
-						.header { text-align: center; margin-bottom: 20px; }
-						.program-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
-						.program-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; width: 45%; }
-						.program-1 { background-color: #f0f8ff; border-color: #0000ff; }
-						.program-2 { background-color: #fff5ee; border-color: #ff8c00; }
-						.summary { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #f8f8f8; }
-						.match-percentage { font-size: 24px; font-weight: bold; color: #333; }
-						.match-label { font-size: 18px; margin: 10px 0; }
-						.match-description { color: #666; }
-						table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-						th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-						th { background-color: #f2f2f2; }
-						.common-ues th { background-color: #e0f2f1; }
-						.program1-ues th { background-color: #e3f2fd; }
-						.program2-ues th { background-color: #fff3e0; }
-						.stats-table { width: 50%; margin: 20px auto; }
-						.footer { margin-top: 30px; text-align: center; font-size: 12px; color: #999; }
-						@media print {
-							button { display: none; }
-							.page-break { page-break-after: always; }
-						}
-					</style>
-				</head>
-				<body>
-					<div class="header">
-						<h1>Rapport de Comparaison de Programmes</h1>
-						<p>Analyse détaillée des similitudes et différences</p>
-					</div>
-
-					<div class="program-info">
-						<div class="program-card program-1">
-							<h3>Programme 1</h3>
-							<p><strong>Désignation:</strong> ${program1Name}</p>
-							<p><strong>Filière:</strong> ${program1Branch}</p>
-							<p><strong>Niveau:</strong> ${program1Level}</p>
-						</div>
-
-						<div class="program-card program-2">
-							<h3>Programme 2</h3>
-							<p><strong>Désignation:</strong> ${program2Name}</p>
-							<p><strong>Filière:</strong> ${program2Branch}</p>
-							<p><strong>Niveau:</strong> ${program2Level}</p>
-						</div>
-					</div>
-
-					<div class="summary">
-						<h2>Résumé de la Comparaison</h2>
-						<p class="match-percentage">${commonPercentage.toFixed(1)}% de correspondance</p>
-						<p class="match-label">${matchLabel}</p>
-						<p class="match-description">${matchDescription}</p>
-
-						<table class="stats-table">
-							<tr>
-								<th>Catégorie</th>
-								<th>Nombre</th>
-								<th>Pourcentage</th>
-							</tr>
-							<tr>
-								<td>UEs en commun</td>
-								<td>${result.commonsUes.length}</td>
-								<td>${((result.commonsUes.length / totalUEs) * 100).toFixed(1)}%</td>
-							</tr>
-							<tr>
-								<td>UEs uniquement dans Programme 1</td>
-								<td>${result.onlyInRecord1.length}</td>
-								<td>${((result.onlyInRecord1.length / totalUEs) * 100).toFixed(1)}%</td>
-							</tr>
-							<tr>
-								<td>UEs uniquement dans Programme 2</td>
-								<td>${result.onlyInRecord2.length}</td>
-								<td>${((result.onlyInRecord2.length / totalUEs) * 100).toFixed(1)}%</td>
-							</tr>
-							<tr>
-								<td><strong>Total</strong></td>
-								<td><strong>${totalUEs}</strong></td>
-								<td><strong>100%</strong></td>
-							</tr>
-						</table>
-					</div>
-
-					<div class="page-break"></div>
-
-					<h2>Détails des UEs</h2>
-
-					<h3>UEs en commun (${result.commonsUes.length})</h3>
-					${
-						result.commonsUes.length > 0
-							? `
-						<table class="common-ues">
-							<tr>
-								<th>Nom</th>
-								<th>Slug</th>
-								<th>Description</th>
-							</tr>
-							${result.commonsUes
-								.map(
-									(ue: Ue) => `
-								<tr>
-									<td>${ue.name}</td>
-									<td>${ue.slug}</td>
-									<td>${ue.description || "-"}</td>
-								</tr>
-							`,
-								)
-								.join("")}
-						</table>
-					`
-							: "<p>Aucune UE en commun</p>"
-					}
-
-					<h3>UEs uniquement dans Programme 1 (${result.onlyInRecord1.length})</h3>
-					${
-						result.onlyInRecord1.length > 0
-							? `
-						<table class="program1-ues">
-							<tr>
-								<th>Nom</th>
-								<th>Slug</th>
-								<th>Description</th>
-							</tr>
-							${result.onlyInRecord1
-								.map(
-									(ue: Ue) => `
-								<tr>
-									<td>${ue.name}</td>
-									<td>${ue.slug}</td>
-									<td>${ue.description || "-"}</td>
-								</tr>
-							`,
-								)
-								.join("")}
-						</table>
-					`
-							: "<p>Aucune UE uniquement dans Programme 1</p>"
-					}
-
-					<h3>UEs uniquement dans Programme 2 (${result.onlyInRecord2.length})</h3>
-					${
-						result.onlyInRecord2.length > 0
-							? `
-						<table class="program2-ues">
-							<tr>
-								<th>Nom</th>
-								<th>Slug</th>
-								<th>Description</th>
-							</tr>
-							${result.onlyInRecord2
-								.map(
-									(ue: Ue) => `
-								<tr>
-									<td>${ue.name}</td>
-									<td>${ue.slug}</td>
-									<td>${ue.description || "-"}</td>
-								</tr>
-							`,
-								)
-								.join("")}
-						</table>
-					`
-							: "<p>Aucune UE uniquement dans Programme 2</p>"
-					}
-
-					<div class="footer">
-						<p>Rapport généré le ${new Date().toLocaleDateString("fr-FR")} via IPES-SCpro - Système de Coordination des programmes des Instituts Privés d'Enseignement Supérieur</p>
-					</div>
-
-					<div style="text-align: center; margin-top: 20px;">
-						<button onclick="window.print()">Imprimer</button>
-					</div>
-				</body>
-			</html>
-		`;
-
-		printWindow.document.write(html);
-		printWindow.document.close();
+		handleExportComparisonAsPDF(result, classroom1, classroom2, filename, instituteName1, instituteName2);
 	};
 
 	return (
@@ -451,751 +125,349 @@ export function CompareResult({
 			radius="md"
 			className={`${classes.resultContainer} theme-card`}
 		>
-			<Group justify="apart" mb="xl">
+			{/* Header: titre + export */}
+			<Group justify="space-between" mb="lg">
 				<ThemedTitle order={3} className={classes.title}>
 					Résultats de la Comparaison
 				</ThemedTitle>
-				<Group>
-					<Menu shadow="md" width={200} position="bottom-end">
-						<Menu.Target>
-							<Button
-								leftSection={<IconTableExport size={18} />}
-								variant="light"
-								size="sm"
-							>
-								Exporter
-							</Button>
-						</Menu.Target>
-						<Menu.Dropdown>
-							<Menu.Item
-								leftSection={<IconFileTypePdf size={18} />}
-								onClick={handleExportPDF}
-							>
-								Exporter en PDF
-							</Menu.Item>
-							<Menu.Item
-								leftSection={<IconFileTypeCsv size={18} />}
-								onClick={handleExportCSV}
-							>
-								Exporter en CSV
-							</Menu.Item>
-							<Menu.Item
-								leftSection={<IconPrinter size={18} />}
-								onClick={handlePrint}
-							>
-								Imprimer
-							</Menu.Item>
-						</Menu.Dropdown>
-					</Menu>
-				</Group>
+				<Button
+					leftSection={<IconFileTypePdf size={18} />}
+					variant="light"
+					size="sm"
+					onClick={handleExportPDF}
+				>
+					Exporter en PDF
+				</Button>
 			</Group>
 
-			<Grid mb="xl" gutter="xl">
+			{/* Programmes comparés : 2 colonnes */}
+			<Grid mb="lg" gutter="md">
 				<Grid.Col span={{ base: 12, md: 6 }}>
 					<ThemedPaper
 						withBorder
-						p="md"
+						p="sm"
 						radius="md"
-						className={classes.programCard}
+						className={classes.programCompactRow}
+						style={{ borderLeft: "3px solid var(--mantine-color-blue-5)" }}
 					>
-						<ThemedTitle order={5} mb="xs" className={classes.programTitle}>
-							<ThemeIcon
-								radius="xl"
-								size="md"
-								color="blue"
-								variant="light"
-								mr="xs"
-							>
-								<IconSchool size={16} />
+						<Group gap="sm" wrap="nowrap">
+							<ThemeIcon radius="xl" size="sm" color="blue" variant="light">
+								<IconSchool size={14} />
 							</ThemeIcon>
-							Programme 1
-						</ThemedTitle>
-						<ThemedText fw={700} size="lg" mb="xs">
-							{classroom1.designation || "Programme 1"}
-						</ThemedText>
-						<Group mt="xs">
-							<Badge color="blue" variant="light">
-								{classroom1.branch?.name || "Non spécifié"}
-							</Badge>
-							<Badge color="cyan" variant="light">
-								{classroom1.level?.name || "Non spécifié"}
-							</Badge>
+							<ThemedText size="xs" c="dimmed" tt="uppercase" fw={600} style={{ whiteSpace: "nowrap" }}>
+								Université
+							</ThemedText>
+							<ThemedText fw={700} size="sm" lineClamp={1} style={{ flex: 1 }}>
+								{instituteName1 || "—"}
+							</ThemedText>
+							<ThemedText size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+								{classroom1.branch?.name || "—"} · {classroom1.level?.name || "—"}
+							</ThemedText>
 						</Group>
 					</ThemedPaper>
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, md: 6 }}>
 					<ThemedPaper
 						withBorder
-						p="md"
+						p="sm"
 						radius="md"
-						className={classes.programCard}
+						className={classes.programCompactRow}
+						style={{ borderLeft: "3px solid var(--mantine-color-orange-5)" }}
 					>
-						<ThemedTitle order={5} mb="xs" className={classes.programTitle}>
-							<ThemeIcon
-								radius="xl"
-								size="md"
-								color="orange"
-								variant="light"
-								mr="xs"
-							>
-								<IconBuildingSkyscraper size={16} />
+						<Group gap="sm" wrap="nowrap">
+							<ThemeIcon radius="xl" size="sm" color="orange" variant="light">
+								<IconBuildingSkyscraper size={14} />
 							</ThemeIcon>
-							Programme 2
-						</ThemedTitle>
-						<ThemedText fw={700} size="lg" mb="xs">
-							{classroom2.designation || "Programme 2"}
-						</ThemedText>
-						<Group mt="xs">
-							<Badge color="orange" variant="light">
-								{classroom2.branch?.name || "Non spécifié"}
-							</Badge>
-							<Badge color="yellow" variant="light">
-								{classroom2.level?.name || "Non spécifié"}
-							</Badge>
+							<ThemedText size="xs" c="dimmed" tt="uppercase" fw={600} style={{ whiteSpace: "nowrap" }}>
+								IPES
+							</ThemedText>
+							<ThemedText fw={700} size="sm" lineClamp={1} style={{ flex: 1 }}>
+								{instituteName2 || "—"}
+							</ThemedText>
+							<ThemedText size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+								{classroom2.branch?.name || "—"} · {classroom2.level?.name || "—"}
+							</ThemedText>
 						</Group>
 					</ThemedPaper>
 				</Grid.Col>
 			</Grid>
 
-			<ThemedPaper
-				withBorder
-				p="md"
-				radius="md"
-				mb="xl"
-				className={classes.summaryCard}
-			>
-				<Group justify="apart">
-					<ThemedTitle order={4} className={classes.summaryTitle}>
-						Résumé de la comparaison
-					</ThemedTitle>
-					<ActionIcon
-						variant="subtle"
-						onClick={() => setShowDetails(!showDetails)}
-						title={showDetails ? "Masquer les détails" : "Afficher les détails"}
-					>
-						{showDetails ? (
-							<IconChevronUp size={18} />
-						) : (
-							<IconChevronDown size={18} />
-						)}
-					</ActionIcon>
-				</Group>
-
-				<Group mt="md" justify="apart" align="flex-start">
-					<Box className={classes.summaryStats}>
-						<ThemedText fw={700} size="lg" color={matchColor}>
-							{matchLabel}
-						</ThemedText>
-						<Progress.Root size={24} radius="xl" mt="xs" mb="sm">
-							<Tooltip
-								label={`${commonPercentage.toFixed(1)}% - ${matchLabel}`}
-							>
-								<Progress.Section value={commonPercentage} color={matchColor}>
-									<Progress.Label>
-										{commonPercentage.toFixed(0)}%
-									</Progress.Label>
-								</Progress.Section>
-							</Tooltip>
-						</Progress.Root>
-						<ThemedText size="sm" className={classes.stepperText}>
-							{totalUEs} UE(s) au total • {result.commonsUes.length} UE(s) en
-							commun
-						</ThemedText>
-					</Box>
-
-					<RingProgress
-						sections={[
-							{
-								value: (result.commonsUes.length / totalUEs) * 100,
-								color: "teal",
-								tooltip: "UEs en commun",
-							},
-							{
-								value: (result.onlyInRecord1.length / totalUEs) * 100,
-								color: "blue",
-								tooltip: "UEs uniquement dans Programme 1",
-							},
-							{
-								value: (result.onlyInRecord2.length / totalUEs) * 100,
-								color: "orange",
-								tooltip: "UEs uniquement dans Programme 2",
-							},
-						]}
-						label={
-							<Center>
-								<ThemedText fw={700} size="xl" ta="center">
-									{commonPercentage.toFixed(0)}%
-								</ThemedText>
-							</Center>
-						}
-						size={120}
-						thickness={12}
-						roundCaps
-						className={classes.ringProgress}
-					/>
-				</Group>
-
-				<Collapse in={showDetails}>
-					<Divider my="md" />
-					<SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
-						<Box className={classes.statBox}>
-							<Group gap="xs">
-								<ThemeIcon color="teal" variant="light" radius="xl">
-									<IconCheck size={16} />
-								</ThemeIcon>
-								<ThemedText fw={600}>UEs en commun</ThemedText>
-							</Group>
-							<ThemedText size="xl" fw={700} mt="xs">
-								{result.commonsUes.length}
-								<ThemedText span size="sm" ml={5} color="dimmed">
-									({((result.commonsUes.length / totalUEs) * 100).toFixed(1)}%)
-								</ThemedText>
-							</ThemedText>
-						</Box>
-
-						<Box className={classes.statBox}>
-							<Group gap="xs">
-								<ThemeIcon color="blue" variant="light" radius="xl">
-									<IconArrowsShuffle size={16} />
-								</ThemeIcon>
-								<ThemedText fw={600}>UEs uniquement dans P1</ThemedText>
-							</Group>
-							<ThemedText size="xl" fw={700} mt="xs">
-								{result.onlyInRecord1.length}
-								<ThemedText span size="sm" ml={5} color="dimmed">
-									({((result.onlyInRecord1.length / totalUEs) * 100).toFixed(1)}
-									%)
-								</ThemedText>
-							</ThemedText>
-						</Box>
-
-						<Box className={classes.statBox}>
-							<Group gap="xs">
-								<ThemeIcon color="orange" variant="light" radius="xl">
-									<IconX size={16} />
-								</ThemeIcon>
-								<ThemedText fw={600}>UEs uniquement dans P2</ThemedText>
-							</Group>
-							<ThemedText size="xl" fw={700} mt="xs">
-								{result.onlyInRecord2.length}
-								<ThemedText span size="sm" ml={5} color="dimmed">
-									({((result.onlyInRecord2.length / totalUEs) * 100).toFixed(1)}
-									%)
-								</ThemedText>
-							</ThemedText>
-						</Box>
-					</SimpleGrid>
-
+			{/* Score principal + Stats en une seule rangée */}
+			<Grid mb="lg" gutter="md">
+				{/* Colonne gauche : score principal */}
+				<Grid.Col span={{ base: 12, md: 5 }}>
 					<ThemedPaper
 						withBorder
 						p="md"
 						radius="md"
-						mt="md"
-						className={classes.infoBox}
+						h="100%"
+						className={classes.scoreCard}
 					>
-						<Group gap="xs" mb="xs">
-							<IconInfoCircle size={18} className={classes.infoIcon} />
-							<ThemedText fw={600}>Interprétation</ThemedText>
-						</Group>
-						<ThemedText size="sm" className={classes.stepperText}>
-							{matchDescription}
-						</ThemedText>
-					</ThemedPaper>
-				</Collapse>
-			</ThemedPaper>
-
-			<Tabs
-				value={activeTab}
-				onChange={setActiveTab}
-				variant="pills"
-				radius="md"
-				className={classes.tabs}
-			>
-				<Tabs.List>
-					<Tabs.Tab value="overview" leftSection={<IconChartPie size={16} />}>
-						Vue d'ensemble
-					</Tabs.Tab>
-					<Tabs.Tab value="details" leftSection={<IconListDetails size={16} />}>
-						Détails des UEs
-					</Tabs.Tab>
-					<Tabs.Tab value="charts" leftSection={<IconChartBar size={16} />}>
-						Graphiques
-					</Tabs.Tab>
-				</Tabs.List>
-
-				<Tabs.Panel value="overview" pt="xl">
-					<SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xl">
-						<ThemedPaper
-							withBorder
-							p="md"
-							radius="md"
-							className={classes.statCard}
-						>
-							<Group>
-								<RingProgress
-									sections={[
-										{ value: commonPercentage, color: "teal" },
-										{ value: 100 - commonPercentage, color: "gray" },
-									]}
-									label={
-										<ThemedText size="lg" fw={700} ta="center">
-											{commonPercentage.toFixed(1)}%
+						<Group align="center" gap="md" wrap="nowrap">
+							<RingProgress
+								sections={[
+									{
+										value: commonPercentage,
+										color: matchColor,
+									},
+									{
+										value: 100 - commonPercentage,
+										color: "gray.2",
+									},
+								]}
+								label={
+									<Center>
+										<ThemedText fw={700} size="xl" ta="center">
+											{commonPercentage.toFixed(0)}%
 										</ThemedText>
-									}
-									size={90}
-									thickness={12}
-								/>
-								<Box>
-									<ThemedText fw={700} size="lg">
-										UEs en commun
-									</ThemedText>
-									<ThemedText size="sm" color="dimmed">
-										{result.commonsUes.length} UE(s) sur {totalUEs}
-									</ThemedText>
-								</Box>
-							</Group>
-						</ThemedPaper>
-
-						<ThemedPaper
-							withBorder
-							p="md"
-							radius="md"
-							className={classes.statCard}
-						>
-							<Group>
-								<RingProgress
-									sections={[
-										{
-											value: (result.onlyInRecord1.length / totalUEs) * 100,
-											color: "blue",
-										},
-										{
-											value: (result.onlyInRecord2.length / totalUEs) * 100,
-											color: "orange",
-										},
-									]}
-									label={
-										<ThemedText size="lg" fw={700} ta="center">
-											{(
-												((result.onlyInRecord1.length +
-													result.onlyInRecord2.length) /
-													totalUEs) *
-												100
-											).toFixed(1)}
-											%
-										</ThemedText>
-									}
-									size={90}
-									thickness={12}
-								/>
-								<Box>
-									<ThemedText fw={700} size="lg">
-										UEs uniques
-									</ThemedText>
-									<ThemedText size="sm" color="dimmed">
-										{result.onlyInRecord1.length + result.onlyInRecord2.length}{" "}
-										UE(s)
-									</ThemedText>
-								</Box>
-							</Group>
-						</ThemedPaper>
-
-						<ThemedPaper
-							withBorder
-							p="md"
-							radius="md"
-							className={classes.statCard}
-						>
-							<Group>
-								<RingProgress
-									sections={[
-										{
-											value: (result.onlyInRecord1.length / totalUEs) * 100,
-											color: "blue",
-										},
-										{
-											value: (result.onlyInRecord2.length / totalUEs) * 100,
-											color: "orange",
-										},
-										{
-											value: (result.commonsUes.length / totalUEs) * 100,
-											color: "teal",
-										},
-									]}
-									label={<IconPercentage size={24} />}
-									size={90}
-									thickness={12}
-								/>
-								<Box>
-									<ThemedText fw={700} size="lg">
-										Répartition
-									</ThemedText>
-									<ThemedText size="sm" color="dimmed">
-										{totalUEs} UE(s) au total
-									</ThemedText>
-								</Box>
-							</Group>
-						</ThemedPaper>
-					</SimpleGrid>
-
-					<ThemedPaper
-						withBorder
-						p="md"
-						radius="md"
-						mt="xl"
-						className={classes.matchContainer}
-					>
-						<ThemedTitle order={4} mb="md">
-							Taux de correspondance
-						</ThemedTitle>
-
-						<Progress.Root size={24} radius="xl">
-							<Tooltip
-								label={`${commonPercentage.toFixed(1)}% - ${matchLabel}`}
-							>
-								<Progress.Section value={commonPercentage} color={matchColor}>
-									<Progress.Label>
-										{commonPercentage.toFixed(0)}%
-									</Progress.Label>
-								</Progress.Section>
-							</Tooltip>
-						</Progress.Root>
-
-						<Box
-							py={10}
-							mt="md"
-							style={{
-								borderBottom: `3px solid var(--mantine-color-${matchColor}-6)`,
-							}}
-						>
-							<Group justify="apart">
-								<ThemedText fw={700} size="xl" color={matchColor}>
+									</Center>
+								}
+								size={100}
+								thickness={10}
+								roundCaps
+							/>
+							<Stack gap={4}>
+								<ThemedText fw={700} size="lg" c={`${matchColor}.6`}>
 									{matchLabel}
 								</ThemedText>
-								<Badge size="xl" color={matchColor} variant="light">
+								<Progress.Root size={8} radius="xl">
+									<Tooltip
+										label={`${commonPercentage.toFixed(1)}% — ${matchLabel}`}
+									>
+										<Progress.Section
+											value={commonPercentage}
+											color={matchColor}
+										/>
+									</Tooltip>
+								</Progress.Root>
+								<ThemedText size="xs" c="dimmed">
+									{totalUEs} UE(s) au total — {result.commonsUes.length} en
+									commun
+								</ThemedText>
+								<ThemedText size="xs" c="dimmed">
+									{matchDescription}
+								</ThemedText>
+							</Stack>
+						</Group>
+					</ThemedPaper>
+				</Grid.Col>
+
+				{/* Colonne droite : 3 stats compactes */}
+				<Grid.Col span={{ base: 12, md: 7 }}>
+					<SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md" h="100%">
+						<ThemedPaper
+							withBorder
+							p="sm"
+							radius="md"
+							className={classes.compactStat}
+						>
+							<Group gap="xs" mb={4}>
+								<ThemeIcon color="teal" variant="light" radius="xl" size="sm">
+									<IconCheck size={14} />
+								</ThemeIcon>
+								<ThemedText size="xs" fw={600}>
+									En commun
+								</ThemedText>
+							</Group>
+							<Group justify="space-between" align="baseline">
+								<ThemedText size="xl" fw={700}>
+									{result.commonsUes.length}
+								</ThemedText>
+								<Badge color="teal" variant="light" size="sm">
 									{commonPercentage.toFixed(1)}%
 								</Badge>
 							</Group>
-						</Box>
-
-						<ThemedText size="sm" mt="md" className={classes.stepperText}>
-							{matchDescription}
-						</ThemedText>
-					</ThemedPaper>
-				</Tabs.Panel>
-
-				<Tabs.Panel value="details" pt="xl">
-					<Accordion variant="separated" radius="md">
-						<Accordion.Item value="common">
-							<Accordion.Control
-								icon={
-									<ThemeIcon color="teal" variant="light" radius="xl">
-										<IconCheck size={16} />
-									</ThemeIcon>
-								}
-							>
-								<ThemedText fw={600}>
-									UEs en commun ({result.commonsUes.length})
-								</ThemedText>
-							</Accordion.Control>
-							<Accordion.Panel>
-								<ScrollArea
-									h={300}
-									offsetScrollbars
-									scrollbarSize={6}
-									type="hover"
-								>
-									{renderUEList(
-										result.commonsUes,
-										<IconCheck
-											size={16}
-											style={{ color: "var(--mantine-color-teal-6)" }}
-										/>,
-										"teal",
-									)}
-								</ScrollArea>
-							</Accordion.Panel>
-						</Accordion.Item>
-
-						<Accordion.Item value="program1">
-							<Accordion.Control
-								icon={
-									<ThemeIcon color="blue" variant="light" radius="xl">
-										<IconArrowsShuffle size={16} />
-									</ThemeIcon>
-								}
-							>
-								<ThemedText fw={600}>
-									UEs uniquement dans Programme 1 ({result.onlyInRecord1.length}
-									)
-								</ThemedText>
-							</Accordion.Control>
-							<Accordion.Panel>
-								<ScrollArea
-									h={300}
-									offsetScrollbars
-									scrollbarSize={6}
-									type="hover"
-								>
-									{renderUEList(
-										result.onlyInRecord1,
-										<IconArrowsShuffle
-											size={16}
-											style={{ color: "var(--mantine-color-blue-6)" }}
-										/>,
-										"blue",
-									)}
-								</ScrollArea>
-							</Accordion.Panel>
-						</Accordion.Item>
-
-						<Accordion.Item value="program2">
-							<Accordion.Control
-								icon={
-									<ThemeIcon color="orange" variant="light" radius="xl">
-										<IconX size={16} />
-									</ThemeIcon>
-								}
-							>
-								<ThemedText fw={600}>
-									UEs uniquement dans Programme 2 ({result.onlyInRecord2.length}
-									)
-								</ThemedText>
-							</Accordion.Control>
-							<Accordion.Panel>
-								<ScrollArea
-									h={300}
-									offsetScrollbars
-									scrollbarSize={6}
-									type="hover"
-								>
-									{renderUEList(
-										result.onlyInRecord2,
-										<IconX
-											size={16}
-											style={{ color: "var(--mantine-color-orange-6)" }}
-										/>,
-										"orange",
-									)}
-								</ScrollArea>
-							</Accordion.Panel>
-						</Accordion.Item>
-					</Accordion>
-				</Tabs.Panel>
-
-				<Tabs.Panel value="charts" pt="xl">
-					<SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
-						<ThemedPaper
-							withBorder
-							p="md"
-							radius="md"
-							className={classes.chartCard}
-						>
-							<ThemedTitle order={5} mb="lg" ta="center">
-								Répartition des UEs
-							</ThemedTitle>
-							<Center>
-								<RingProgress
-									sections={[
-										{
-											value: (result.commonsUes.length / totalUEs) * 100,
-											color: "teal",
-											tooltip: `${result.commonsUes.length} UEs en commun (${((result.commonsUes.length / totalUEs) * 100).toFixed(1)}%)`,
-										},
-										{
-											value: (result.onlyInRecord1.length / totalUEs) * 100,
-											color: "blue",
-											tooltip: `${result.onlyInRecord1.length} UEs uniquement dans Programme 1 (${((result.onlyInRecord1.length / totalUEs) * 100).toFixed(1)}%)`,
-										},
-										{
-											value: (result.onlyInRecord2.length / totalUEs) * 100,
-											color: "orange",
-											tooltip: `${result.onlyInRecord2.length} UEs uniquement dans Programme 2 (${((result.onlyInRecord2.length / totalUEs) * 100).toFixed(1)}%)`,
-										},
-									]}
-									size={200}
-									thickness={30}
-									roundCaps
-									label={
-										<Center>
-											<ThemedText fw={700} size="lg">
-												{totalUEs} UEs
-											</ThemedText>
-										</Center>
-									}
-								/>
-							</Center>
-
-							<SimpleGrid cols={3} mt="xl">
-								<Box ta="center">
-									<Badge
-										color="teal"
-										size="lg"
-										radius="sm"
-										variant="dot"
-										mb="xs"
-									>
-										UEs en commun
-									</Badge>
-									<ThemedText fw={700}>{result.commonsUes.length}</ThemedText>
-								</Box>
-								<Box ta="center">
-									<Badge
-										color="blue"
-										size="lg"
-										radius="sm"
-										variant="dot"
-										mb="xs"
-									>
-										UEs P1 uniquement
-									</Badge>
-									<ThemedText fw={700}>
-										{result.onlyInRecord1.length}
-									</ThemedText>
-								</Box>
-								<Box ta="center">
-									<Badge
-										color="orange"
-										size="lg"
-										radius="sm"
-										variant="dot"
-										mb="xs"
-									>
-										UEs P2 uniquement
-									</Badge>
-									<ThemedText fw={700}>
-										{result.onlyInRecord2.length}
-									</ThemedText>
-								</Box>
-							</SimpleGrid>
+							<Progress
+								value={commonPercentage}
+								color="teal"
+								size={4}
+								radius="xl"
+								mt={4}
+							/>
 						</ThemedPaper>
 
 						<ThemedPaper
 							withBorder
-							p="md"
+							p="sm"
 							radius="md"
-							className={classes.chartCard}
+							className={classes.compactStat}
 						>
-							<ThemedTitle order={5} mb="lg" ta="center">
-								Taux de correspondance
-							</ThemedTitle>
-
-							<Box className={classes.barChartContainer}>
-								<ThemedText ta="center" mb="md" fw={600}>
-									{commonPercentage.toFixed(1)}% de correspondance
+							<Group gap="xs" mb={4}>
+								<ThemeIcon color="blue" variant="light" radius="xl" size="sm">
+									<IconArrowsShuffle size={14} />
+								</ThemeIcon>
+								<ThemedText size="xs" fw={600}>
+									Univ. seul
 								</ThemedText>
+							</Group>
+							<Group justify="space-between" align="baseline">
+								<ThemedText size="xl" fw={700}>
+									{result.onlyInRecord1.length}
+								</ThemedText>
+								<Badge color="blue" variant="light" size="sm">
+									{((result.onlyInRecord1.length / totalUEs) * 100).toFixed(1)}%
+								</Badge>
+							</Group>
+							<Progress
+								value={(result.onlyInRecord1.length / totalUEs) * 100}
+								color="blue"
+								size={4}
+								radius="xl"
+								mt={4}
+							/>
+						</ThemedPaper>
 
-								<Box className={classes.barChart}>
-									<Box className={classes.barChartLabel}>
-										<ThemedText size="sm">0%</ThemedText>
-									</Box>
-
-									<Box className={classes.barChartTrack}>
-										<Box
-											className={classes.barChartFill}
-											style={{
-												width: `${commonPercentage}%`,
-												backgroundColor: `var(--mantine-color-${matchColor}-6)`,
-											}}
-										/>
-
-										<Box className={classes.barChartMarkers}>
-											<Box
-												className={classes.barChartMarker}
-												style={{ left: "30%" }}
-											>
-												<Box className={classes.barChartMarkerLine} />
-												<ThemedText
-													size="xs"
-													className={classes.barChartMarkerLabel}
-												>
-													Minimale
-												</ThemedText>
-											</Box>
-
-											<Box
-												className={classes.barChartMarker}
-												style={{ left: "50%" }}
-											>
-												<Box className={classes.barChartMarkerLine} />
-												<ThemedText
-													size="xs"
-													className={classes.barChartMarkerLabel}
-												>
-													Partielle
-												</ThemedText>
-											</Box>
-
-											<Box
-												className={classes.barChartMarker}
-												style={{ left: "70%" }}
-											>
-												<Box className={classes.barChartMarkerLine} />
-												<ThemedText
-													size="xs"
-													className={classes.barChartMarkerLabel}
-												>
-													Moyenne
-												</ThemedText>
-											</Box>
-
-											<Box
-												className={classes.barChartMarker}
-												style={{ left: "85%" }}
-											>
-												<Box className={classes.barChartMarkerLine} />
-												<ThemedText
-													size="xs"
-													className={classes.barChartMarkerLabel}
-												>
-													Avancée
-												</ThemedText>
-											</Box>
-
-											<Box
-												className={classes.barChartMarker}
-												style={{ left: "100%" }}
-											>
-												<Box className={classes.barChartMarkerLine} />
-												<ThemedText
-													size="xs"
-													className={classes.barChartMarkerLabel}
-												>
-													Optimale
-												</ThemedText>
-											</Box>
-										</Box>
-									</Box>
-
-									<Box className={classes.barChartLabel}>
-										<ThemedText size="sm">100%</ThemedText>
-									</Box>
-								</Box>
-
-								<ThemedPaper
-									withBorder
-									p="sm"
-									radius="md"
-									mt="xl"
-									className={classes.matchSummary}
-								>
-									<ThemedText fw={700} size="lg" color={matchColor} ta="center">
-										{matchLabel}
-									</ThemedText>
-									<ThemedText
-										size="sm"
-										ta="center"
-										mt="xs"
-										className={classes.stepperText}
-									>
-										{matchDescription}
-									</ThemedText>
-								</ThemedPaper>
-							</Box>
+						<ThemedPaper
+							withBorder
+							p="sm"
+							radius="md"
+							className={classes.compactStat}
+						>
+							<Group gap="xs" mb={4}>
+								<ThemeIcon color="orange" variant="light" radius="xl" size="sm">
+									<IconX size={14} />
+								</ThemeIcon>
+								<ThemedText size="xs" fw={600}>
+									IPES seul
+								</ThemedText>
+							</Group>
+							<Group justify="space-between" align="baseline">
+								<ThemedText size="xl" fw={700}>
+									{result.onlyInRecord2.length}
+								</ThemedText>
+								<Badge color="orange" variant="light" size="sm">
+									{((result.onlyInRecord2.length / totalUEs) * 100).toFixed(1)}%
+								</Badge>
+							</Group>
+							<Progress
+								value={(result.onlyInRecord2.length / totalUEs) * 100}
+								color="orange"
+								size={4}
+								radius="xl"
+								mt={4}
+							/>
 						</ThemedPaper>
 					</SimpleGrid>
-				</Tabs.Panel>
-			</Tabs>
+				</Grid.Col>
+			</Grid>
+
+			{/* Détails des UEs — 3 colonnes côte à côte */}
+			<Divider
+				mb="md"
+				label={
+					<ThemedText fw={600} size="sm">
+						Détails des UEs
+					</ThemedText>
+				}
+				labelPosition="left"
+			/>
+
+			<SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
+				<ThemedPaper
+					withBorder
+					p="sm"
+					radius="md"
+					className={classes.ueColumn}
+				>
+					<Group gap="xs" mb="xs">
+						<ThemeIcon color="teal" variant="light" radius="xl" size="sm">
+							<IconCheck size={14} />
+						</ThemeIcon>
+						<ThemedText fw={600} size="sm">
+							En commun
+						</ThemedText>
+						<Badge color="teal" variant="light" size="sm" ml="auto">
+							{result.commonsUes.length}
+						</Badge>
+					</Group>
+					<Divider mb="xs" />
+					<ScrollArea
+						h={280}
+						offsetScrollbars
+						scrollbarSize={6}
+						type="hover"
+					>
+						{renderUEList(
+							result.commonsUes,
+							<IconCheck
+								size={14}
+								style={{ color: "var(--mantine-color-teal-6)" }}
+							/>,
+							"teal",
+						)}
+					</ScrollArea>
+				</ThemedPaper>
+
+				<ThemedPaper
+					withBorder
+					p="sm"
+					radius="md"
+					className={classes.ueColumn}
+				>
+					<Group gap="xs" mb="xs">
+						<ThemeIcon color="blue" variant="light" radius="xl" size="sm">
+							<IconArrowsShuffle size={14} />
+						</ThemeIcon>
+						<ThemedText fw={600} size="sm">
+							Univ. seul
+						</ThemedText>
+						<Badge color="blue" variant="light" size="sm" ml="auto">
+							{result.onlyInRecord1.length}
+						</Badge>
+					</Group>
+					<Divider mb="xs" />
+					<ScrollArea
+						h={280}
+						offsetScrollbars
+						scrollbarSize={6}
+						type="hover"
+					>
+						{renderUEList(
+							result.onlyInRecord1,
+							<IconArrowsShuffle
+								size={14}
+								style={{ color: "var(--mantine-color-blue-6)" }}
+							/>,
+							"blue",
+						)}
+					</ScrollArea>
+				</ThemedPaper>
+
+				<ThemedPaper
+					withBorder
+					p="sm"
+					radius="md"
+					className={classes.ueColumn}
+				>
+					<Group gap="xs" mb="xs">
+						<ThemeIcon color="orange" variant="light" radius="xl" size="sm">
+							<IconX size={14} />
+						</ThemeIcon>
+						<ThemedText fw={600} size="sm">
+							IPES seul
+						</ThemedText>
+						<Badge color="orange" variant="light" size="sm" ml="auto">
+							{result.onlyInRecord2.length}
+						</Badge>
+					</Group>
+					<Divider mb="xs" />
+					<ScrollArea
+						h={280}
+						offsetScrollbars
+						scrollbarSize={6}
+						type="hover"
+					>
+						{renderUEList(
+							result.onlyInRecord2,
+							<IconX
+								size={14}
+								style={{ color: "var(--mantine-color-orange-6)" }}
+							/>,
+							"orange",
+						)}
+					</ScrollArea>
+				</ThemedPaper>
+			</SimpleGrid>
 		</ThemedPaper>
 	);
 }

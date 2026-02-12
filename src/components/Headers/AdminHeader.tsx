@@ -12,7 +12,6 @@ import { fetchJson, internalApiUrl } from "@/app/lib/utils";
 import { notifications } from "@mantine/notifications";
 import { useAuthorizations, useInstitution, useUser } from "@/app/context/SessionContext";
 import { ProfileMenu } from "../ProfileMenu/ProfileMenu";
-import { UnreadMessagesBadge } from "../Messages/UnreadBadge";
 
 interface Props {
 	burger?: React.ReactNode;
@@ -34,7 +33,6 @@ export function AdminHeader({ burger }: Props) {
 			{/*	<IconSettings size="1.25rem" />*/}
 			{/*</ActionIcon>*/}
 			<div className={classes.rightSection}>
-				<UnreadMessagesBadge />
 				<ThemeSwitcher />
 				<ProfileMenu
 					image={"/profile.png"}
